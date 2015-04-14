@@ -1,9 +1,6 @@
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
-# GreenTV s3 bucket creds
-export AWS_ACCESS_KEY_ID=AKIAJVLPKXOONMB7SR2Q
-export AWS_SECRET_ACCESS_KEY=PHLAo0EMSrfM8ltoaCXFUORB0khH08A1YiLJIAOX 
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/

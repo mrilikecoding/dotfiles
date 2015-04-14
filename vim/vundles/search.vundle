@@ -1,0 +1,4 @@
+Plugin 'kien/ctrlp.vim'
+Plugin 'SearchComplete'
+Plugin 'henrik/vim-indexed-search'
+Plugin 'mileszs/ack.vim'
