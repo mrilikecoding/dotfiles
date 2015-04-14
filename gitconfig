@@ -1,0 +1,2 @@
+[remote "ec2"]
+	receivepack = git receive-pack
