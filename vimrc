@@ -83,13 +83,13 @@ if has('persistent_undo')
  set wildignore+=log/**
  set wildignore+=tmp/**
  set wildignore+=*.png,*.jpg,*.gif
- 
+
 " ================ Scrolling ========================
 
  set scrolloff=8         "Start scrolling when we're 8 lines away from margins
  set sidescrolloff=15
  set sidescroll=1
- 
+
  " ================ Search ===========================
 
 set incsearch       " Find the next match as we type the search
@@ -127,8 +127,6 @@ nmap <leader>bq :bp <BAR> bd #<CR>
 " Show all open buffers and their status
 nmap <leader>bl :ls<CR>
 
-
-
 let g:neocomplcache_enable_at_startup = 1
 let g:auto_save = 1
 let g:auto_save_in_insert_mode = 0
@@ -137,6 +135,7 @@ let g:indent_guides_auto_colors = 0
 let g:netrw_list_hide= '.*\.swp$'
 let g:netrw_list_hide= '.DS_Store'
 let g:gitgutter_eager = 0
+let g:airline#extensions#tabline#enabled = 1
 
 " do not display info on the top of window
 let g:netrw_banner = 0
