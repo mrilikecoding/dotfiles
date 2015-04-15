@@ -1,5 +1,4 @@
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'gorodinskiy/vim-coloresque'
 Plugin 'AnsiEsc.vim'
-Plugin 'kshenoy/vim-signature'
 Plugin 'altercation/vim-colors-solarized'
