@@ -12,7 +12,6 @@ if filereadable(expand("~/.vim/vundles.vim"))
   endif
 
 " ================ General Config ====================
-set hidden "make tabs act like other editors
 set showcmd "incomplete commands at bottom
 set showmode "current mode visible at bottom
 set visualbell "no sounds
@@ -95,7 +94,7 @@ if has('persistent_undo')
  " ================ Search ===========================
 set incsearch       " Find the next match as we type the search
 set hlsearch        " Highlight searches by default
-nnoremap <silent> <C-l> :nohl<CR><C-l> " <Ctrl-l> redraws the screen and removes any search highlighting.
+nnoremap <silent> // :nohl<CR><C-l> " // redraws the screen and removes any search highlighting.
 set ignorecase      " Ignore case when searching...
 set smartcase       " ...unless we type a capital"
 
@@ -138,6 +137,8 @@ nmap <leader>l :bprevious<CR> " Move to the previous buffer
 nmap <leader>bq :bp <BAR> bd #<CR> " Close the current buffer and move to the previous one. This replicates the idea of closing a tab
 nmap <leader>bl :ls<CR> " Show all open buffers and their status
 
+set hidden "make tabs act like other editors
+
 " airline configuration - turn on tabline top, show just file name
 " map numbers to buffers
 let g:airline#extensions#tabline#enabled = 1
@@ -159,4 +160,3 @@ let g:netrw_list_hide= '.DS_Store'
 let g:netrw_banner = 0 " do not display info on the top of window
 let g:netrw_liststyle = 3
 let g:netrw_browse_split = 4 " use the previous window to open file
-"
