@@ -1,1 +1,2 @@
 Plugin 'chrisbra/Recover.vim'
+Plugin 'kshenoy/vim-signature'
