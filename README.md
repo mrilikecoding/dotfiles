@@ -28,19 +28,20 @@
 
 Some wicked Vim dotfiles and an installation script!
 
-This is mostly for keeping my setup consistent across machines... but hey, feel free to yank this! I'm borring from all over...
+This my opinionated and evolving setup, mostly for keeping my setup consistent across machines... but hey, feel free to yank this! I'm borrowing from all over.
 
-### Dependencies
-First, Install iTerm2
-Clone this repo into your home directory
+### Setup
 
-Run installation script: `sh makesymlinks.sh`
+I use iTerm2, oh-my-zsh, rvm, and the latest Homebrew Vim.
 
-**Note: this will install zshell if it isn't already installed!**
+* First, [Install iTerm2](https://www.iterm2.com/)
+* [Install homebrew](http://brew.sh/)
+* Clone this repo into your home directory
+* Run the installation script: `sh makesymlinks.sh` **This will install zshell if it isn't already installed!**
 
-Set iterm2 colorschemes with the schemes located within `/itermcolors`
+I use the [solarized color scheme](http://ethanschoonover.com/solarized) cuz there's some science or something... To get this scheme to work with Vim, set iTerm2 colorschemes in the preferences with light and dark schemes located within `/itermcolors`. I switch between the light and dark themes depending on my mood. You'll need to switch both the Vim colorscheme and the iTerm2 colorscheme for everthing to look right.
 
-You'll want to install an up to date Vim via Homebrew so it compiles with ruby, python, clientserver...
+Because OSX's default Vim doesn't compile with certain nice things, you'll want to install an up to date Vim via Homebrew and set a flag so that it compiles with `clientserver`. This is necessary to run the vim-ruby-debugger.
 	
 	# mercurial required - install if you don't already have it.
 	$ brew install mercurial
@@ -60,9 +61,13 @@ Launch Vim, and run `:PluginInstall`
 
 ### Configurations
 
-Set environment variables in .zprofile
+Any environment variables should be kept in `.zprofile` which is not kept in source control.
 
-### What's what?
+### Managing Vim plugins
 
-Vim plugins managed via Vundle. Checkout out the `Vundles` folder. Plugins are categorized. After adding a plugin, run `:source %` followed by `:PluginInstall`.
+Vim plugins are managed via Vundle. Checkout out the `Vundles` folder. Plugins are loosely categorized. After adding a plugin, run `:source %` followed by `:PluginInstall`.
+
+Other settings are managed from vimrc.
+
+Happy coding!
 
