@@ -158,4 +158,5 @@ nmap <leader>9 <Plug>AirlineSelectTab9
  autocmd VimEnter * NERDTree
  autocmd VimEnter * wincmd p
 map <silent> <C-n> :NERDTreeToggle<CR>
- 
+" Select NERDTree file opens in Startify buffer  
+autocmd User Startified set buftype=
