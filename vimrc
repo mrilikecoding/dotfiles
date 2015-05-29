@@ -154,9 +154,8 @@ nmap <leader>7 <Plug>AirlineSelectTab7
 nmap <leader>8 <Plug>AirlineSelectTab8
 nmap <leader>9 <Plug>AirlineSelectTab9
 
- " ================ Manage Netwr ===========================
-let g:netrw_list_hide= '.*\.swp$'
-let g:netrw_list_hide= '.DS_Store'
-let g:netrw_banner = 0 " do not display info on the top of window
-let g:netrw_liststyle = 3
-let g:netrw_browse_split = 4 " use the previous window to open file
+ " ================ Manage NERDTree ===========================
+ autocmd VimEnter * NERDTree
+ autocmd VimEnter * wincmd p
+map <silent> <C-n> :NERDTreeToggle<CR>
+ 
