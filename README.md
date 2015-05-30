@@ -65,9 +65,9 @@ Any environment variables should be kept in `.zprofile` which is not kept in sou
 
 ### Managing Vim plugins
 
-Vim plugins are managed via Vundle. Checkout out the `Vundles` folder. Plugins are loosely categorized. After adding a plugin, run `:source %` followed by `:PluginInstall`.
+Vim plugins are managed via Vundle. Checkout out the `Vundles` folder. Plugins are loosely categorized. After adding a plugin, run `:source %` (or restart Vim) followed by `:PluginInstall`.
 
-Other settings are managed from vimrc.
+Other settings, including plugin configurations and key mappings, are managed from vimrc.
 
 Happy coding!
 

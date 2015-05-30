@@ -154,7 +154,7 @@ nmap <leader>7 <Plug>AirlineSelectTab7
 nmap <leader>8 <Plug>AirlineSelectTab8
 nmap <leader>9 <Plug>AirlineSelectTab9
 
- " ================ Manage NERDTree ===========================
+" ================ Manage NERDTree ===========================
  autocmd VimEnter * NERDTree
  autocmd VimEnter * wincmd p
 map <silent> <C-n> :NERDTreeToggle<CR>
