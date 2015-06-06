@@ -77,9 +77,7 @@ export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 #
 # Example aliases
 alias zshconfig="vim ~/.zshrc"
-alias v="vim"
-alias ve="vim -c 'NERDTree'"
-
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+alias v="nvim"
+alias vim="nvim"
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
