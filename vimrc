@@ -160,8 +160,9 @@ nmap <leader>8 <Plug>AirlineSelectTab8
 nmap <leader>9 <Plug>AirlineSelectTab9
 
 " ================ Manage NERDTree ===========================
- autocmd VimEnter * NERDTree
- autocmd VimEnter * wincmd p
+autocmd VimEnter * NERDTree
+autocmd VimEnter * wincmd p
 map <silent> <C-n> :NERDTreeToggle<CR>
-" Select NERDTree file opens in Startify buffer  
+" Select NERDTree file opens in Startify buffer
 autocmd User Startified set buftype=
+let NERDTreeShowHidden=1
