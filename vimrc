@@ -166,3 +166,4 @@ map <silent> <C-n> :NERDTreeToggle<CR>
 " Select NERDTree file opens in Startify buffer
 autocmd User Startified set buftype=
 let NERDTreeShowHidden=1
+let NERDTreeIgnore=['\.DS_Store$']
