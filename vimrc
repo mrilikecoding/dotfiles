@@ -167,3 +167,10 @@ map <silent> <C-n> :NERDTreeToggle<CR>
 autocmd User Startified set buftype=
 let NERDTreeShowHidden=1
 let NERDTreeIgnore=['\.DS_Store$']
+
+" ================ Leader Key Copy Paste ===========================
+vmap <Leader>y "+y
+nmap <Leader>p "+p
+nmap <Leader>P "+P
+vmap <Leader>p "+p
+vmap <Leader>P "+P
