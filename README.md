@@ -53,6 +53,8 @@ Because OSX's default Vim doesn't compile with certain nice things, you'll want 
 	$brew tap neovim/neovim
 	$brew install --HEAD neovim
 
+  #you'll need to create aliases in zshrc for vim to nvim
+
 	# otherwise install Vim
 	$ brew install vim --with-client-server
 

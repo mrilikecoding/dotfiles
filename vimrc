@@ -3,14 +3,7 @@
 
 " use vim settings, not vi
 " nvim doesn't need this setting, but uncomment for regular vim
-" set nocompatible
-
-"  =============== Vundle Initialization ===============
-" This loads all the plugins specified in ~/.vim/vundles.vim
-" Use Vundle plugin to manage all other plugins
-if filereadable(expand("~/.vim/vundles.vim"))
-  source ~/.vim/vundles.vim
-  endif
+set nocompatible
 
 if filereadable(expand("~/.vim/plugins.vim"))
   source ~/.vim/plugins.vim
