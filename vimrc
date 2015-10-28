@@ -28,6 +28,9 @@ set ruler
 syntax on "turn on syntax highlighting
 let mapleader="," "replace \ as leader because it's too far away
 
+" configured to speed up neovim
+autocmd FileType c,java,cpp,python,ruby,json setlocal foldmethod=syntax
+
 " ================ Interaction ====================
 " Allow mouse scrolling
 map <ScrollWheelUp> <C-Y>
@@ -91,6 +94,10 @@ if has('persistent_undo')
  set wildignore+=tmp/**
  set wildignore+=*.png,*.jpg,*.gif
 
+ autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
+ autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
+ autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
+
 " ================ Scrolling ========================
  set scrolloff=8         "Start scrolling when we're 8 lines away from margins
  set sidescrolloff=15
@@ -104,7 +111,7 @@ set ignorecase      " Ignore case when searching...
 set smartcase       " ...unless we type a capital"
 
  " ================ Appearance ===========================
-set background=dark
+set background=light
 colorscheme solarized
 " solarized options
 let g:solarized_termcolors = 16

@@ -1,2 +1,5 @@
 [remote "ec2"]
 	receivepack = git receive-pack
+[user]
+	email = nathanrgreen@gmail.com
+	name = Nathan Green
