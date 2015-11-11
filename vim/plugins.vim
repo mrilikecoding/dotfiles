@@ -24,6 +24,7 @@ Plug 'mattn/emmet-vim'
 Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
 Plug 'tpope/vim-haml'
+Plug 'cakebaker/scss-syntax.vim'
 
 "project
 Plug 'chrisbra/Recover.vim'

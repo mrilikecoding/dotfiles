@@ -104,7 +104,7 @@ set ignorecase      " Ignore case when searching...
 set smartcase       " ...unless we type a capital"
 
  " ================ Appearance ===========================
-set background=light
+set background=dark
 colorscheme solarized
 " solarized options
 let g:solarized_termcolors = 16
