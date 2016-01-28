@@ -23,7 +23,6 @@ Plug 'pangloss/vim-javascript'
 Plug 'mattn/emmet-vim'
 Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
-Plug 'janko-m/vim-test'
 Plug 'tpope/vim-haml'
 Plug 'cakebaker/scss-syntax.vim'
 
