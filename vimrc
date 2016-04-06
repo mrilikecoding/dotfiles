@@ -14,6 +14,7 @@ set showcmd "incomplete commands at bottom
 set showmode "current mode visible at bottom
 set visualbell "no sounds
 set number "line numbers
+" set relativenumber
 set history=1000 "command history length
 set autoread "reload files changed outside of vim
 set cursorline
@@ -104,13 +105,10 @@ set ignorecase      " Ignore case when searching...
 set smartcase       " ...unless we type a capital"
 
  " ================ Appearance ===========================
-set background=light
-colorscheme solarized
-" solarized options
-let g:solarized_termcolors = 16
-let g:solarized_visibility = "normal"
-let g:solarized_contrast = "normal"
-let g:solarized_termtrans = 0
+set background=dark
+let base16colorspace=256  " Access colors present in 256 colorspace"
+colorscheme base16-default
+
 highlight clear SignColumn
 autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd ctermbg=3
 autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=4
@@ -124,15 +122,18 @@ let g:indent_guides_auto_colors = 0
 let g:ctrlp_map = '<c-p>'
 " Emmet
 let g:user_emmet_leader_key='<C-Z>'
+
 "syntax?
-let g:syntastic_check_on_open=1
+
 " Autosave
 let g:auto_save = 1
 let g:auto_save_in_insert_mode = 0
+let g:auto_save_no_updatetime = 1
+autocmd BufEnter * set updatetime=200
+
 "git gutter
 let g:gitgutter_realtime = 1
 let g:gitgutter_eager = 0
-" Airline
 
  " ================ Manage buffers like tabs ===========================
  " key mappings
@@ -149,6 +150,11 @@ set hidden "make tabs act like other editors
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
 let g:airline#extensions#tabline#buffer_idx_mode = 1
+let g:airline_theme = 'base16'
+let g:airline_powerline_fonts=1
+
+set laststatus=2
+
 nmap <leader>1 <Plug>AirlineSelectTab1
 nmap <leader>2 <Plug>AirlineSelectTab2
 nmap <leader>3 <Plug>AirlineSelectTab3
@@ -159,18 +165,30 @@ nmap <leader>7 <Plug>AirlineSelectTab7
 nmap <leader>8 <Plug>AirlineSelectTab8
 nmap <leader>9 <Plug>AirlineSelectTab9
 
-" ================ Manage NERDTree ===========================
-autocmd VimEnter * NERDTree
+" Random
+" Sonic Pi
+noremap <leader>r :silent w !sonic_pi<CR>
+noremap <leader>S :call system("sonic_pi stop")<CR>
+
+" ================ Manage NERDTree / Startify ===========================
+" autocmd VimEnter * NERDTree
 autocmd VimEnter * wincmd p
 map <silent> <C-n> :NERDTreeToggle<CR>
 " Select NERDTree file opens in Startify buffer
 autocmd User Startified set buftype=
 let NERDTreeShowHidden=1
 let NERDTreeIgnore=['\.DS_Store$']
-
+let g:startify_custom_header = [
+            \ '                                 ________  __ __        ',
+            \ '            __                  /\_____  \/\ \\ \       ',
+            \ '    __  __ /\_\    ___ ___      \/___//''/''\ \ \\ \    ',
+            \ '   /\ \/\ \\/\ \ /'' __` __`\        /'' /''  \ \ \\ \_ ',
+            \ '   \ \ \_/ |\ \ \/\ \/\ \/\ \      /'' /''__  \ \__ ,__\',
+            \ '    \ \___/  \ \_\ \_\ \_\ \_\    /\_/ /\_\  \/_/\_\_/  ',
+            \ '     \/__/    \/_/\/_/\/_/\/_/    \//  \/_/     \/_/    ',
+            \ '',
+            \ '',
+            \ ]
 " ================ Leader Key Copy Paste ===========================
-vmap <Leader>y "+y
-nmap <Leader>p "+p
-nmap <Leader>P "+P
-vmap <Leader>p "+p
-vmap <Leader>P "+P
+vnoremap <C-c> :w !pbcopy<CR><CR>
+noremap <C-v> :r !pbpaste<CR><CR>
