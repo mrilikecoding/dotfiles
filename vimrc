@@ -105,7 +105,13 @@ set ignorecase      " Ignore case when searching...
 set smartcase       " ...unless we type a capital"
 
  " ================ Appearance ===========================
-set background=dark
+let zsh_bg = $BG
+if zsh_bg == 'light'
+  set background=light
+else
+  set background=dark
+endif
+
 let base16colorspace=256  " Access colors present in 256 colorspace"
 colorscheme base16-default
 
