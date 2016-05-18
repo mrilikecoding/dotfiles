@@ -22,16 +22,13 @@ set ruler
 syntax on "turn on syntax highlighting
 let mapleader="," "replace \ as leader because it's too far away
 
-" configured to speed up neovim
-autocmd FileType c,java,cpp,python,ruby,json setlocal foldmethod=syntax
-
 " ================ Interaction ====================
 " Allow mouse scrolling
 map <ScrollWheelUp> <C-Y>
 map <ScrollWheelDown> <C-E>
 set mouse=a
 
-" Bubble single lines
+" Bubble single lines (like RubyMine)
 nmap <C-K> ddkP
 nmap <C-J> ddp
 " Bubble multiple lines
@@ -88,10 +85,6 @@ if has('persistent_undo')
  set wildignore+=tmp/**
  set wildignore+=*.png,*.jpg,*.gif
 
- autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
- autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
- autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
-
 " ================ Scrolling ========================
  set scrolloff=8         "Start scrolling when we're 8 lines away from margins
  set sidescrolloff=15
@@ -116,9 +109,9 @@ let base16colorspace=256  " Access colors present in 256 colorspace"
 colorscheme base16-default
 
 highlight clear SignColumn
-autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd ctermbg=3
-autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=4
-autocmd StdinReadPre * let s:std_in=1
+" autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd ctermbg=3
+" autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=4
+" autocmd StdinReadPre * let s:std_in=1
 
 " ============ Plugin Configuration (to install new plugins, see vim/vundles.vim) ========
 
@@ -138,8 +131,8 @@ let g:auto_save_no_updatetime = 1
 autocmd BufEnter * set updatetime=200
 
 "git gutter
-let g:gitgutter_realtime = 1
-let g:gitgutter_eager = 0
+" let g:gitgutter_realtime = 1
+" let g:gitgutter_eager = 0
 
  " ================ Manage buffers like tabs ===========================
  " key mappings
@@ -158,6 +151,7 @@ let g:airline#extensions#tabline#fnamemod = ':t'
 let g:airline#extensions#tabline#buffer_idx_mode = 1
 let g:airline_theme = 'base16'
 let g:airline_powerline_fonts=1
+let g:airline#extensions#whitespace#enabled = 0
 
 set laststatus=2
 
@@ -177,11 +171,6 @@ noremap <leader>r :silent w !sonic_pi<CR>
 noremap <leader>S :call system("sonic_pi stop")<CR>
 
 " ================ Manage NERDTree / Startify ===========================
-" autocmd VimEnter * NERDTree
-autocmd VimEnter * wincmd p
-map <silent> <C-n> :NERDTreeToggle<CR>
-" Select NERDTree file opens in Startify buffer
-autocmd User Startified set buftype=
 let NERDTreeShowHidden=1
 let NERDTreeIgnore=['\.DS_Store$']
 let g:startify_custom_header = [
@@ -195,6 +184,12 @@ let g:startify_custom_header = [
             \ '',
             \ '',
             \ ]
-" ================ Leader Key Copy Paste ===========================
+
+
+" Select NERDTree file opens in Startify buffer
+" autocmd VimEnter * NERDTree
+map <silent> <C-n> :NERDTreeToggle<CR>
+autocmd User Startified set buftype=
+" ================ Control Key Copy/Paste ===========================
 vnoremap <C-c> :w !pbcopy<CR><CR>
 noremap <C-v> :r !pbpaste<CR><CR>

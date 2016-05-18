@@ -5,7 +5,6 @@ Plug 'chriskempson/base16-vim'
 
 "git
 Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-fugitive'
 
 "languages
 Plug 'jelera/vim-javascript-syntax'
@@ -22,11 +21,7 @@ Plug 'jeroenbourgois/vim-actionscript'
 "project
 Plug 'chrisbra/Recover.vim'
 
-"search
-Plug 'kien/ctrlp.vim'
-
 "textobjects
-Plug 'ngmy/vim-rubocop'
 Plug 'tomtom/tcomment_vim'
 Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-surround'
@@ -35,16 +30,16 @@ Plug 'tpope/vim-surround'
 Plug 'xolox/vim-misc'
 Plug '907th/vim-auto-save'
 Plug 'mhinz/vim-startify'
-Plug 'bling/vim-airline'
+Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'xolox/vim-reload'
 Plug 'scrooloose/NERDTree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
+" Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'jiangmiao/auto-pairs'
 
 " random stuff
 " sonic pi
-Plug 'dermusikman/sonicpi'
+" Plug 'dermusikman/sonicpi'
 
 call plug#end()

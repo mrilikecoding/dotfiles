@@ -10,12 +10,12 @@ dir=~/dotfiles                    # dotfiles directory
 olddir=~/dotfiles_old             # old dotfiles backup directory
 
 # list of files/folders to symlink in homedir
-files="bashrc nvimrc vimrc nvim vim zshrc oh-my-zsh editorconfig gitconfig gitignore_global"    
+files="bashrc nvimrc vimrc nvim vim zshrc oh-my-zsh editorconfig gitconfig gitignore_global zshenv"
 
 ##########
 #symlink neovim to vim
-cp -rf ~/dotfiles/vim ~/dotfiles/nvim
-cp ~/dotfiles/vimrc ~/dotfiles/nvimrc
+# cp -rf ~/dotfiles/vim ~/dotfiles/nvim
+# cp ~/dotfiles/vimrc ~/dotfiles/nvimrc
 
 # create dotfiles_old in homedir
 echo -n "Creating $olddir for backup of any existing dotfiles in ~ ..."
@@ -29,7 +29,7 @@ echo "done"
 
 # move any existing dotfiles in homedir to dotfiles_old directory, then create symlinks from the homedir to any files in the ~/dotfiles directory specified in $files
 for file in $files; do
-	echo "Moving any existing dotfiles from ~ to $olddir"
+echo "Moving any existing dotfiles from ~ to $olddir"
 	mv ~/.$file ~/dotfiles_old/
 	echo "Creating symlink to $file in home directory."
 	ln -s $dir/$file ~/.$file
