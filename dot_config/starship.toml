@@ -4,6 +4,7 @@ format = """
 [](color_orange)\
 $os\
 $username\
+$aws\
 [](bg:color_yellow fg:color_orange)\
 $directory\
 [](fg:color_yellow bg:color_aqua)\
@@ -85,6 +86,9 @@ truncation_symbol = "…/"
 "Music" = "󰝚 "
 "Pictures" = " "
 "Developer" = "󰲋 "
+
+[aws]
+format = '[[ aws: $profile:($region) ](fg:color_fg0 bg:color_orange)]($style)'
 
 [git_branch]
 symbol = ""
