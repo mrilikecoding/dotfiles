@@ -20,6 +20,12 @@ return {
       })
     end,
   },
+  -- Colorful window separation
+  {
+    "nvim-zh/colorful-winsep.nvim",
+    config = true,
+    event = { "WinLeave" },
+  },
 
   -- You may have additional plugins here
 }
