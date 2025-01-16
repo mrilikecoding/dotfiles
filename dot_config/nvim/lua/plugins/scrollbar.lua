@@ -1,25 +1,43 @@
 return {
-  "petertriho/nvim-scrollbar",
-  dependencies = {
-    "kevinhwang91/nvim-hlslens", -- Optional for better search
-  },
+  "lewis6991/satellite.nvim",
+  lazy = false,
   config = function()
-    require("scrollbar").setup({
-      show_in_active_only = true,
-      handle = {
-        color = "#555555",
-        clickable = true,
-      },
-      marks = {
-        Search = { color = "#ff9e64" },
-        Error = { color = "#db4b4b" },
-        Warn = { color = "#e0af68" },
-        Info = { color = "#0db9d7" },
-        Hint = { color = "#1abc9c" },
-        Misc = { color = "#9d7cd8" },
-        GitAdd = { color = "#449dab" },
-        GitChange = { color = "#6183bb" },
-        GitDelete = { color = "#914c54" },
+    require("satellite").setup({
+      current_only = true,
+      winblend = 30,
+      zindex = 40,
+      excluded_filetypes = {},
+      width = 10,
+      handlers = {
+        cursor = {
+          enable = true,
+          -- Supports any number of symbols
+          symbols = { "⎺", "⎻", "⎼", "⎽" },
+        },
+        search = {
+          enable = true,
+        },
+        diagnostic = {
+          enable = true,
+          signs = { "-", "=", "≡" },
+          min_severity = vim.diagnostic.severity.HINT,
+        },
+        gitsigns = {
+          enable = true,
+          signs = { -- can only be a single character (multibyte is okay)
+            add = "+",
+            change = "~",
+            delete = "-",
+          },
+        },
+        marks = {
+          enable = true,
+          show_builtins = false, -- shows the builtin marks like [ ] < >
+          key = "m",
+        },
+        quickfix = {
+          signs = { "-", "=", "≡" },
+        },
       },
     })
   end,
