@@ -2,7 +2,7 @@ return {
   {
     "RRethy/base16-nvim",
     config = function()
-      vim.cmd("colorscheme base16-ocean")
+      vim.cmd("colorscheme tokyonight-day")
     end,
   },
   -- Telescope configuration with colorscheme preview enabled
