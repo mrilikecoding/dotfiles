@@ -18,20 +18,24 @@ return {
     dap.listeners.after.event_stopped["reuse_windows"] = function(_, body)
       local filename = body.frame and body.frame.source and body.frame.source.path
       if filename then
-        -- Try to find existing window with this buffer
-        local found = false
+        -- Get the current window
+        local current_win = vim.api.nvim_get_current_win()
+        -- Get all windows that aren't the test window
+        local available_wins = {}
         for _, win in pairs(vim.api.nvim_list_wins()) do
           local buf = vim.api.nvim_win_get_buf(win)
-          if vim.api.nvim_buf_get_name(buf) == filename then
-            vim.api.nvim_set_current_win(win)
-            found = true
-            break
+          local buf_name = vim.api.nvim_buf_get_name(buf)
+          if not buf_name:match("_test%.py$") and not buf_name:match("test_.*%.py$") then
+            table.insert(available_wins, win)
           end
         end
 
-        -- If window not found, open in new buffer
-        if not found then
+        -- Use the first non-test window found
+        if #available_wins > 0 then
+          vim.api.nvim_set_current_win(available_wins[1])
           vim.cmd("edit " .. filename)
+          -- Return to the original window
+          vim.api.nvim_set_current_win(current_win)
         end
       end
     end
