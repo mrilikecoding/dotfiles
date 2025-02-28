@@ -13,5 +13,8 @@ vim.keymap.set({ "n", "x" }, "<leader>rr", function()
   require("telescope").extensions.refactoring.refactors()
 end)
 
+-- load project specific config
+require("dap_projects").load_project_config()
+
 -- comment default
 require("Comment").setup()
