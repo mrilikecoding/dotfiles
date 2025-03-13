@@ -10,7 +10,6 @@ vim.api.nvim_create_user_command("DapAttachDebugger", function()
   require("dap").continue()
   print("Attached to debugger")
 end, {})
-
 -- Keybinding for attaching to debugger
 vim.keymap.set("n", "<Leader>da", function()
   require("dap").continue()
@@ -102,6 +101,17 @@ function M.load_project_config()
       M.initialized = true
       M.last_loaded_dir = current_dir
       return true
+    end
+    if pattern ~= "default_python" and pattern ~= "default_ruby" and pattern ~= "rails" then
+      -- Check if the pattern is in the path (case-insensitive)
+      if current_dir:lower():match(pattern:lower()) then
+        local project_type = config.type
+        require("dap").configurations[project_type] = { config }
+        print("✅ Loaded DAP config for: " .. pattern)
+        M.initialized = true
+        M.last_loaded_dir = current_dir
+        return true
+      end
     end
   end
 
