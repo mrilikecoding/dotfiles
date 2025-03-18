@@ -7,7 +7,7 @@ return {
     return {
       sections = {
         lualine_a = { "mode" },
-        lualine_b = { "branch", "diagnostics", spelunk.persist },
+        lualine_b = { "branch", "diagnostics" },
         lualine_c = {
           { git_blame.get_current_blame_text, cond = git_blame.is_blame_text_available },
         },

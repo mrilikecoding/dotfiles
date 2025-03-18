@@ -26,7 +26,7 @@ end, {})
 vim.keymap.set("n", "<Leader>dx", function()
   require("dap").clear_breakpoints()
   print("All breakpoints cleared")
-end, { desc = "Clear all breakpoints" })
+end, { desc = "debug: clear all breakpoints" })
 
 vim.keymap.set("n", "<leader>du", function()
   require("dapui").toggle()
@@ -47,6 +47,11 @@ end, { desc = "debug: step into" })
 vim.keymap.set("n", "<leader>do", function()
   require("dap").step_out()
 end, { desc = "debug: step out" })
+
+-- Map a key to evaluate expressions
+vim.keymap.set("n", "<Leader>de", function()
+  require("dap.ui.widgets").hover()
+end, { desc = "debug: evaluate expression under cursor" })
 
 -- set breakpoints
 vim.keymap.set("n", "<leader>db", function()
