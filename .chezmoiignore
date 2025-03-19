@@ -1,1 +1,6 @@
-.zsh/secrets.zsh
+# Generated on Tue Mar 18 17:35:22 PDT 2025
+**/secrets.zsh
+**/.DS_Store
+**/.config/chezmoi/**
+**/node_modules/**
+**/.git/**
