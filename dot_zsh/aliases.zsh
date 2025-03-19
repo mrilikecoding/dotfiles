@@ -33,6 +33,7 @@ alias czd="chezmoi diff"
 alias cze="chezmoi edit"
 alias czu="chezmoi update"
 alias czm="chezmoi_manage"
+alias czpath="chezmoi source-path"
 alias czg="chezmoi_git_status"
 alias czgs="chezmoi_git_sync"
 
