@@ -3,6 +3,10 @@ alias zshconfig="$EDITOR ~/.zshrc"
 alias zprofile="$EDITOR ~/.zprofile"
 alias zshenv="$EDITOR ~/.zshenv"
 
+# alias aliases :)
+alias list_aliases="cat ~/.zsh/aliases.zsh"
+alias aliasconfig="$EDITOR ~/.zsh/aliases.zsh"
+
 # tool config
 alias awsconfig="$EDITOR ~/.aws/config"
 alias sshconfig="$EDITOR ~/.ssh/config"
@@ -36,6 +40,7 @@ alias czm="chezmoi_manage"
 alias czpath="chezmoi source-path"
 alias czg="chezmoi_git_status"
 alias czgs="chezmoi_git_sync"
+alias czrun="czm && czg && czgs"
 
 
 
