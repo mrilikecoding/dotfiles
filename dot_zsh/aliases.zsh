@@ -27,6 +27,7 @@ alias reload="source ~/.zshrc" # or ~/.bashrc
 alias c="clear"
 alias h="history"
 alias bdf="brew bundle dump --force" # update Brewfile
+alias bb="brew bundle"
 
 # chezmoi shortcuts
 alias cz="chezmoi"
