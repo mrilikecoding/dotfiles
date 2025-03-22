@@ -1,10 +1,50 @@
-# Generated on Fri Mar 21 17:39:01 PDT 2025
+# Generated on Fri Mar 21 17:46:48 PDT 2025
 **/secrets.zsh
 **/.DS_Store
 **/.config/chezmoi/**
 **/node_modules/**
 **/.git/**
 # Patterns from .gitignore files
-# From global gitignore
-*~
+# From local gitignore
+# An example global gitignore file
+#
+# Place a copy if this at ~/.gitignore_global
+# Run `git config --global core.excludesfile ~/.gitignore_global`
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+*.pyo
+
+# OS generated files #
+######################
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Temporary files #
+###################
+*.bak
+*.swp
+*.swo
+*~
+*#
+
+# IDE files #
+#############
+.vscode
+.idea
+.iml
+*.sublime-workspace
+

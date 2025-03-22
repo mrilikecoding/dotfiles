@@ -45,7 +45,7 @@ alias czg="chezmoi_git_status"
 alias czgs="chezmoi_git_sync"
 
 alias czpush="chezmoi_push"
-alias czpull"chezmoi_pull"
+alias czpull="chezmoi_pull"
 
 # Tmux pane management aliases
 alias tsplit="tmux split-window -h"     # Split vertically (side by side)
