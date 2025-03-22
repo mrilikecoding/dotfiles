@@ -1,6 +1,10 @@
-# Generated on Fri Mar 21 17:35:19 PDT 2025
+# Generated on Fri Mar 21 17:39:01 PDT 2025
 **/secrets.zsh
 **/.DS_Store
 **/.config/chezmoi/**
 **/node_modules/**
 **/.git/**
+# Patterns from .gitignore files
+# From global gitignore
+*~
+.DS_Store

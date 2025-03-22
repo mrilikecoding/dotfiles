@@ -22,50 +22,63 @@ CHEZMOI_EXCLUDE=(
 )
 
 function chezmoi_manage() {
-  # Store the full path to chezmoi before doing anything else
   (
-
-    local CHEZMOI_BIN=$(which chezmoi)
-    
     # Check if chezmoi is installed
+    local CHEZMOI_BIN=$(which chezmoi)
     if [ -z "$CHEZMOI_BIN" ]; then
       echo "Error: chezmoi is not installed or not in PATH."
       return 1
     fi
 
-    # Get the source directory (use the full path to chezmoi)
+    # Get the source directory
     local SOURCE_DIR=$("$CHEZMOI_BIN" source-path)
     if [ -z "$SOURCE_DIR" ]; then
       echo "Error: Could not determine chezmoi source directory."
       return 1
     fi
 
-    # Update the ignore file
+    # Always regenerate the ignore file
     echo "Updating .chezmoiignore..."
     echo "# Generated on $(date)" > "$SOURCE_DIR/.chezmoiignore"
+    
+    # Add our standard exclusion patterns
     for pattern in "${CHEZMOI_EXCLUDE[@]}"; do
       echo "$pattern" >> "$SOURCE_DIR/.chezmoiignore"
     done
+    
+    # Always include gitignore patterns
+    echo "# Patterns from .gitignore files" >> "$SOURCE_DIR/.chezmoiignore"
+    
+    # Global gitignore
+    if [ -f "$HOME/.gitignore_global" ]; then
+      echo "# From global gitignore" >> "$SOURCE_DIR/.chezmoiignore"
+      cat "$HOME/.gitignore_global" >> "$SOURCE_DIR/.chezmoiignore"
+    fi
+    
+    # Local gitignore if it exists
+    if [ -f "$HOME/.gitignore" ]; then
+      echo "# From local gitignore" >> "$SOURCE_DIR/.chezmoiignore"
+      cat "$HOME/.gitignore" >> "$SOURCE_DIR/.chezmoiignore"
+    fi
 
     # Add files to chezmoi
     echo "Adding files to chezmoi..."
     for path in "${CHEZMOI_INCLUDE[@]}"; do
-    # Remove trailing slashes if any
-    path="${path%/}"
-    
-    if [ -e "$path" ]; then
-      echo "Adding $path"
-      # For directories, add -r for recursive
-      if [ -d "$path" ]; then
-        # respect .gitignore 
-        "$CHEZMOI_BIN" add -r "$path"
+      # Remove trailing slashes if any
+      path="${path%/}"
+      
+      if [ -e "$path" ]; then
+        echo "Adding $path"
+        # For directories, add -r for recursive
+        if [ -d "$path" ]; then
+          "$CHEZMOI_BIN" add -r "$path"
+        else
+          "$CHEZMOI_BIN" add "$path"
+        fi
       else
-        "$CHEZMOI_BIN" add "$path"
+        echo "Skipping $path (not found)"
       fi
-    else
-      echo "Skipping $path (not found)"
-    fi
-  done
+    done
 
     echo "✅ Done! To see changes, run: chezmoi status"
   )
