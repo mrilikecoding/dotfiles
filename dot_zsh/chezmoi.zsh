@@ -57,6 +57,7 @@ function chezmoi_manage() {
       echo "Adding $path"
       # For directories, add -r for recursive
       if [ -d "$path" ]; then
+        # respect .gitignore 
         "$CHEZMOI_BIN" add -r "$path"
       else
         "$CHEZMOI_BIN" add "$path"
@@ -150,8 +151,55 @@ function chezmoi_git_sync() {
   echo "✅ Changes pushed successfully!"
 }
 
-function chezmoi_run() {
-  echo "===== Chezmoi Dotfiles Management ====="
+#
+# Function to fetch latest changes from remote chezmoi repository
+function chezmoi_fetch() {
+  local CHEZMOI_BIN=$(which chezmoi)
+  
+  # Check if chezmoi is installed
+  if [ -z "$CHEZMOI_BIN" ]; then
+    echo "Error: chezmoi is not installed or not in PATH."
+    return 1
+  fi
+
+  # Get the source directory
+  local SOURCE_DIR=$("$CHEZMOI_BIN" source-path)
+  if [ -z "$SOURCE_DIR" ]; then
+    echo "Error: Could not determine chezmoi source directory."
+    return 1
+  fi
+  
+  # Check if the source directory is a git repository
+  if [ ! -d "$SOURCE_DIR/.git" ]; then
+    echo "Error: $SOURCE_DIR is not a git repository."
+    return 1
+  fi
+  
+  echo "Fetching latest changes from remote repository..."
+  (cd "$SOURCE_DIR" && git pull)
+  
+  echo "✅ Latest changes fetched successfully!"
+}
+
+# Function to apply the latest chezmoi configuration
+function chezmoi_apply() {
+  local CHEZMOI_BIN=$(which chezmoi)
+  
+  # Check if chezmoi is installed
+  if [ -z "$CHEZMOI_BIN" ]; then
+    echo "Error: chezmoi is not installed or not in PATH."
+    return 1
+  fi
+  
+  echo "Applying latest chezmoi configuration..."
+  "$CHEZMOI_BIN" apply
+  
+  echo "✅ Configuration applied successfully!"
+}
+
+# Function to sync to chezmoi local repo and  push to remote
+function chezmoi_push() {
+  echo "===== Chezmoi Sync and Push to Remote ====="
   
   # Step 1: Manage files
   echo "Step 1: Add files to chezmoi"
@@ -184,4 +232,31 @@ function chezmoi_run() {
   fi
   
   echo "✅ Chezmoi workflow completed!"
+}
+
+# Function to sync from remote and apply changes
+function chezmoi_pull() {
+  echo "===== Chezmoi Pull from Remote and Sync ====="
+  
+  # Step 1: Fetch latest changes
+  echo "Step 1: Fetch latest changes from remote"
+  echo -n "Do you want to fetch the latest changes? (y/n): "
+  read confirm
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    chezmoi_fetch
+  else
+    echo "Skipping fetch step."
+  fi
+  
+  # Step 2: Apply configuration
+  echo "Step 2: Apply configuration changes"
+  echo -n "Do you want to apply the configuration changes? (y/n): "
+  read confirm
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    chezmoi_apply
+  else
+    echo "Skipping apply step."
+  fi
+  
+  echo "✅ Chezmoi sync from remote completed!"
 }

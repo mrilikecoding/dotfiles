@@ -33,16 +33,19 @@ alias bb="brew bundle"
 # chezmoi shortcuts
 alias cz="chezmoi"
 alias cza="chezmoi add"
+alias czfetch="chezmoi_fetch"
 alias czapply="chezmoi apply"
 alias czs="chezmoi status"
 alias czd="chezmoi diff"
 alias cze="chezmoi edit"
 alias czu="chezmoi update"
-alias czm="chezmoi_manage"
+alias czm="chezmoi_manage" # update local tracked files 
 alias czpath="chezmoi source-path"
 alias czg="chezmoi_git_status"
 alias czgs="chezmoi_git_sync"
-alias czrun="chezmoi_run"
+
+alias czpush="chezmoi_push"
+alias czpull"chezmoi_pull"
 
 # Tmux pane management aliases
 alias tsplit="tmux split-window -h"     # Split vertically (side by side)
