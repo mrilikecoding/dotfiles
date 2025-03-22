@@ -149,3 +149,39 @@ function chezmoi_git_sync() {
   
   echo "✅ Changes pushed successfully!"
 }
+
+function chezmoi_run() {
+  echo "===== Chezmoi Dotfiles Management ====="
+  
+  # Step 1: Manage files
+  echo "Step 1: Add files to chezmoi"
+  echo -n "Do you want to add files to chezmoi? (y/n): "
+  read confirm
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    chezmoi_manage
+  else
+    echo "Skipping file management step."
+  fi
+  
+  # Step 2: Show git status
+  echo "Step 2: Check git status"
+  echo -n "Do you want to check git status? (y/n): "
+  read confirm
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    chezmoi_git_status
+  else
+    echo "Skipping git status step."
+  fi
+  
+  # Step 3: Sync changes
+  echo "Step 3: Commit and push changes"
+  echo -n "Do you want to commit and push changes? (y/n): "
+  read confirm
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    chezmoi_git_sync
+  else
+    echo "Skipping git sync step."
+  fi
+  
+  echo "✅ Chezmoi workflow completed!"
+}
