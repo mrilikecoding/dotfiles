@@ -30,6 +30,8 @@ alias h="history"
 alias bdf="brew bundle dump --force" # update Brewfile
 alias bb="brew bundle"
 
+alias aider-claude="aider --anthropic-api-key $AIDER_ANTHROPIC_API_KEY --no-auto-commits --no-attribute-author --no-attribute-committer"
+
 # chezmoi shortcuts
 alias cz="chezmoi"
 alias cza="chezmoi add"
