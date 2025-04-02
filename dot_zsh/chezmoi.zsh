@@ -1,6 +1,7 @@
 # Define files to include in chezmoi
 # In this list, don't include globs, just files/directories
 CHEZMOI_INCLUDE=(
+  "$HOME/.gitignore_global"
   "$HOME/.zsh"
   "$HOME/.zshrc"
   "$HOME/.config/nvim"
