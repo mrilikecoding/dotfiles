@@ -1,4 +1,4 @@
-# Generated on Thu Apr  3 09:37:08 PDT 2025
+# Generated on Thu Apr  3 15:26:25 PDT 2025
 **/secrets.zsh
 **/.DS_Store
 **/.config/chezmoi/**
@@ -6,52 +6,5 @@
 **/.git/**
 # Patterns from .gitignore files
 # From global gitignore
-
-# Aider files
-.aider*
-.aider/
-.aider.chat.history.md
-.aider.input.history
-# From local gitignore
-# An example global gitignore file
-#
-# Place a copy if this at ~/.gitignore_global
-# Run `git config --global core.excludesfile ~/.gitignore_global`
-
-# Compiled source #
-###################
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
-*.pyc
-*.pyo
-
-# OS generated files #
-######################
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# Temporary files #
-###################
-*.bak
-*.swp
-*.swo
 *~
-*#
-
-# IDE files #
-#############
-.vscode
-.idea
-.iml
-*.sublime-workspace
-
+.DS_Store
