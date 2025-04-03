@@ -27,8 +27,8 @@ alias edit="$EDITOR ."
 alias reload="source ~/.zshrc" # or ~/.bashrc
 alias c="clear"
 alias h="history"
-alias bdf="brew bundle dump --force" # update Brewfile
-alias bb="brew bundle"
+alias bdf="brew bundle dump --force --file=~/Brewfile" # update Brewfile
+alias bb="brew bundle --file=~/Brewfile"
 
 # chezmoi shortcuts
 alias cz="chezmoi"
