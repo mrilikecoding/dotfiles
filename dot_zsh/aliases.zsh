@@ -12,7 +12,7 @@ alias awsconfig="$EDITOR ~/.aws/config"
 alias sshconfig="$EDITOR ~/.ssh/config"
 alias tmuxconfig="$EDITOR ~/.tmux.conf"
 alias nvimconfig="$EDITOR ~/.config/nvim/init.lua"
-alias starshipconfig="$EDITOR ~./config/starship.toml"
+alias starshipconfig="$EDITOR ~/.config/starship.toml"
 alias chezmoiconfig="$EDITOR ~/.zsh/chezmoi.zsh"
 alias czconfig="$EDITOR ~/.zsh/chezmoi.zsh"
 alias secretsconfig="$EDITOR ~/.zsh/secrets.zsh"
@@ -27,8 +27,12 @@ alias edit="$EDITOR ."
 alias reload="source ~/.zshrc" # or ~/.bashrc
 alias c="clear"
 alias h="history"
-alias bdf="brew bundle dump --force --file=~/Brewfile" # update Brewfile
-alias bb="brew bundle --file=~/Brewfile"
+alias bdf="cd ~ && brew bundle dump --force && cd -" # update Brewfile
+alias bb="cd ~ && brew bundle && cd -"
+
+# remotes
+alias tmux-tailscale-remote="TERM=xterm-256color ssh $TAILSCALE_REMOTE -t 'zsh -l -c \"tmux attach || tmux new\"'"
+alias ttr=tmux-tailscale-remote
 
 # chezmoi shortcuts
 alias cz="chezmoi"
