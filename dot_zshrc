@@ -6,6 +6,12 @@ plugins=(git pyenv rbenv macos z direnv tmux)
 
 source $ZSH/oh-my-zsh.sh
 
+# Skip nonexistent completion files
+# this is handy when connecting to this machine via ssh
+setopt EXTENDED_GLOB
+ZSH_COMPDUMP="${ZDOTDIR:-$HOME}/.zcompdump"
+compinit -u
+
 
 # rbenv
 eval "$(rbenv init -)"
