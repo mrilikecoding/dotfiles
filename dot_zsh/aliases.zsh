@@ -15,7 +15,9 @@ alias nvimconfig="$EDITOR ~/.config/nvim/init.lua"
 alias starshipconfig="$EDITOR ~/.config/starship.toml"
 alias chezmoiconfig="$EDITOR ~/.zsh/chezmoi.zsh"
 alias czconfig="$EDITOR ~/.zsh/chezmoi.zsh"
+alias czopt="$EDITOR ~/.config/chezmoi/chezmoi.toml"
 alias secretsconfig="$EDITOR ~/.zsh/secrets.zsh"
+alias gitconfig="$EDITOR ~/.gitconfig"
 
 # command aliases
 alias la="ll -a"
@@ -27,11 +29,8 @@ alias edit="$EDITOR ."
 alias reload="source ~/.zshrc" # or ~/.bashrc
 alias c="clear"
 alias h="history"
-
-# brew stuff
 alias bdf="cd ~ && brew bundle dump --force && cd -" # update Brewfile
 alias bb="cd ~ && brew bundle && cd -"
-alias bclean="brew cleanup && rm -f $ZSH_COMPDUMP && source ~/.zshrc"
 
 # remotes
 alias tmux-tailscale-remote="TERM=xterm-256color ssh $TAILSCALE_REMOTE -t 'zsh -l -c \"tmux attach || tmux new\"'"

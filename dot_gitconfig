@@ -1,0 +1,23 @@
+[user]
+	name = greenj3lly
+	email = ngreen@jellyvision.com
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[core]
+	excludesfile = ~/.gitignore_global
+[diff]
+	tool = smerge
+[difftool "smerge"]
+	cmd = smerge difftool \"$LOCAL\" \"$REMOTE\"
+[difftool]
+	prompt = false
+[merge]
+	tool = smerge
+[mergetool "smerge"]
+	cmd = smerge mergetool \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
+[mergetool]
+	keepBackup = false
