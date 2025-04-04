@@ -3,6 +3,7 @@
 format = """
 [](color_orange)\
 $os\
+$hostname\
 $username\
 $aws\
 [](bg:color_yellow fg:color_orange)\
@@ -41,6 +42,12 @@ color_orange = '#d65d0e'
 color_purple = '#b16286'
 color_red = '#cc241d'
 color_yellow = '#d79921'
+
+[hostname]
+ssh_only = true
+format = "[●](bold red) $hostname"
+trim_at = "."
+disabled = false
 
 [os]
 disabled = false
