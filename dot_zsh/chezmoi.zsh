@@ -4,6 +4,7 @@ CHEZMOI_INCLUDE=(
   "$HOME/.zsh"
   "$HOME/.zshrc"
   "$HOME/.config/nvim"
+  "$HOME/.config/starship.toml"
   "$HOME/.tmux.conf"
   "$HOME/.bashrc"
   "$HOME/.bash_profile"
