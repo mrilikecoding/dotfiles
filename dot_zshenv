@@ -3,10 +3,5 @@
 # NON-SECRET vars
 export OLLAMA_API_BASE=http://127.0.0.1:11434
 
-# Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='vim'
-else
-  export EDITOR='nvim'
-fi
+export EDITOR='nvim'
 
