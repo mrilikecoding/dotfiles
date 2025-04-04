@@ -27,8 +27,11 @@ alias edit="$EDITOR ."
 alias reload="source ~/.zshrc" # or ~/.bashrc
 alias c="clear"
 alias h="history"
+
+# brew stuff
 alias bdf="cd ~ && brew bundle dump --force && cd -" # update Brewfile
 alias bb="cd ~ && brew bundle && cd -"
+alias bclean="brew cleanup && rm -f $ZSH_COMPDUMP && source ~/.zshrc"
 
 # remotes
 alias tmux-tailscale-remote="TERM=xterm-256color ssh $TAILSCALE_REMOTE -t 'zsh -l -c \"tmux attach || tmux new\"'"
