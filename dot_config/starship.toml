@@ -3,8 +3,8 @@
 format = """
 [](color_orange)\
 $os\
-$hostname\
 $username\
+$hostname\
 $aws\
 [](bg:color_yellow fg:color_orange)\
 $directory\
@@ -33,6 +33,7 @@ palette = 'gruvbox_dark'
 
 [palettes.gruvbox_dark]
 color_fg0 = '#fbf1c7'
+color_fg1 = '#f1fa8c'
 color_bg1 = '#3c3836'
 color_bg3 = '#665c54'
 color_blue = '#458588'
@@ -45,7 +46,8 @@ color_yellow = '#d79921'
 
 [hostname]
 ssh_only = true
-format = "[●](bold red) $hostname"
+format = "[⚡$hostname ⚡]($style)"
+style = "bg:color_orange fg:color_fg1 "
 trim_at = "."
 disabled = false
 
