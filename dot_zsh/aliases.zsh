@@ -36,6 +36,8 @@ alias bb="cd ~ && brew bundle && cd -"
 alias tmux-tailscale-remote="TERM=xterm-256color ssh $TAILSCALE_REMOTE -t 'zsh -l -c \"tmux attach || tmux new\"'"
 alias ttr=tmux-tailscale-remote
 
+# ai/llm
+
 # chezmoi shortcuts
 alias cz="chezmoi"
 alias cza="chezmoi add"
@@ -49,7 +51,6 @@ alias czm="chezmoi_manage" # update local tracked files
 alias czpath="chezmoi source-path"
 alias czg="chezmoi_git_status"
 alias czgs="chezmoi_git_sync"
-
 alias czpush="chezmoi_push"
 alias czpull="chezmoi_pull"
 
