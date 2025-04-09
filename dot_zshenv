@@ -5,6 +5,7 @@
 # Ollama 
 export OLLAMA_API_BASE=http://127.0.0.1:11434
 export OLLAMA_CONTEXT_LENGTH=8192
+export DEFAULT_OLLAMA_AIDER_MODEL=gemma3:12b
 
 export EDITOR='nvim'
 

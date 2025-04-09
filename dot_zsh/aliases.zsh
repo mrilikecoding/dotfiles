@@ -37,6 +37,7 @@ alias tmux-tailscale-remote="TERM=xterm-256color ssh $TAILSCALE_REMOTE -t 'zsh -
 alias ttr=tmux-tailscale-remote
 
 # ai/llm
+alias aider-ollama="OLLAMA_API_BASE=$OLLAMA_API_BASE aider --model ollama_chat/$DEFAULT_OLLAMA_AIDER_MODEL --no-auto-commits --no-attribute-author --no-attribute-committer"
 
 # chezmoi shortcuts
 alias cz="chezmoi"
