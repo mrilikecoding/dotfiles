@@ -18,3 +18,6 @@
 	cmd = smerge mergetool \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
 [mergetool]
 	keepBackup = false
+[user]
+	name = Nathan Green
+	email = ngreen@jellyvision.com

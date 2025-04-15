@@ -18,6 +18,7 @@ alias czconfig="$EDITOR ~/.zsh/chezmoi.zsh"
 alias czopt="$EDITOR ~/.config/chezmoi/chezmoi.toml"
 alias secretsconfig="$EDITOR ~/.zsh/secrets.zsh"
 alias gitconfig="$EDITOR ~/.gitconfig"
+alias termconfig="$EDITOR ~/.config/ghostty/config"
 
 # command aliases
 alias la="ll -a"
@@ -31,6 +32,7 @@ alias c="clear"
 alias h="history"
 alias bdf="cd ~ && brew bundle dump --force && cd -" # update Brewfile
 alias bb="cd ~ && brew bundle && cd -"
+
 
 # remotes
 alias tmux-tailscale-remote="TERM=xterm-256color ssh $TAILSCALE_REMOTE -t 'zsh -l -c \"tmux attach || tmux new\"'"
