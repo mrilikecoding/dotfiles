@@ -6,6 +6,7 @@ CHEZMOI_INCLUDE=(
   "$HOME/.zshrc"
   "$HOME/.config/nvim"
   "$HOME/.config/starship.toml"
+  "$HOME/.config/ghostty/config"
   "$HOME/.tmux.conf"
   "$HOME/.bashrc"
   "$HOME/.bash_profile"
@@ -21,6 +22,7 @@ CHEZMOI_EXCLUDE=(
   "**/.config/chezmoi/**"
   "**/node_modules/**"
   "**/.git/**"
+  "**__pycache__**"
 )
 
 function chezmoi_manage() {
@@ -62,6 +64,27 @@ function chezmoi_manage() {
       echo "# From local gitignore" >> "$SOURCE_DIR/.chezmoiignore"
       cat "$HOME/.gitignore" >> "$SOURCE_DIR/.chezmoiignore"
     fi
+
+    # Remove files that match the exclude patterns from chezmoi source
+    echo "Removing excluded patterns from chezmoi..."
+    for pattern in "${CHEZMOI_EXCLUDE[@]}"; do
+      # Convert glob pattern to find pattern
+      # Replace ** with * for the find command and escape the [ character in sed replacement
+      local find_pattern=$(echo "$pattern" | sed -e 's/\*\*/*/g' -e 's/\*/[^\/]*/g')
+      
+      # Use find to locate matching files in source directory
+      local excluded_files=$(find "$SOURCE_DIR" -path "$SOURCE_DIR/$find_pattern" 2>/dev/null)
+      
+      if [ ! -z "$excluded_files" ]; then
+        echo "Found excluded files matching pattern: $pattern"
+        echo "$excluded_files" | while read -r excluded_file; do
+          if [ -e "$excluded_file" ]; then
+            echo "Removing $excluded_file from chezmoi source"
+            rm -rf "$excluded_file"
+          fi
+        done
+      fi
+    done
 
     # Add files to chezmoi
     echo "Adding files to chezmoi..."
@@ -149,11 +172,26 @@ function chezmoi_git_sync() {
     return 0
   fi
   
+  # Check for untracked files and offer to add them
+  local UNTRACKED_FILES=$(git ls-files --others --exclude-standard)
+  if [ ! -z "$UNTRACKED_FILES" ]; then
+    echo "Untracked files detected:"
+    echo "$UNTRACKED_FILES" | sed 's/^/  /'
+    echo -n "Do you want to add these untracked files? (y/n): "
+    read add_untracked
+    if [[ $add_untracked == [yY] || $add_untracked == [yY][eE][sS] ]]; then
+      echo "Adding untracked files..."
+      git add $(echo "$UNTRACKED_FILES" | tr '\n' ' ')
+    else
+      echo "Skipping untracked files."
+    fi
+  fi
+  
   # Get commit message from argument or use default
   local COMMIT_MSG=${1:-"Update dotfiles $(date +%Y-%m-%d)"}
   
   echo "Committing changes with message: $COMMIT_MSG"
-  git add .
+  git add -u
   git commit -m "$COMMIT_MSG"
   
   # Push changes
@@ -232,16 +270,87 @@ function chezmoi_push() {
   read confirm
   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
     chezmoi_git_status
+    
+    # Step 2b: Check for untracked files and offer to add them
+    local CHEZMOI_BIN=$(which chezmoi)
+    local SOURCE_DIR=$("$CHEZMOI_BIN" source-path)
+    
+    local UNTRACKED_FILES=$(cd "$SOURCE_DIR" && git ls-files --others --exclude-standard)
+    if [ ! -z "$UNTRACKED_FILES" ]; then
+      echo "Untracked files detected:"
+      echo "$UNTRACKED_FILES" | sed 's/^/  /'
+      echo -n "Do you want to add these untracked files? (y/n): "
+      read add_untracked
+      if [[ $add_untracked == [yY] || $add_untracked == [yY][eE][sS] ]]; then
+        echo "Adding untracked files..."
+        (cd "$SOURCE_DIR" && git add $(echo "$UNTRACKED_FILES" | tr '\n' ' '))
+        echo "Untracked files added successfully."
+      else
+        echo "Skipping untracked files."
+      fi
+    fi
   else
     echo "Skipping git status step."
   fi
   
-  # Step 3: Sync changes
-  echo "Step 3: Commit and push changes"
+  # Step 3: Check for remote changes before pushing
+  echo "Step 3: Check for remote changes"
+  echo -n "Do you want to check for remote changes before pushing? (y/n): "
+  read confirm
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    # Get the source directory
+    local CHEZMOI_BIN=$(which chezmoi)
+    local SOURCE_DIR=$("$CHEZMOI_BIN" source-path)
+    
+    echo "Checking for remote changes..."
+    (cd "$SOURCE_DIR" && git fetch)
+    
+    # Check if we're behind remote
+    local BEHIND_COUNT=$(cd "$SOURCE_DIR" && git rev-list --count HEAD..@{upstream} 2>/dev/null)
+    if [ -n "$BEHIND_COUNT" ] && [ "$BEHIND_COUNT" -gt 0 ]; then
+      echo "⚠️  Your local repository is behind the remote by $BEHIND_COUNT commit(s)."
+      echo "You should merge remote changes before pushing to avoid conflicts."
+      echo "Options:"
+      echo "1. Pull remote changes and merge (recommended)"
+      echo "2. Continue without merging (may cause conflicts later)"
+      echo -n "Choose an option (1/2): "
+      read merge_option
+      
+      if [ "$merge_option" = "1" ]; then
+        echo "Pulling remote changes..."
+        (cd "$SOURCE_DIR" && git pull)
+        if [ $? -ne 0 ]; then
+          echo "⚠️  Merge conflicts detected. Please resolve conflicts manually."
+          echo "After resolving conflicts, run: (cd \"$SOURCE_DIR\" && git add . && git commit)"
+          return 1
+        fi
+        echo "Remote changes merged successfully."
+      else
+        echo "Proceeding without merging remote changes."
+      fi
+    else
+      echo "Your local repository is up-to-date with remote."
+    fi
+  else
+    echo "Skipping remote check step."
+  fi
+  
+  # Step 4: Sync changes
+  echo "Step 4: Commit and push changes"
   echo -n "Do you want to commit and push changes? (y/n): "
   read confirm
   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
-    chezmoi_git_sync
+    # Get commit message
+    local COMMIT_MSG="Update dotfiles $(date +%Y-%m-%d)"
+    echo -n "Enter commit message (default: \"$COMMIT_MSG\"): "
+    read custom_msg
+    if [ ! -z "$custom_msg" ]; then
+      COMMIT_MSG="$custom_msg"
+    fi
+    
+    # Use our modified git sync function with the commit message
+    (cd "$SOURCE_DIR" && git add -u && git commit -m "$COMMIT_MSG" && git push)
+    echo "✅ Changes pushed successfully!"
   else
     echo "Skipping git sync step."
   fi
@@ -262,9 +371,70 @@ function chezmoi_pull() {
   else
     echo "Skipping fetch step."
   fi
+
+  # Get the source directory
+  local CHEZMOI_BIN=$(which chezmoi)
+  local SOURCE_DIR=$("$CHEZMOI_BIN" source-path)
   
-  # Step 2: Apply configuration
-  echo "Step 2: Apply configuration changes"
+  # Step 2: Check for local changes
+  echo "Step 2: Check for local changes"
+  local HAS_LOCAL_CHANGES=false
+  if [ -n "$(cd "$SOURCE_DIR" && git status --porcelain)" ]; then
+    echo "Local changes detected in chezmoi source directory."
+    echo "These changes need to be merged with remote changes."
+    HAS_LOCAL_CHANGES=true
+  else
+    echo "No local changes detected."
+  fi
+  
+  # Step 3: Handle potential merge conflicts
+  if [ "$HAS_LOCAL_CHANGES" = true ]; then
+    echo "Step 3: Merge local and remote changes"
+    echo "The following strategies are available:"
+    echo "1. Stash local changes, pull remote, then apply stash (safest)"
+    echo "2. Commit local changes, then merge (standard git workflow)"
+    echo "3. Continue without merging (not recommended if conflicts exist)"
+    echo -n "Choose a merge strategy (1/2/3): "
+    read merge_option
+    
+    case $merge_option in
+      1)
+        echo "Stashing local changes..."
+        (cd "$SOURCE_DIR" && git stash)
+        echo "Pulling remote changes..."
+        (cd "$SOURCE_DIR" && git pull)
+        echo "Applying stashed changes..."
+        (cd "$SOURCE_DIR" && git stash pop)
+        if [ $? -ne 0 ]; then
+          echo "⚠️  Merge conflicts detected. Please resolve conflicts manually."
+          echo "After resolving conflicts, run: (cd \"$SOURCE_DIR\" && git add . && git commit -m \"Resolve merge conflicts\")"
+          return 1
+        fi
+        ;;
+      2)
+        echo "Committing local changes..."
+        local commit_msg="Local changes before merge $(date +%Y-%m-%d)"
+        (cd "$SOURCE_DIR" && git add . && git commit -m "$commit_msg")
+        echo "Merging remote changes..."
+        (cd "$SOURCE_DIR" && git pull)
+        if [ $? -ne 0 ]; then
+          echo "⚠️  Merge conflicts detected. Please resolve conflicts manually."
+          echo "After resolving conflicts, run: (cd \"$SOURCE_DIR\" && git add . && git commit)"
+          return 1
+        fi
+        ;;
+      3)
+        echo "Proceeding without merging."
+        ;;
+      *)
+        echo "Invalid option. Aborting."
+        return 1
+        ;;
+    esac
+  fi
+  
+  # Step 4: Apply configuration
+  echo "Step 4: Apply configuration changes"
   echo -n "Do you want to apply the configuration changes? (y/n): "
   read confirm
   if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then

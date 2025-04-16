@@ -1,0 +1,6 @@
+theme = dark:tokyonight,light:tokyonight-day
+font-family = "Inconsolata Nerd Font Mono"
+font-size=14
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
+macos-titlebar-style=transparent
+window-padding-balance=true
