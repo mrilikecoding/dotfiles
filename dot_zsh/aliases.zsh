@@ -21,7 +21,8 @@ alias gitconfig="$EDITOR ~/.gitconfig"
 alias termconfig="$EDITOR ~/.config/ghostty/config"
 
 # command aliases
-alias la="ll -a"
+alias la="ll -a --color=auto"
+alias ls="ls --color=auto"
 alias gs="git status"
 alias docker-compose="docker compose"
 alias dc="docker compose"
@@ -40,6 +41,7 @@ alias ttr=tmux-tailscale-remote
 
 # ai/llm
 alias aider-ollama="OLLAMA_API_BASE=$OLLAMA_API_BASE aider --model ollama_chat/$DEFAULT_OLLAMA_AIDER_MODEL --no-auto-commits --no-attribute-author --no-attribute-committer"
+alias aider-claude="aider --model $ANTHROPIC_MODEL --no-auto-commits --no-attribute-author --no-attribute-committer"
 
 # chezmoi shortcuts
 alias cz="chezmoi"

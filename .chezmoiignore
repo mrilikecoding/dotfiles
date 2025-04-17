@@ -5,6 +5,7 @@
 **/node_modules/**
 **/.git/**
 **__pycache__**
+**.aider**
 # Patterns from .gitignore files
 # From global gitignore
 

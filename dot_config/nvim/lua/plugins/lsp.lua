@@ -17,10 +17,6 @@ return {
       },
     }
 
-    -- Keybindings to view diagnostics
-    vim.keymap.set("n", "<Tab>", vim.diagnostic.open_float, { desc = "Show diagnostic in floating window" })
-    vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Show hover documentation" })
-
     return opts
   end,
 }

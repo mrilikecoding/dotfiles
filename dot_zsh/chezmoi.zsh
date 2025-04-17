@@ -23,6 +23,7 @@ CHEZMOI_EXCLUDE=(
   "**/node_modules/**"
   "**/.git/**"
   "**__pycache__**"
+  "**.aider**"
 )
 
 function chezmoi_manage() {

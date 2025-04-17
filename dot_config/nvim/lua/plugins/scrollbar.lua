@@ -1,6 +1,5 @@
 return {
   "lewis6991/satellite.nvim",
-  lazy = false,
   config = function()
     require("satellite").setup({
       current_only = true,
