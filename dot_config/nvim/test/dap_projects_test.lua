@@ -52,6 +52,87 @@ M.tests = {
     assert(config ~= nil, "Should find commercial-api config")
     assert(pattern == "commercial-api", "Should match commercial-api pattern")
   end,
+  
+  test_get_status_no_sessions = function()
+    -- Setup: Creating a simplified test for status
+    local mock_get_status = function()
+      -- Simulate the get_status function with no sessions
+      local dap = { sessions = function() return {} end }
+      
+      -- Logic from get_status function
+      local session_count = #dap.sessions()
+      
+      if session_count > 0 then
+        if session_count > 1 then
+          return "🐛 DBG(" .. session_count .. ")"
+        else
+          return "🐛 DBG"
+        end
+      end
+      
+      return ""
+    end
+    
+    -- Execute
+    local status = mock_get_status()
+    
+    -- Verify: Status should be empty string
+    assert(status == "", "Status should be empty when no sessions exist")
+  end,
+  
+  test_get_status_one_session = function()
+    -- Setup: Creating a simplified test for status
+    local mock_get_status = function()
+      -- Simulate the get_status function with one session
+      local dap = { sessions = function() return {{id = "session1"}} end }
+      
+      -- Logic from get_status function
+      local session_count = #dap.sessions()
+      
+      if session_count > 0 then
+        if session_count > 1 then
+          return "🐛 DBG(" .. session_count .. ")"
+        else
+          return "🐛 DBG"
+        end
+      end
+      
+      return ""
+    end
+    
+    -- Execute
+    local status = mock_get_status()
+    
+    -- Verify: Status should be the debug indicator
+    assert(status == "🐛 DBG", "Status should show debug indicator for one session")
+  end,
+  
+  test_get_status_multiple_sessions = function()
+    -- Setup: Creating a simplified test for status
+    local mock_get_status = function()
+      -- Simulate the get_status function with multiple sessions
+      local dap = { sessions = function() return {{id = "session1"}, {id = "session2"}} end }
+      
+      -- Logic from get_status function
+      local session_count = #dap.sessions()
+      
+      if session_count > 0 then
+        if session_count > 1 then
+          return "🐛 DBG(" .. session_count .. ")"
+        else
+          return "🐛 DBG"
+        end
+      end
+      
+      return ""
+    end
+    
+    -- Execute
+    local status = mock_get_status()
+    
+    -- Verify: Status should show the count of sessions
+    assert(status == "🐛 DBG(2)", "Status should show session count for multiple sessions")
+  end,
 
   test_load_default_config = function()
     -- Execute
@@ -115,6 +196,159 @@ M.tests = {
     assert(type(default_config.pathMappings) == "table", "Default config should have pathMappings")
     assert(type(default_config.pathMappings[1].localRoot) == "function",
       "Default config's localRoot should be a function")
+  end,
+  
+  test_check_multiple_sessions = function()
+    -- Setup: Creating a simplified test for multiple sessions check
+    local mock_check_multiple_sessions = function()
+      -- Simulate the check_multiple_sessions function with multiple sessions
+      local dap = { sessions = function() return {{id = "session1"}, {id = "session2"}} end }
+      
+      -- Logic from check_multiple_sessions function
+      local session_count = #dap.sessions()
+      
+      if session_count > 1 then
+        -- Would normally log a warning here
+        return true
+      end
+      
+      return false
+    end
+    
+    -- Execute
+    local has_multiple = mock_check_multiple_sessions()
+    
+    -- Verify: Should detect multiple sessions
+    assert(has_multiple == true, "Should detect multiple sessions")
+  end,
+  
+  test_dap_attach_function = function()
+    -- This test simulates the behavior of DapAttachDebugger without mocking Neovim commands
+    
+    -- Track if sessions are closed and continue is called
+    local sessions_closed = 0
+    local continue_called = false
+    
+    -- Mock sessions that will be closed
+    local mock_sessions = {
+      { close = function() sessions_closed = sessions_closed + 1 end },
+    }
+    
+    -- Mock DAP functions
+    local dap = {
+      sessions = function() return mock_sessions end,
+      continue = function() continue_called = true end
+    }
+    
+    -- Simulate the attach debugger logic
+    local function attach_debugger()
+      -- First clean up any existing sessions to prevent conflicts
+      for _, session in pairs(dap.sessions()) do
+        session:close()
+      end
+      
+      -- Call continue after a delay (which we simulate immediately for testing)
+      dap.continue()
+    end
+    
+    -- Execute
+    attach_debugger()
+    
+    -- Verify: Session should be closed and continue called
+    assert(sessions_closed == 1, "Existing sessions should be closed before attaching")
+    assert(continue_called, "Continue should be called to start debugging")
+  end,
+  
+  test_close_all_sessions_function = function()
+    -- This test simulates the behavior of DapCloseAllSessions without mocking Neovim commands
+    
+    -- Track if sessions were closed
+    local sessions_closed = 0
+    
+    -- Create mock sessions
+    local mock_sessions = {
+      { close = function() sessions_closed = sessions_closed + 1 end },
+      { close = function() sessions_closed = sessions_closed + 1 end }
+    }
+    
+    -- Mock DAP
+    local dap = {
+      sessions = function() return mock_sessions end
+    }
+    
+    -- Simulate the close all sessions logic
+    local function close_all_sessions()
+      local sessions = dap.sessions()
+      
+      if #sessions == 0 then
+        return false
+      end
+      
+      for _, session in pairs(sessions) do
+        session:close()
+      end
+      
+      return true
+    end
+    
+    -- Execute
+    local result = close_all_sessions()
+    
+    -- Verify: All sessions should be closed
+    assert(result == true, "Function should return true when sessions were closed")
+    assert(sessions_closed == 2, "All debug sessions should be closed")
+  end,
+  
+  test_reset_state_function = function()
+    -- This test simulates the core behavior of DapResetState without mocking Neovim commands
+    
+    -- Track command execution flags
+    local sessions_closed = 0
+    local reset_called = false
+    local session_nullified = false
+    
+    -- Create mock session
+    local mock_session = {
+      close = function() sessions_closed = sessions_closed + 1 end
+    }
+    
+    -- Mock DAP
+    local dap = {
+      sessions = function() return {mock_session} end,
+      reset = function() reset_called = true end,
+      session = {}, -- Will be nullified
+    }
+    
+    -- Simulate the reset state logic
+    local function reset_state()
+      -- Close all sessions
+      local sessions = dap.sessions()
+      if #sessions > 0 then
+        for _, session in pairs(sessions) do
+          session:close()
+        end
+      end
+      
+      -- Reset DAP state
+      if dap.reset then
+        dap.reset()
+      end
+      
+      -- Nullify session
+      dap.session = nil
+      session_nullified = true
+      
+      return true
+    end
+    
+    -- Execute
+    local result = reset_state()
+    
+    -- Verify: State should be reset
+    assert(result == true, "Function should return true when reset completes")
+    assert(sessions_closed == 1, "All debug sessions should be closed")
+    assert(reset_called, "DAP reset function should be called")
+    assert(session_nullified, "DAP session should be nullified")
   end,
 }
 

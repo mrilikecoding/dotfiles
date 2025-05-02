@@ -156,12 +156,23 @@ function M.create_env()
   -- Mock for dap (Debug Adapter Protocol)
   env.dap = {
     configurations = {},
+    adapters = {},
+    session = nil,
+    sessions = function() return {} end,
+    reset = function() end,
     continue = function() end,
     clear_breakpoints = function() end,
     toggle_breakpoint = function() end,
     step_over = function() end,
     step_into = function() end,
     step_out = function() end,
+    listeners = {
+      after = {
+        event_initialized = {},
+        event_terminated = {},
+        disconnect = {}
+      }
+    },
     ui = {
       widgets = {
         hover = function() end,
@@ -273,6 +284,9 @@ function M.load_with_sandbox(module_path)
   -- Create clean environment
   local env = M.create_env()
   
+  -- Mark this as a test environment
+  env._TEST_ENV = true
+  
   -- Normalize the module path
   local actual_path = module_path
   if module_path:sub(1, 4) == "lua." then
@@ -301,6 +315,11 @@ function M.load_with_sandbox(module_path)
   -- Create a sandboxed environment with both our mocks and minimal _G access
   local sandbox = setmetatable({}, {
     __index = function(t, k)
+      -- Allow test environment flag
+      if k == "_TEST_ENV" then
+        return true
+      end
+      
       -- First check if our mock environment has the key
       if env[k] ~= nil then
         return env[k]

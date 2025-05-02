@@ -87,9 +87,10 @@ return {
       end
     end
 
-    -- Automatically open DAP UI when debugging starts
+    -- DAP UI configuration - no longer opens automatically
+    -- To manually open UI, use <Leader>du keybinding defined in dap_projects.lua
     dap.listeners.after.event_initialized["dapui_config"] = function()
-      dapui.open()
+      -- dapui.open() -- Automatic UI opening disabled
       for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         if vim.bo[buf].filetype == "dap-repl" then
           vim.opt.modifiable = true
@@ -104,9 +105,57 @@ return {
       end
     end
 
-    -- Configure Python DAP
-    local python_path = vim.fn.trim(vim.fn.system("pyenv which python"))
-    require("dap-python").setup(python_path)
+    -- Configure Python DAP with more robust path detection
+    local python_path
+    
+    -- Try multiple methods to find Python path
+    local function get_python_path()
+      -- Method 1: Try pyenv which python (with error checking)
+      local pyenv_path = vim.fn.trim(vim.fn.system("pyenv which python 2>/dev/null"))
+      if pyenv_path ~= "" and vim.fn.executable(pyenv_path) == 1 then
+        return pyenv_path
+      end
+      
+      -- Method 2: Try direct path to current pyenv Python
+      local pyenv_root = os.getenv("PYENV_ROOT") or vim.fn.expand("~/.pyenv")
+      local version_path = pyenv_root .. "/version"
+      if vim.fn.filereadable(version_path) == 1 then
+        local current_version = vim.fn.trim(vim.fn.readfile(version_path)[1])
+        local direct_path = pyenv_root .. "/versions/" .. current_version .. "/bin/python"
+        if vim.fn.executable(direct_path) == 1 then
+          return direct_path
+        end
+      end
+      
+      -- Method 3: Try system Python
+      local sys_path = vim.fn.exepath("python3")
+      if sys_path ~= "" then
+        return sys_path
+      end
+      
+      -- Method 4: Try system Python (python command)
+      sys_path = vim.fn.exepath("python")
+      if sys_path ~= "" then
+        return sys_path
+      end
+      
+      -- Fallback to a common path
+      return "/usr/bin/python3"
+    end
+    
+    python_path = get_python_path()
+    
+    -- Log the path we're using
+    vim.notify("DAP using Python: " .. python_path, vim.log.levels.INFO)
+    
+    -- Setup with error handling
+    local status, err = pcall(function()
+      require("dap-python").setup(python_path)
+    end)
+    
+    if not status then
+      vim.notify("Error setting up Python DAP: " .. tostring(err), vim.log.levels.ERROR)
+    end
 
     -- Configure Ruby DAP
     dap.adapters.ruby = {
