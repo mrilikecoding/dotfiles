@@ -378,6 +378,45 @@ function M.config.setup_projects()
       justMyCode = false,
       pythonPath = python_path,  -- Add explicit Python path
     },
+    -- Python projects
+    ["commercial-api"] = {
+      type = "python",
+      request = "attach",
+      name = "Commercial API",
+      connect = { host = "localhost", port = 5678 },
+      pathMappings = {
+        {
+          localRoot = function()
+            -- Try to find the project root
+            local current_dir = vim.fn.getcwd()
+            if current_dir:find("commercial-api", 1, true) then
+              return current_dir
+            end
+            -- Fallback to the original path if needed
+            return vim.fn.expand("~/Documents/Development/jv-dev-kit/services/commercial-api")
+          end,
+          remoteRoot = "/app",
+        },
+      },
+      justMyCode = false,
+    },
+
+    -- Platform API project
+    ["platform-api"] = {
+      type = "ruby",
+      request = "attach",
+      name = "Platform API",
+      port = 38698,
+      host = "0.0.0.0",
+      pathMappings = {
+        -- Try multiple path mappings to cover possible variations
+        ["/Users/nategreen/Documents/Development/jv-dev-kit/services/platform-api"] = "/home/app",
+        [vim.fn.expand("$HOME/Documents/Development/jv-dev-kit/services/platform-api")] = "/home/app",
+        ["/Users/nategreen/Documents/Development/jv-dev-kit/services/platform-api/"] = "/home/app/",
+      },
+      localfs = true,
+      wait_for_ready = true,
+    },
 
     -- You can add more project configurations here
     -- Example:
@@ -424,6 +463,20 @@ end
 -- Module-level log function that forwards to utils.log
 function M.log(message, level)
   M.utils.log(message, level)
+end
+
+-- Function to get DAP status for statusline integration
+function M.get_status()
+  local ok, dap = pcall(require, "dap")
+  if not ok then
+    return ""
+  end
+  
+  local sessions = dap.sessions()
+  if #sessions > 0 then
+    return "🐞 " .. #sessions
+  end
+  return ""
 end
 
 -- Load project configuration based on current directory
@@ -484,236 +537,94 @@ function M.find_matching_config(directory)
   return nil, nil
 end
 
--- Get the DAP status for display in lualine
--- This function is called frequently by lualine, so it should be fast
-function M.get_status()
-  -- Access dap directly each time to get real-time status
-  local ok, dap = pcall(require, "dap")
-  if not ok then
-    return ""
-  end
-  
-  -- Safety check - don't access dap.session directly as it can cause issues
-  local sessions = {}
-  local session_count = 0
-  
-  -- Use pcall for everything to ensure we don't crash if DAP API changes
-  if dap.sessions then
-    ok, sessions = pcall(function() return dap.sessions() end)
-    if ok and type(sessions) == "table" then
-      session_count = #sessions
-    end
-  end
-  
-  -- Additional safety check to ensure dap.session (old API) isn't giving false positives
-  if session_count == 0 and dap.session then
-    -- Only count dap.session if it's actually connected and running
-    if type(dap.session) == "table" and dap.session.dirty == false and dap.session.capabilities then
-      session_count = 1
-    end
-  end
-  
-  if session_count > 0 then
-    -- Show number of active debug sessions if more than one
-    if session_count > 1 then
-      return "🐛 DBG(" .. session_count .. ")"
-    else
-      return "🐛 DBG"
-    end
-  end
-  
-  return ""
-end
+-- Initialize nvim-dap-ruby if available
+local function setup_ruby_dap()
+  local has_dap_ruby, dap_ruby = pcall(require, "dap-ruby")
+  if has_dap_ruby then
+    -- Set up Ruby DAP adapter
+    dap_ruby.setup()
 
--- Check if there are multiple active debug sessions
-function M.check_multiple_sessions()
-  local ok, dap = pcall(require, "dap")
-  if not ok then
-    return false
-  end
-  
-  -- Safety wrapper to avoid errors
-  local function safe_call(fn, ...)
-    local status, result = pcall(fn, ...)
-    return status and result or nil
-  end
-  
-  -- Safely check for sessions using the same logic as get_status
-  local sessions = {}
-  local session_count = 0
-  
-  if dap.sessions then
-    sessions = safe_call(function() return dap.sessions() end) or {}
-    session_count = #sessions
-  end
-  
-  -- Additional safety check to ensure dap.session (old API) isn't giving false positives
-  if session_count == 0 and dap.session then
-    -- Only count dap.session if it's actually connected and running
-    if type(dap.session) == "table" and dap.session.dirty == false and dap.session.capabilities then
-      session_count = 1
-    end
-  end
-  
-  if session_count > 1 then
-    M.log("Warning: " .. session_count .. " active debug sessions detected", "warn")
-    return true
-  end
-  
-  return false
-end
-
--- Check if debugpy is installed and install if needed
-function M.adapters.ensure_debugpy()
-  -- Handle testing environment
-  if _G._TEST_ENV then
-    return true
-  end
-  
-  local python_path = M.adapters.find_python_path()
-  
-  -- Check if os.execute is available (won't be in test env)
-  if type(os) ~= "table" or type(os.execute) ~= "function" then
-    M.log("Cannot check for debugpy (os.execute not available)", "warn")
-    return true
-  end
-  
-  -- Check if debugpy is installed
-  local check_cmd = python_path .. " -c \"import debugpy\" 2>/dev/null"
-  local debugpy_installed = os.execute(check_cmd) == 0
-  
-  if not debugpy_installed then
-    M.log("debugpy not found. Attempting to install...", "warn")
-    
-    -- Try to install debugpy
-    local install_cmd = python_path .. " -m pip install debugpy"
-    local install_result = os.execute(install_cmd)
-    
-    if install_result == 0 then
-      M.log("Successfully installed debugpy", "success")
-      return true
-    else
-      M.log("Failed to install debugpy. Please install it manually: pip install debugpy", "error")
-      return false
-    end
-  end
-  
-  return true
-end
-
--- Configure the Python DAP adapter
-function M.adapters.setup_python()
-  -- Skip actual adapter setup in test environment
-  if _G._TEST_ENV then
-    return
-  end
-
-  local ok, dap = pcall(require, "dap")
-  if not ok then
-    M.log("DAP not available for adapter setup", "error")
-    return
-  end
-
-  -- Get the Python path
-  local python_path = M.adapters.find_python_path()
-  
-  -- Ensure debugpy is installed
-  local debugpy_installed = M.adapters.ensure_debugpy()
-  if not debugpy_installed then
-    M.log("Warning: Python adapter may not work properly without debugpy", "warn")
-  else
-    M.log("Setting up Python adapter with: " .. python_path, "info")
-  end
-
-  -- Setup the debugpy adapter
-  dap.adapters.python = {
-    type = "executable",
-    command = python_path,
-    args = { "-m", "debugpy.adapter" }
-  }
-  
-  -- For compatibility with nvim-dap-python, also set 'debugpy' adapter
-  dap.adapters.debugpy = dap.adapters.python
-end
-
--- Setup DAP event listeners to track attachment status
-function M.config.setup_listeners()
-  local ok, dap = pcall(require, "dap")
-  if not ok then
-    return
-  end
-  
-  -- When a DAP session initializes - just warn about multiple sessions
-  if dap.listeners and dap.listeners.after then
-    dap.listeners.after.event_initialized["dap_projects_status"] = function()
-      vim.defer_fn(function()
-        M.check_multiple_sessions()
-      end, 100)
-    end
-  end
-end
-
--- Clean DAP state on startup to avoid stale sessions
-function M.utils.clean_dap_state()
-  -- Skip in test environment
-  if _G._TEST_ENV then
-    return
-  end
-
-  -- Safely check if DAP exists
-  local ok, dap = pcall(require, "dap")
-  if not ok then
-    return
-  end
-  
-  local safe_call = M.utils.safe_call
-
-  -- Clean up any stale session state
-  if dap.session ~= nil then
-    dap.session = nil
-  end
-  
-  -- Handle session table if it exists (newer DAP API)
-  if dap.sessions then
-    local all_sessions = safe_call(function() return dap.sessions() end) or {}
-    for _, session in pairs(all_sessions) do
-      safe_call(function() session:close() end)
-    end
-    
-    -- Clear internal sessions data if possible
-    if type(dap._sessions) == "table" then
-      for k in pairs(dap._sessions) do
-        dap._sessions[k] = nil
+    -- Create a direct command to force the Ruby Docker config
+    vim.api.nvim_create_user_command("RubyDebugDocker", function()
+      -- Force load the platform-api config if we're in that directory
+      local matched_config, _ = M.find_matching_config(vim.fn.getcwd())
+      if matched_config and matched_config.type == "ruby" then
+        require("dap").run(matched_config)
+      else
+        -- Use the platform-api config directly if no match
+        require("dap").run(M.projects["platform-api"])
       end
-    end
+      M.log("Loaded Ruby Docker debugger configuration", "success")
+    end, { desc = "Start Ruby debugging in Docker" })
+
+    -- Create a command to update Ruby path mappings on the fly
+    vim.api.nvim_create_user_command("RubyUpdatePathMapping", function(opts)
+      local args = opts.fargs
+      if #args ~= 2 then
+        M.log("Usage: RubyUpdatePathMapping <local_path> <remote_path>", "info")
+        return
+      end
+
+      -- Update all Ruby configurations
+      for pattern, config in pairs(M.projects) do
+        if config.type == "ruby" then
+          M.projects[pattern].pathMappings = {
+            [args[1]] = args[2],
+          }
+        end
+      end
+
+      -- Immediately reload if we're in a Ruby project
+      local matched_config, _ = M.find_matching_config(vim.fn.getcwd())
+      if matched_config and matched_config.type == "ruby" then
+        require("dap").configurations.ruby = { matched_config }
+        M.log("Updated and reloaded Ruby path mapping: " .. args[1] .. " → " .. args[2], "success")
+      else
+        M.log("Updated Ruby path mapping: " .. args[1] .. " → " .. args[2], "success")
+      end
+    end, { nargs = "*", desc = "Update Ruby debug path mapping", complete = "file" })
+  else
+    M.log("nvim-dap-ruby not found, Ruby debugging might not work properly", "warn")
   end
-  
-  -- Force a reload of DAP if possible
-  if package and package.loaded then
-    package.loaded["dap"] = nil
-  end
-  
-  -- Explicitly require DAP again to ensure clean state
-  ok, dap = pcall(require, "dap")
 end
 
--- Initialize the module with all required setup functions
+-- Define module-level setup functions based on internal functions
+local function setup_project_configs()
+  M.config.setup_projects()
+end
+
+local function setup_commands_and_keybindings()
+  M.config.setup_commands_and_keybindings()
+end
+
+local function setup_listeners()
+  M.config.setup_listeners()
+end
+
+-- Auto-initialize when the module is loaded
+-- Define init() function at module level for external access
 function M.init()
   -- Reset DAP state to ensure a clean startup
-  M.utils.clean_dap_state()
+  if M.utils.clean_dap_state then
+    M.utils.clean_dap_state()
+  end
   
   -- Setup configs and adapters
   M.config.setup_projects()
-  M.adapters.setup_python()
   M.config.setup_commands_and_keybindings()
-  M.config.setup_listeners()
+  if M.config.setup_listeners then
+    M.config.setup_listeners()
+  end
+  
+  -- Setup Ruby DAP adapter if available
+  setup_ruby_dap()
   M.load_project_config()
   
   -- Log ready status
   M.log("DAP Projects module initialized", "success")
 end
 
--- Auto-initialize when the module is loaded
+-- Call init on module load
 M.init()
 
 return M

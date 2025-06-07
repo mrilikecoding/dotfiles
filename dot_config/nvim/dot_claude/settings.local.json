@@ -1,0 +1,9 @@
+{
+  "enableAllProjectMcpServers": false,
+  "permissions": {
+    "allow": [
+      "Bash(./test/run.sh:*)",
+      "Bash(grep:*)"
+    ]
+  }
+}
