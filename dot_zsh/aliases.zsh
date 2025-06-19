@@ -42,13 +42,6 @@ alias ttr=tmux-tailscale-remote
 # ai/llm
 alias aider-ollama="OLLAMA_API_BASE=$OLLAMA_API_BASE aider --model ollama_chat/$AIDER_OLLAMA_MODEL --no-auto-commits --no-attribute-author --no-attribute-committer"
 alias aider-claude="aider --model $ANTHROPIC_MODEL --no-auto-commits --no-attribute-author --no-attribute-committer"
-alias llm-claude="llm -m $LLM_ANTHROPIC_MODEL"
-alias llm-ollama="llm -m $LLM_OLLAMA_MODEL"
-
-# bedrock claude
-alias bedrock='aws sso login --profile bedrock && eval "$(aws configure export-credentials --profile bedrock --format env)" && export BEDROCK_KEYS="$AWS_ACCESS_KEY_ID,$AWS_SECRET_ACCESS_KEY,us-west-2,$AWS_SESSION_TOKEN" && echo "✅ BEDROCK_KEYS set: ${BEDROCK_KEYS:0:50}... "'
-alias llm-bedrock='bedrock && expect -c "spawn llm keys set bedrock; expect \"*:\"; send \"$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY\r\"; expect eof"'
-
 
 # chezmoi shortcuts
 alias cz="chezmoi"

@@ -35,11 +35,11 @@ local M = {
   -- Module state
   initialized = false,
   last_loaded_dir = nil,
-  
+
   -- Submodules
-  utils = {},    -- Utility functions
+  utils = {}, -- Utility functions
   adapters = {}, -- Adapter setup functions
-  config = {},   -- Configuration functions
+  config = {}, -- Configuration functions
 }
 
 -- Setup commands and keybindings for DAP interaction
@@ -47,12 +47,12 @@ function M.config.setup_commands_and_keybindings()
   -- Create user commands
   vim.api.nvim_create_user_command("DapAttachDebugger", function()
     local dap = require("dap")
-    
+
     -- First clean up any existing sessions to prevent conflicts
     for _, session in pairs(dap.sessions()) do
       session:close()
     end
-    
+
     -- Small delay to ensure cleanup is complete
     vim.defer_fn(function()
       dap.continue()
@@ -64,7 +64,7 @@ function M.config.setup_commands_and_keybindings()
     require("dap").clear_breakpoints()
     M.log("All breakpoints cleared", "info")
   end, { desc = "Clear all breakpoints" })
-  
+
   vim.api.nvim_create_user_command("DapResetState", function()
     -- Most aggressive cleanup possible
     local ok, dap = pcall(require, "dap")
@@ -72,28 +72,30 @@ function M.config.setup_commands_and_keybindings()
       M.log("DAP not available", "error")
       return
     end
-    
+
     -- First try to close all sessions properly
     local sessions = dap.sessions()
     if #sessions > 0 then
       M.log("Terminating " .. #sessions .. " active debug sessions", "warn")
       for _, session in pairs(sessions) do
-        pcall(function() session:close() end)
+        pcall(function()
+          session:close()
+        end)
       end
     end
-    
+
     -- Wait a bit for sessions to close
     vim.defer_fn(function()
       -- Reset adapters and other dap state if possible
       if type(dap.reset) == "function" then
         dap.reset()
       end
-      
+
       -- Forcibly clear internal session tracking
       if type(dap.session) ~= "nil" then
         dap.session = nil
       end
-      
+
       if dap.sessions and #dap.sessions() > 0 then
         -- If we can access the internal sessions table directly, clear it
         if type(dap._sessions) == "table" then
@@ -101,38 +103,38 @@ function M.config.setup_commands_and_keybindings()
             dap._sessions[k] = nil
           end
         end
-        
+
         M.log("Forcibly reset all DAP sessions", "warn")
       end
-      
+
       -- Try to clear any client connections by unloading and reloading DAP
       package.loaded["dap"] = nil
       require("dap")
-      
+
       M.log("DAP state has been completely reset", "success")
     end, 300)
   end, { desc = "Reset DAP state completely (emergency use)" })
-  
+
   vim.api.nvim_create_user_command("DapListSessions", function()
     local dap = require("dap")
     local sessions = dap.sessions()
-    
+
     if #sessions == 0 then
       M.log("No active debug sessions", "info")
       return
     end
-    
-    local lines = {"Active debug sessions:"}
+
+    local lines = { "Active debug sessions:" }
     for i, session in ipairs(sessions) do
       local config = session.config or {}
       local name = config.name or "Session " .. i
       local type = config.type or "unknown"
       table.insert(lines, i .. ": " .. name .. " (" .. type .. ")")
     end
-    
+
     M.log(table.concat(lines, "\n"), "info")
   end, { desc = "List all active debug sessions" })
-  
+
   vim.api.nvim_create_user_command("DapCloseAllSessions", function()
     -- More aggressive session cleanup
     local ok, dap = pcall(require, "dap")
@@ -140,20 +142,22 @@ function M.config.setup_commands_and_keybindings()
       M.log("DAP not available", "error")
       return
     end
-    
+
     local sessions = dap.sessions()
     local session_count = #sessions
-    
+
     if session_count == 0 then
       M.log("No active debug sessions", "info")
       return
     end
-    
+
     -- Close all sessions
     for _, session in pairs(sessions) do
-      pcall(function() session:close() end)
+      pcall(function()
+        session:close()
+      end)
     end
-    
+
     -- Force reinitialization of DAP session tracking
     vim.defer_fn(function()
       if #dap.sessions() > 0 then
@@ -285,7 +289,9 @@ function M.utils.safe_call(fn, ...)
 end
 
 function M.utils.safe_trim(str)
-  if not str then return "" end
+  if not str then
+    return ""
+  end
   if type(vim.fn.trim) == "function" then
     return vim.fn.trim(str)
   else
@@ -306,14 +312,14 @@ function M.adapters.find_python_path()
   -- Method 1: Try pyenv which python (with error checking)
   local pyenv_path
   if type(vim.fn.system) == "function" then
-    pyenv_path = safe_call(function() 
+    pyenv_path = safe_call(function()
       return safe_trim(vim.fn.system("pyenv which python 2>/dev/null"))
     end)
     if pyenv_path and pyenv_path ~= "" and vim.fn.executable and vim.fn.executable(pyenv_path) == 1 then
       return pyenv_path
     end
   end
-  
+
   -- Method 2: Try direct path to current pyenv Python
   local pyenv_root = "~/.pyenv"
   if type(os) == "table" and type(os.getenv) == "function" and os.getenv("PYENV_ROOT") then
@@ -322,11 +328,13 @@ function M.adapters.find_python_path()
   if vim.fn.expand then
     pyenv_root = vim.fn.expand(pyenv_root)
   end
-  
+
   if vim.fn.filereadable then
     local version_path = pyenv_root .. "/version"
     if vim.fn.filereadable(version_path) == 1 and vim.fn.readfile then
-      local readfile_result = safe_call(function() return vim.fn.readfile(version_path) end) or {""}
+      local readfile_result = safe_call(function()
+        return vim.fn.readfile(version_path)
+      end) or { "" }
       local current_version = safe_trim(readfile_result[1])
       local direct_path = pyenv_root .. "/versions/" .. current_version .. "/bin/python"
       if vim.fn.executable and vim.fn.executable(direct_path) == 1 then
@@ -334,21 +342,21 @@ function M.adapters.find_python_path()
       end
     end
   end
-  
+
   -- Method 3: Try system Python
   if vim.fn.exepath then
     local sys_path = vim.fn.exepath("python3")
     if sys_path and sys_path ~= "" then
       return sys_path
     end
-    
+
     -- Method 4: Try system Python (python command)
     sys_path = vim.fn.exepath("python")
     if sys_path and sys_path ~= "" then
       return sys_path
     end
   end
-  
+
   -- Fallback to a common path
   return "/usr/bin/python3"
 end
@@ -356,28 +364,29 @@ end
 -- Define project-specific debug configurations
 function M.config.setup_projects()
   -- Get Python path for DAP configuration
-  local python_path = M.adapters.find_python_path()
-  M.log("DAP Projects using Python: " .. python_path, "info")
+  -- local python_path = M.adapters.find_python_path()
+  -- M.log("DAP Projects using Python: " .. python_path, "info")
+  require("dap").set_log_level("TRACE")
 
   -- Initialize projects configuration table
   M.projects = {
     -- Default configurations by language
-    ["default"] = {
-      type = "python",
-      request = "attach",
-      name = "Default Python Debug",
-      connect = { host = "localhost", port = 5678 },
-      pathMappings = {
-        {
-          localRoot = function()
-            return vim.fn.getcwd()
-          end,
-          remoteRoot = "/app",
-        },
-      },
-      justMyCode = false,
-      pythonPath = python_path,  -- Add explicit Python path
-    },
+    -- ["default"] = {
+    --   type = "python",
+    --   request = "attach",
+    --   name = "Default Python Debug",
+    --   connect = { host = "localhost", port = 5678 },
+    --   pathMappings = {
+    --     {
+    --       localRoot = function()
+    --         return vim.fn.getcwd()
+    --       end,
+    --       remoteRoot = "/app",
+    --     },
+    --   },
+    --   justMyCode = false,
+    --   pythonPath = python_path, -- Add explicit Python path
+    -- },
     -- Python projects
     ["commercial-api"] = {
       type = "python",
@@ -401,37 +410,13 @@ function M.config.setup_projects()
       justMyCode = false,
     },
 
-    -- Platform API project
     ["platform-api"] = {
       type = "ruby",
       request = "attach",
-      name = "Platform API",
-      port = 38698,
-      host = "0.0.0.0",
-      pathMappings = {
-        -- Try multiple path mappings to cover possible variations
-        ["/Users/nategreen/Documents/Development/jv-dev-kit/services/platform-api"] = "/home/app",
-        [vim.fn.expand("$HOME/Documents/Development/jv-dev-kit/services/platform-api")] = "/home/app",
-        ["/Users/nategreen/Documents/Development/jv-dev-kit/services/platform-api/"] = "/home/app/",
-      },
-      localfs = true,
-      wait_for_ready = true,
+      name = "Platform API Docker",
+      connect = { host = "localhost", port = 38698 },
+      localfsMap = "/home/app:/Users/nategreen/Documents/Development/jv-dev-kit/services/platform-api",
     },
-
-    -- You can add more project configurations here
-    -- Example:
-    -- ["my-project"] = {
-    --   type = "python",
-    --   request = "attach",
-    --   name = "My Project Debug",
-    --   connect = { host = "localhost", port = 5678 },
-    --   pathMappings = {
-    --     {
-    --       localRoot = vim.fn.getcwd,
-    --       remoteRoot = "/app",
-    --     },
-    --   },
-    -- },
   }
 end
 
@@ -471,7 +456,7 @@ function M.get_status()
   if not ok then
     return ""
   end
-  
+
   local sessions = dap.sessions()
   if #sessions > 0 then
     return "🐞 " .. #sessions
@@ -537,89 +522,15 @@ function M.find_matching_config(directory)
   return nil, nil
 end
 
--- Initialize nvim-dap-ruby if available
-local function setup_ruby_dap()
-  local has_dap_ruby, dap_ruby = pcall(require, "dap-ruby")
-  if has_dap_ruby then
-    -- Set up Ruby DAP adapter
-    dap_ruby.setup()
-
-    -- Create a direct command to force the Ruby Docker config
-    vim.api.nvim_create_user_command("RubyDebugDocker", function()
-      -- Force load the platform-api config if we're in that directory
-      local matched_config, _ = M.find_matching_config(vim.fn.getcwd())
-      if matched_config and matched_config.type == "ruby" then
-        require("dap").run(matched_config)
-      else
-        -- Use the platform-api config directly if no match
-        require("dap").run(M.projects["platform-api"])
-      end
-      M.log("Loaded Ruby Docker debugger configuration", "success")
-    end, { desc = "Start Ruby debugging in Docker" })
-
-    -- Create a command to update Ruby path mappings on the fly
-    vim.api.nvim_create_user_command("RubyUpdatePathMapping", function(opts)
-      local args = opts.fargs
-      if #args ~= 2 then
-        M.log("Usage: RubyUpdatePathMapping <local_path> <remote_path>", "info")
-        return
-      end
-
-      -- Update all Ruby configurations
-      for pattern, config in pairs(M.projects) do
-        if config.type == "ruby" then
-          M.projects[pattern].pathMappings = {
-            [args[1]] = args[2],
-          }
-        end
-      end
-
-      -- Immediately reload if we're in a Ruby project
-      local matched_config, _ = M.find_matching_config(vim.fn.getcwd())
-      if matched_config and matched_config.type == "ruby" then
-        require("dap").configurations.ruby = { matched_config }
-        M.log("Updated and reloaded Ruby path mapping: " .. args[1] .. " → " .. args[2], "success")
-      else
-        M.log("Updated Ruby path mapping: " .. args[1] .. " → " .. args[2], "success")
-      end
-    end, { nargs = "*", desc = "Update Ruby debug path mapping", complete = "file" })
-  else
-    M.log("nvim-dap-ruby not found, Ruby debugging might not work properly", "warn")
-  end
-end
-
--- Define module-level setup functions based on internal functions
-local function setup_project_configs()
-  M.config.setup_projects()
-end
-
-local function setup_commands_and_keybindings()
-  M.config.setup_commands_and_keybindings()
-end
-
-local function setup_listeners()
-  M.config.setup_listeners()
-end
-
 -- Auto-initialize when the module is loaded
 -- Define init() function at module level for external access
 function M.init()
-  -- Reset DAP state to ensure a clean startup
-  if M.utils.clean_dap_state then
-    M.utils.clean_dap_state()
-  end
-  
   -- Setup configs and adapters
   M.config.setup_projects()
   M.config.setup_commands_and_keybindings()
-  if M.config.setup_listeners then
-    M.config.setup_listeners()
-  end
-  
-  -- Setup Ruby DAP adapter if available
-  setup_ruby_dap()
+
   M.load_project_config()
-  
+
   -- Log ready status
   M.log("DAP Projects module initialized", "success")
 end

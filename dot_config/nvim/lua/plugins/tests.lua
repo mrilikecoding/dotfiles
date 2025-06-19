@@ -11,8 +11,7 @@ return {
     -- Language-specific dependencies
     "nvim-neotest/neotest-python",
     "mfussenegger/nvim-dap-python",
-    "olimorris/neotest-rspec",
-    "suketa/nvim-dap-ruby",
+    -- "olimorris/neotest-rspec",
   },
   config = function()
     local neotest = require("neotest")
@@ -87,27 +86,9 @@ return {
       end
     end
 
-    -- DAP UI configuration - no longer opens automatically
-    -- To manually open UI, use <Leader>du keybinding defined in dap_projects.lua
-    dap.listeners.after.event_initialized["dapui_config"] = function()
-      -- dapui.open() -- Automatic UI opening disabled
-      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.bo[buf].filetype == "dap-repl" then
-          vim.opt.modifiable = true
-          for _, win in ipairs(vim.api.nvim_list_wins()) do
-            if vim.api.nvim_win_get_buf(win) == buf then
-              vim.api.nvim_set_current_win(win)
-              vim.cmd("startinsert")
-              break
-            end
-          end
-        end
-      end
-    end
-
     -- Configure Python DAP with more robust path detection
     local python_path
-    
+
     -- Try multiple methods to find Python path
     local function get_python_path()
       -- Method 1: Try pyenv which python (with error checking)
@@ -115,7 +96,7 @@ return {
       if pyenv_path ~= "" and vim.fn.executable(pyenv_path) == 1 then
         return pyenv_path
       end
-      
+
       -- Method 2: Try direct path to current pyenv Python
       local pyenv_root = os.getenv("PYENV_ROOT") or vim.fn.expand("~/.pyenv")
       local version_path = pyenv_root .. "/version"
@@ -126,59 +107,59 @@ return {
           return direct_path
         end
       end
-      
+
       -- Method 3: Try system Python
       local sys_path = vim.fn.exepath("python3")
       if sys_path ~= "" then
         return sys_path
       end
-      
+
       -- Method 4: Try system Python (python command)
       sys_path = vim.fn.exepath("python")
       if sys_path ~= "" then
         return sys_path
       end
-      
+
       -- Fallback to a common path
       return "/usr/bin/python3"
     end
-    
+
     python_path = get_python_path()
-    
+
     -- Log the path we're using
     vim.notify("DAP using Python: " .. python_path, vim.log.levels.INFO)
-    
+
     -- Setup with error handling
     local status, err = pcall(function()
       require("dap-python").setup(python_path)
     end)
-    
+
     if not status then
       vim.notify("Error setting up Python DAP: " .. tostring(err), vim.log.levels.ERROR)
     end
 
-    -- Configure Ruby DAP
-    dap.adapters.ruby = {
-      type = "server",
-      host = "127.0.0.1",
-      port = 38698,
-      executable = {
-        command = "bundle",
-        args = { "exec", "rdbg", "-n", "--open", "--port", "38698" },
-      },
-    }
-
-    dap.configurations.ruby = {
-      {
-        type = "ruby",
-        name = "Debug Ruby Tests",
-        request = "attach",
-        port = 38698,
-        localfs = true,
-        waiting = 1000,
-      },
-    }
-
+    -- -- Configure Ruby DAP
+    -- dap.adapters.ruby = {
+    --   type = "server",
+    --   host = "127.0.0.1",
+    --   port = 38698,
+    --   executable = {
+    --     command = "bundle",
+    --     args = { "exec", "rdbg", "-n", "--open", "--port", "38698" },
+    --   },
+    -- }
+    --
+    -- dap.configurations.ruby = {
+    --   {
+    --     type = "ruby",
+    --     name = "Debug Ruby Tests",
+    --     request = "attach",
+    --     port = 38698,
+    --     localfs = true,
+    --     waiting = 1000,
+    --   },
+    -- }
+    --
     -- Python config
     local python_config = {
       -- Arguments for pytest
@@ -205,42 +186,42 @@ return {
       },
     }
 
-    -- Ruby config
-    local ruby_config = {
-      -- File pattern for RSpec and Rails tests
-      rspec_files = {
-        -- Default RSpec patterns
-        "spec/(.*)_spec.rb",
-        "spec/(.*)/(.*)_spec.rb",
-        -- Rails test patterns
-        "test/(.*)_test.rb",
-        "test/(.*)/(.*)_test.rb",
-      },
-
-      -- Transform test results
-      results_path = "tmp/rspec.output.json",
-
-      -- Test root patterns
-      root_patterns = {
-        ".rspec",
-        ".gitlab-ci.yml",
-        ".github",
-        "Gemfile",
-      },
-
-      -- Automatically detect Rails projects
-      is_rails_project = function()
-        local path = vim.fn.getcwd() .. "/config/application.rb"
-        return vim.fn.filereadable(path) == 1
-      end,
-
-      -- Configure DAP settings
-      dap = {
-        type = "ruby",
-        request = "attach",
-      },
-    }
-
+    -- -- Ruby config
+    -- local ruby_config = {
+    --   -- File pattern for RSpec and Rails tests
+    --   rspec_files = {
+    --     -- Default RSpec patterns
+    --     "spec/(.*)_spec.rb",
+    --     "spec/(.*)/(.*)_spec.rb",
+    --     -- Rails test patterns
+    --     "test/(.*)_test.rb",
+    --     "test/(.*)/(.*)_test.rb",
+    --   },
+    --
+    --   -- Transform test results
+    --   results_path = "tmp/rspec.output.json",
+    --
+    --   -- Test root patterns
+    --   root_patterns = {
+    --     ".rspec",
+    --     ".gitlab-ci.yml",
+    --     ".github",
+    --     "Gemfile",
+    --   },
+    --
+    --   -- Automatically detect Rails projects
+    --   is_rails_project = function()
+    --     local path = vim.fn.getcwd() .. "/config/application.rb"
+    --     return vim.fn.filereadable(path) == 1
+    --   end,
+    --
+    --   -- Configure DAP settings
+    --   dap = {
+    --     type = "ruby",
+    --     request = "attach",
+    --   },
+    -- }
+    --
     -- Neotest setup with all adapters
     neotest.setup({
       -- Add adapters
@@ -255,14 +236,14 @@ return {
           dap = python_config.dap,
         }),
 
-        -- Ruby adapter
-        require("neotest-rspec")({
-          rspec_files = ruby_config.rspec_files,
-          results_path = ruby_config.results_path,
-          root_patterns = ruby_config.root_patterns,
-          is_rails_project = ruby_config.is_rails_project,
-          dap = ruby_config.dap,
-        }),
+        -- -- Ruby adapter
+        -- require("neotest-rspec")({
+        --   rspec_files = ruby_config.rspec_files,
+        --   results_path = ruby_config.results_path,
+        --   root_patterns = ruby_config.root_patterns,
+        --   is_rails_project = ruby_config.is_rails_project,
+        --   dap = ruby_config.dap,
+        -- }),
       },
 
       -- Common test icons and highlights
