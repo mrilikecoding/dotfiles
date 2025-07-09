@@ -5,6 +5,7 @@ CHEZMOI_INCLUDE=(
   "$HOME/.zsh"
   "$HOME/.zshrc"
   "$HOME/.config/nvim"
+  "$HOME/.config/llm-orc"
   "$HOME/.config/starship.toml"
   "$HOME/.config/ghostty/config"
   "$HOME/.tmux.conf"

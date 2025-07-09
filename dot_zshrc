@@ -66,3 +66,4 @@ for config (~/.zsh/*.zsh) source $config
 compinit -u
 
 export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+
