@@ -3,9 +3,11 @@
 # NON-SECRET vars
 
 # Ollama 
-export OLLAMA_API_BASE=http://127.0.0.1:11434
+export OLLAMA_HOST=http://127.0.0.1:11434
 export OLLAMA_CONTEXT_LENGTH=8192
-export DEFAULT_OLLAMA_AIDER_MODEL=gemma3:12b
+
 
 export EDITOR='nvim'
 
+eval "$(_LLM_ORC_COMPLETE=zsh_source 
+  llm-orc completion)"
