@@ -1,5 +1,6 @@
 .DS_Store
-dot_config/nvim/bookmarks.db.*
 *DS_Store
 *.swp
+home/.config/nvim/bookmarks.db.*
+home/.zsh/secrets.zsh
 
