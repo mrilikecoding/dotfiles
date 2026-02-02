@@ -67,3 +67,5 @@ compinit -u
 
 export PATH="/opt/homebrew/opt/curl/bin:$PATH"
 
+# llm-orc completion (must be after compinit)
+eval "$(_LLM_ORC_COMPLETE=zsh_source llm-orc completion)"

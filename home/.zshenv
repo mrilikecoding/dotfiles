@@ -9,5 +9,6 @@ export OLLAMA_CONTEXT_LENGTH=8192
 
 export EDITOR='nvim'
 
-eval "$(_LLM_ORC_COMPLETE=zsh_source 
-  llm-orc completion)"
+# llm-orc completion moved to .zshrc (needs compinit first)
+
+export PATH="$HOME/.local/bin:$PATH"
