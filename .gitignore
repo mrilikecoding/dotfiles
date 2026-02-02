@@ -3,4 +3,5 @@
 *.swp
 home/.config/nvim/bookmarks.db.*
 home/.zsh/secrets.zsh
+home/.claude/settings.local.json
 

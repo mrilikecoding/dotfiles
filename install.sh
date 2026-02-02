@@ -71,6 +71,10 @@ else
     echo "  No existing files to backup"
 fi
 
+# Pre-create directories that must not be "folded" by stow
+# (stow would otherwise replace the dir with a single symlink)
+mkdir -p "$HOME/.claude"
+
 # Create symlinks
 echo ""
 echo "Step 2: Creating symlinks with stow..."
