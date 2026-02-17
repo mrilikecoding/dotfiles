@@ -86,6 +86,22 @@ Before generating a document, ask:
 
 ---
 
+## Model Selection
+
+Not all work requires the most capable model. Match the model to the task:
+
+| Model | Use for | Examples |
+|-------|---------|----------|
+| **Opus** | Architecture, research, writing, complex reasoning, multi-file design | `/rdd-research`, `/rdd-decide`, `/argument-audit`, `/peer-review`, tricky bugs |
+| **Sonnet** | Implementation, refactoring, test writing, code changes | `/rdd-build`, feature work, test suites, straightforward debugging |
+| **Haiku** | Simple file operations, formatting, lookups, mechanical tasks | Renaming, simple edits, grep-and-replace, boilerplate generation |
+
+**Opus is the writer and architect, not the bricklayer.** Use Sonnet for implementation once the design is clear. Use Haiku for tasks that don't require judgment.
+
+When spawning subagents via the Task tool, set the `model` parameter to match the work: `model: "haiku"` for file lookups, `model: "sonnet"` for implementation tasks, and reserve Opus (default) for research and design.
+
+---
+
 ## Code Style
 
 **Follow existing patterns.** If the codebase uses:

@@ -66,6 +66,14 @@ For each core claim or design principle extracted in Step 1:
 - Compare the abstract's framing of each major claim against how that claim appears in the body
 - Flag any claim that is stronger in the abstract than its body treatment supports, or that uses different framing language (e.g., abstract says "requires" but body says "can optionally use")
 
+#### 1.5.5 Invariant Compliance
+
+If a domain model with invariants exists for the project being audited (`./docs/domain-model.md`, § Invariants):
+- Read the invariants before auditing any document
+- For every document being audited, check that no claim contradicts a current invariant
+- Invariant violations are **constitutional violations** — higher severity than normal internal contradictions, because they mean the document is operating on superseded assumptions
+- Flag these in the Internal Consistency Report as a separate category
+
 ```
 ## Internal Consistency Report
 
@@ -88,6 +96,11 @@ For each core claim or design principle extracted in Step 1:
 | Abstract Claim | Body Treatment | Gap |
 |---|---|---|
 | ... | ... | ... |
+
+### Invariant Violations (if domain model exists)
+| Document | Claim (Location) | Contradicted Invariant | Severity |
+|---|---|---|---|
+| ... | ... | ... | Constitutional |
 ```
 
 **Note:** Contradictions found here are often the highest-impact findings in the entire audit. A paper with locally valid arguments that globally contradict each other has a more serious problem than a paper with a weak individual inference — the former suggests the author hasn't fully worked out their own position.
