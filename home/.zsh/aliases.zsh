@@ -43,8 +43,6 @@ alias ttr=tmux-tailscale-remote
 alias aider-ollama="OLLAMA_API_BASE=$OLLAMA_API_BASE aider --model ollama_chat/$AIDER_OLLAMA_MODEL --no-auto-commits --no-attribute-author --no-attribute-committer"
 alias aider-claude="aider --model $ANTHROPIC_MODEL --no-auto-commits --no-attribute-author --no-attribute-committer"
 
-alias claude="~/.claude/local/claude"
-
 # chezmoi shortcuts
 alias cz="chezmoi"
 alias cza="chezmoi add"
