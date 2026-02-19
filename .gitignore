@@ -8,4 +8,5 @@ home/.tmux/plugins/
 
 home/.config/glab-cli/recover/*
 home/.config/cagent/.cagent_first_run
+home/.config/llm-orc/credentials.yaml
 

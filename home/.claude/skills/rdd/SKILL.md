@@ -47,6 +47,10 @@ Phase 2: DECIDE
 Phase 3: BUILD
 └── /rdd-build — BDD → TDD → working software
     [Gate: User approves at each scenario completion.]
+
+Phase 4: INTEGRATE
+└── /rdd-build Step 5 — Integration verification
+    [Gate: New components verified against real neighbors, not just stubs.]
 ```
 
 ### Mode B: Research Only
@@ -101,6 +105,7 @@ Maintain a running status table:
 | MODEL | /rdd-model | ☐ Pending | — | — |
 | DECIDE | /rdd-decide | ☐ Pending | — | — |
 | BUILD | /rdd-build | ☐ Pending | — | — |
+| INTEGRATE | /rdd-build Step 5 | ☐ Pending | — | — |
 ```
 
 Update and display this table at each gate.
@@ -115,6 +120,7 @@ Findings from earlier phases inform later ones:
 - `/rdd-decide` ADR decisions constrain what `/rdd-build` implements
 - `/rdd-decide` behavior scenarios drive `/rdd-build` test-first process
 - `/rdd-build` treats ADR violations as architectural tidying — resolve as `refactor:` commits before implementing scenarios
+- `/rdd-build` integration verification (Step 5) catches type mismatches, persistence divergence, and missing cross-component contracts that acceptance tests with stubs cannot detect
 - If `/rdd-build` reveals a flaw in a decision, go back and update the ADR
 - When any phase changes a domain model invariant, **backward propagation triggers**: all prior documents are swept for contradictions, supersession notes are added, and the amendment is logged in the domain model. This is a cross-cutting event that interrupts normal phase sequence.
 

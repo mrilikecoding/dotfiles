@@ -142,6 +142,16 @@ Write scenarios to `./docs/scenarios.md`.
 
 **Refutable** means each scenario can be clearly true or false when tested against the running software. Vague outcomes like "the system works correctly" are not refutable. Each Then clause must be observable and verifiable.
 
+**Integration scenarios.** For each new component, include at least one scenario that tests the boundary with an adjacent component using real (not stubbed) types. If the component accepts input from another component, write a scenario where that component produces the input. If the component's output feeds into another, write a scenario verifying the downstream component can consume it.
+
+Example pattern:
+```
+### Scenario: Coordinator dispatches to SemanticAdapter with real input type
+**Given** an ExtractionCoordinator with a registered SemanticAdapter (not a stub)
+**When** the coordinator processes an extract-file input
+**Then** SemanticAdapter receives input it can downcast without error
+```
+
 ### Step 5: Present for Approval
 
 Present the complete set — ADRs + scenarios + audit findings and fixes — to the user. Highlight:

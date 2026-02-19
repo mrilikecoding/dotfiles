@@ -55,6 +55,19 @@ After each scenario:
 - Show what code was written or changed
 - Ask whether to proceed to the next scenario
 
+### Step 5: Integration Verification
+
+After all scenarios pass with unit and acceptance tests, verify that the new component integrates with its real neighbors — not stubs.
+
+1. **Identify neighbors** — what real components call this one? What does it call? List the concrete types on both sides of each interface.
+2. **Write an integration test** — replace stubs with real implementations. Wire the new component into the actual pipeline it will participate in. The test should exercise real data flow across at least one boundary (e.g., coordinator → adapter, adapter → sink → storage).
+3. **Run the integration test** — if it fails, the failures reveal integration gaps. Each gap becomes a new scenario (loop back to Step 2).
+4. **Present integration results** — show the user which boundaries were verified and which gaps were found.
+
+Key principle: **if the new component was tested only with `MockX` or `StubY`, at least one test must replace those with the real `X` or `Y`.** A component that only passes with mocks has not been verified.
+
+This step catches type mismatches between components designed in parallel, persistence paths that diverge between test and production, and missing contracts in adapters tested without their real pipeline.
+
 ---
 
 ## STRUCTURE VS. BEHAVIOR
