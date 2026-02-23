@@ -673,3 +673,273 @@
 **Then** it reports: "Script parse_schema.py contains hardcoded project path — not portable"
 **And** recommends keeping in local tier
 **And** does not offer global promotion
+
+---
+
+> **Note:** Scenarios below are for ADRs 015–020. Several scenarios in the sections above (Ensemble Composition, Ensemble Promotion, LoRA Candidate Flagging, Multi-Stage Ensemble Composition) assign composition/authoring/promotion actions to the conductor. Per ADR-015, these actions move to the Ensemble Designer. The scenarios above remain valid as behavioral descriptions but the actor changes from conductor to designer for composition, script authoring, promotion execution, and LoRA flagging.
+
+---
+
+## Feature: Conductor/Designer Skill Separation (ADR-015)
+
+### Scenario: Conductor requests a new ensemble from the designer
+**Given** the conductor is executing a workflow plan
+**And** the workflow plan identifies a gap: no ensemble exists for task type "semantic-extraction"
+**And** the subtask pattern exceeds the repetition threshold (4 expected repetitions)
+**When** the conductor reaches the preparation step
+**Then** the conductor emits an ensemble-request artifact containing: task type ("semantic-extraction"), delegability category ("ensemble-delegable"), DAG test results, sample inputs from the workflow, and any prior evaluation data for similar tasks
+**And** presents to the user: "No ensemble for semantic-extraction. Request one from the Ensemble Designer?"
+**And** on user consent, the request is handed off to the designer
+**And** the conductor falls back to Claude-direct for the current invocation while awaiting the designer's ensemble
+
+### Scenario: Designer returns a validated ensemble to the conductor
+**Given** the Ensemble Designer has received an ensemble-request artifact for task type "semantic-extraction"
+**And** the designer has composed and validated ensemble "extract-semantics"
+**When** the designer completes the ensemble
+**Then** the designer produces a handoff artifact containing: ensemble name, DAG shape description, profiles used, any verification scripts included, and a readiness status
+**And** the conductor can now invoke "extract-semantics" for subsequent routing decisions
+**And** the ensemble enters calibration (Invariant 4: first 5 invocations evaluated)
+
+### Scenario: Conductor provides evaluation feedback to the designer
+**Given** ensemble "extract-semantics" has completed calibration
+**And** 3 of 5 calibration evaluations scored "poor" with failure mode "incomplete"
+**When** the conductor summarizes the evaluation data
+**Then** the conductor produces a feedback artifact containing: ensemble name, scores (2 good, 3 poor), dominant failure mode ("incomplete"), sample inputs/outputs for poor evaluations
+**And** presents to the user: "extract-semantics scored poor on 3/5 calibration. Send feedback to the designer for revision?"
+**And** on user consent, the feedback artifact is handed off to the designer
+
+### Scenario: User gates the transition between conductor and designer
+**Given** the conductor identifies a need for a new ensemble
+**When** the conductor proposes handing off to the designer
+**Then** the user must explicitly consent before the transition occurs
+**And** if the user declines, the conductor continues with Claude-direct for the subtask
+**And** the conductor does not invoke the designer autonomously (Invariant 1)
+
+### Scenario: Designer does not intervene during active orchestration
+**Given** the conductor is mid-execution of a workflow plan
+**And** ensemble "cross-file-analyzer" scores "poor" on an invocation
+**When** the conductor adapts the workflow
+**Then** the conductor falls back to Claude-direct for the current subtask (Invariant 2)
+**And** records the evaluation with failure mode
+**And** accumulates the feedback for a potential designer handoff after workflow completion
+**And** does NOT pause execution to invoke the designer
+
+---
+
+## Feature: Verification Scripts (ADR-016)
+
+### Scenario: Verification script computes embedding-based confidence within an ensemble DAG
+**Given** a multi-stage ensemble "analyze-docs" contains:
+  - LLM agent "analyzer" (qwen3:8b) producing analysis output
+  - Verification script "embed-confidence" hosting MiniLM (22M params)
+  - "embed-confidence" depends on "analyzer"
+**When** the ensemble is invoked
+**Then** "analyzer" produces its output
+**And** "embed-confidence" computes cosine similarity between the output and the input
+**And** the similarity score is included in the ensemble's artifact as a quality signal
+**And** downstream agents can use the confidence score for routing or filtering
+
+### Scenario: Verification script selects winner from complementary model outputs
+**Given** a complementary ensemble "dual-extract" contains:
+  - LLM agent "extractor-qwen" (qwen3:8b)
+  - LLM agent "extractor-mistral" (mistral:7b)
+  - Verification script "select-winner" hosting MiniLM
+  - "select-winner" depends on both "extractor-qwen" and "extractor-mistral"
+**When** the ensemble is invoked with an extraction task
+**Then** both extractors produce output independently (no debate, no shared context)
+**And** "select-winner" computes embedding-based confidence for each output
+**And** "select-winner" selects the output with higher confidence via argmax
+**And** the ensemble's final output is the selected winner, not a synthesis of both
+
+### Scenario: Log-probability entropy provides zero-cost quality signal
+**Given** a multi-stage ensemble contains LLM agent "classifier" (qwen3:4b) with logprobs enabled
+**And** a verification script "entropy-check" that computes per-token Shannon entropy via numpy
+**When** the classifier produces output with logprobs
+**Then** "entropy-check" computes mean entropy across output tokens
+**And** high entropy (above a designer-configured threshold) signals low confidence
+**And** the entropy value is passed downstream for conditional routing (e.g., escalate to a larger model if entropy exceeds threshold)
+
+### Scenario: Verification script expands what is ensemble-delegable
+**Given** the conductor is triaging subtask "verify extracted facts against source documents"
+**And** this task would normally require Claude-only (LLM quality judgment)
+**When** the conductor applies the DAG decomposability test
+**Then** condition 2 (script-absorbable) passes because NLI-based consistency checking via DeBERTa in a verification script can handle factual verification
+**And** the task is classified as ensemble-delegable (not Claude-only)
+**And** the conductor routes to an ensemble with a verification script for NLI-based checking
+
+### Integration Scenario: Designer composes ensemble with verification script
+**Given** the Ensemble Designer receives an ensemble-request for task type "fact-extraction"
+**And** the design pattern library suggests a complementary pair with embedding-based verification
+**When** the designer composes the ensemble
+**Then** the designer authors a verification script hosting MiniLM with ONNX runtime
+**And** the script takes JSON input: `{"candidates": [{"output": "...", "source": "qwen"}, {"output": "...", "source": "mistral"}]}`
+**And** the script returns JSON output: `{"selected": "qwen", "confidence": 0.87, "method": "cosine_similarity"}`
+**And** the designer validates the verification script's JSON I/O contract against the upstream LLM agents' output schema
+**And** the ensemble is validated via `validate_ensemble` before handoff
+
+---
+
+## Feature: Architectural Complementarity (ADR-017)
+
+### Scenario: Designer applies complementarity for a reasoning task
+**Given** the Ensemble Designer receives an ensemble-request for task type "code-correctness-check"
+**And** the task involves reasoning with determinable correct answers (code is correct or not)
+**And** the design pattern library shows no prior data for this model pair on this task type
+**When** the designer evaluates the complementarity pattern
+**Then** the designer proposes a complementary ensemble: qwen3:8b + mistral:7b with a MiniLM verification script
+**And** notes: "Complementarity applied — reasoning task with determinable answers. Union accuracy and contradiction penalty will be measured during calibration."
+**And** the ensemble includes both LLM agents generating independently and a verification script selecting via argmax
+
+### Scenario: Designer rejects complementarity for a generation task
+**Given** the Ensemble Designer receives an ensemble-request for task type "summarization"
+**And** summarization is open-ended generation (no single correct answer)
+**When** the designer evaluates the complementarity pattern
+**Then** the designer rejects complementarity: "Summarization is open-ended generation — self-MoA outperforms mixed-model MoA by 6.6% on generation tasks (Inv 15)"
+**And** proposes a single-model ensemble instead
+
+### Scenario: Designer measures union accuracy and contradiction penalty during calibration
+**Given** complementary ensemble "dual-check" is in calibration (invocations 1–5)
+**And** the conductor evaluates each invocation, recording per-model correctness
+**When** calibration completes with 5 evaluations
+**Then** the designer computes:
+  - Union accuracy: fraction of inputs where at least one model was correct
+  - Contradiction penalty: fraction where one model was confidently wrong while the other was right
+**And** records both metrics in the design pattern library
+**And** if union accuracy ≥ 0.80 and contradiction penalty ≤ 0.20, the design is confirmed
+**And** if either threshold fails, the designer recommends reverting to single-model
+
+### Scenario: Designer reverts to single-model after high contradiction penalty
+**Given** complementary ensemble "dual-extract" completes calibration
+**And** union accuracy is 0.85 (above threshold)
+**But** contradiction penalty is 0.35 (above 0.20 threshold)
+**When** the designer reviews calibration data
+**Then** the designer reports: "High contradiction penalty (0.35) — the verification script is selecting the wrong model too often"
+**And** recommends reverting to single-model (the model with higher individual accuracy)
+**And** records the anti-pattern in the design pattern library: "qwen3:8b + mistral:7b pair has high contradiction penalty on extraction tasks"
+
+### Integration Scenario: Complementary ensemble uses verification script for arbitration
+**Given** complementary ensemble "dual-reason" contains:
+  - LLM agent "reason-qwen" (qwen3:8b) with system prompt for reasoning
+  - LLM agent "reason-mistral" (mistral:7b) with system prompt for reasoning
+  - Verification script "select-best" hosting MiniLM
+**When** invoked with a reasoning problem
+**Then** "reason-qwen" and "reason-mistral" generate independently (no debate)
+**And** neither agent sees the other's output
+**And** "select-best" receives both outputs and computes confidence scores
+**And** "select-best" returns the higher-confidence output as the ensemble result
+**And** the conductor evaluates this result via the standard evaluation protocol (ADR-003)
+
+---
+
+## Feature: 14B Ceiling (ADR-018)
+
+### Scenario: Designer uses 14B synthesizer for high-fan-in ensemble
+**Given** the Ensemble Designer is composing a multi-stage ensemble with 6 fan-out LLM agents
+**When** the synthesizer must combine outputs from all 6 upstream agents
+**Then** the designer assigns the ceiling tier model (qwen3:14b) to the synthesizer
+**And** explains: "Using 14B for synthesis across 6 agent outputs — this exceeds the 4+ upstream threshold"
+**And** all extractors and analyzers remain at micro/small/medium tiers (≤7B)
+
+### Scenario: Designer uses 8B default for low-fan-in ensemble
+**Given** the Ensemble Designer is composing a multi-stage ensemble with 3 fan-out LLM agents
+**When** the synthesizer must combine outputs from 3 upstream agents
+**Then** the designer assigns conductor-medium (llama3.1:8b) to the synthesizer
+**And** does not invoke the ceiling exception (3 < 4 upstream outputs)
+**And** the ceiling tier (qwen3:14b) is not used
+
+---
+
+## Feature: Design Pattern Library (ADR-019)
+
+### Scenario: Designer consults library for a new ensemble request
+**Given** the design pattern library contains a successful pattern: "fan-out swarm with MiniLM verification works well for extraction tasks (union accuracy 0.88, 4/5 good calibration)"
+**And** the Ensemble Designer receives an ensemble-request for task type "data-extraction"
+**When** the designer queries the library by: delegability category (ensemble-delegable), template architecture (multi-stage), output type (structured extraction)
+**Then** the designer finds the matching pattern
+**And** proposes: "Found a successful extraction pattern — fan-out swarm with MiniLM verification. Adapting for data-extraction."
+**And** customizes the pattern (specific system prompts, input schema) while reusing the DAG shape and verification approach
+
+### Scenario: Designer records a pattern after successful calibration
+**Given** ensemble "extract-semantics" completes calibration with 4/5 good scores
+**And** the ensemble uses a fan-out swarm with MiniLM verification
+**When** the designer records the calibration results
+**Then** the designer writes to the design pattern library:
+  - DAG shape: fan-out swarm → verification script → synthesizer
+  - Profiles: qwen3:0.6b (extractors), qwen3:8b (synthesizer)
+  - Verification technique: MiniLM embedding confidence
+  - Task type characteristics: delegability (ensemble-delegable), template (multi-stage), output type (structured extraction)
+  - Calibration results: 4/5 good
+**And** future ensemble requests for similar task types will find this pattern
+
+### Scenario: Designer investigates before recording an anti-pattern
+**Given** ensemble "classify-bugs" completes calibration with 3/5 poor scores
+**And** all 3 poor scores have failure mode "hallucination"
+**When** the designer reviews the failure modes
+**Then** the designer investigates: is the failure due to fixable configuration (bad prompt, wrong profile tier) or fundamental design flaw (wrong DAG shape for the task)?
+**And** if fixable: records the investigation, proposes a revision, does not record as anti-pattern
+**And** if fundamental: records in the design pattern library as anti-pattern with failure analysis: "Single-agent classification with qwen3:4b hallucinated on complex bug categories — task may require either a larger model or multi-stage decomposition"
+
+### Scenario: Designer composes from first principles when no library match exists
+**Given** the design pattern library has no entries for task type "dependency-graph-analysis"
+**When** the Ensemble Designer receives an ensemble-request for this task type
+**Then** the designer reports: "No matching pattern in the library — composing from first principles"
+**And** designs a custom DAG based on the task's DAG decomposability test results
+**And** after calibration, records the result (whether successful or anti-pattern) in the library
+
+---
+
+## Feature: Graph-Structured Memory Target (ADR-020)
+
+### Scenario: System operates in degraded mode without graph backend
+**Given** the graph memory backend (Plexus) is not yet integrated
+**And** the conductor and designer use flat file persistence (ADR-004)
+**When** the conductor needs to answer "what led to this poor evaluation result?"
+**Then** the conductor reads routing-log.jsonl and evaluations.jsonl
+**And** manually correlates entries by routing_id
+**And** can identify the ensemble and profile used, but cannot traverse design decisions or calibration history without reading multiple files
+**And** this is accepted technical debt — full provenance traversal is deferred to the graph backend
+
+### Scenario: Conductor records provenance metadata in routing log
+**Given** the conductor logs a routing decision to routing-log.jsonl
+**When** the entry is written
+**Then** the record includes provenance fields: `ensemble_spec_version` (which ensemble YAML was used), `profile_versions` (which profiles were active), `routing_config_version` (which routing config version informed the decision)
+**And** these fields enable future migration to the graph memory layer without data loss
+**And** the flat file format captures the provenance relationships that the graph will natively represent
+
+### Scenario: Designer records design knowledge in pattern library YAML
+**Given** the design pattern library is stored as `design-patterns.yaml` (flat file)
+**When** the designer records a new pattern
+**Then** the entry includes: task type characteristics, DAG shape, profiles, verification techniques, calibration results, and a cross-reference to the ensemble YAML
+**And** the designer can read through the YAML to find similar patterns by manual inspection
+**And** the YAML format supports recording but not structured similarity queries — this limitation is accepted until the graph backend is integrated
+
+---
+
+## Feature: Integration — Conductor/Designer End-to-End Flow (ADR-015, ADR-016, ADR-017)
+
+### Scenario: Full cycle from conductor gap detection through designer composition to invocation
+**Given** the conductor is executing a workflow plan with 6 extraction subtasks
+**And** no ensemble exists for task type "extraction"
+**And** the repetition threshold (3+) is met
+**When** the conductor completes pre-flight discovery
+**Then** the conductor emits an ensemble-request artifact: task type "extraction", 6 repetitions expected, sample input from the workflow
+**And** the user approves the transition to the designer
+**And** the Ensemble Designer queries the design pattern library — finds no match
+**And** the designer composes a complementary ensemble: qwen3:8b + mistral:7b with MiniLM verification (reasoning task with determinable answers)
+**And** validates via `validate_ensemble`
+**And** hands off the validated ensemble to the conductor
+**And** the conductor invokes the ensemble for the first extraction subtask
+**And** evaluates the output (calibration: invocation 1 of 5)
+**And** the ensemble enters calibration with both per-model correctness tracking and union accuracy measurement
+
+### Scenario: Conductor evaluation feedback triggers designer revision
+**Given** ensemble "dual-extract" completes calibration
+**And** 3 of 5 scores are "poor" with failure mode "incomplete" and contradiction penalty 0.30
+**When** the conductor summarizes feedback
+**Then** the feedback artifact includes: scores, failure modes, per-model correctness, union accuracy (0.82), contradiction penalty (0.30)
+**And** the user approves transition to the designer
+**And** the designer reviews the feedback
+**And** the designer identifies: contradiction penalty too high for complementary pattern
+**And** proposes a single-model revision using the better-performing model
+**And** records the anti-pattern in the design pattern library
+**And** hands off the revised ensemble to the conductor for re-calibration

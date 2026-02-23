@@ -17,6 +17,8 @@ llm-orc's MCP surface has no promotion or contribution tools — library access 
 4. On user consent: copy ensemble YAML to `~/.config/llm-orc/ensembles/`, copy any missing profiles to `~/.config/llm-orc/profiles/`
 5. Verify the ensemble is runnable at the destination via `check_ensemble_runnable`
 
+> **Superseded by ADR-015:** Promotion execution (file copying, verification) is now the Ensemble Designer's responsibility. The conductor recommends promotion based on evaluation evidence.
+
 **Global → Library** contribution:
 1. Ensemble has 5+ "good" evaluations and passes generality assessment
 2. Conductor presents recommendation with evidence

@@ -12,6 +12,8 @@ Two architectures were considered: (a) the conductor as a pure SKILL.md with all
 
 The conductor is a Claude Code skill (`SKILL.md`) that maintains a `.llm-orc/` directory within the skill folder (`~/.claude/skills/llm-conductor/.llm-orc/`). Claude handles high-level routing, evaluation, and promotion decisions. Local ensembles within the skill's own `.llm-orc/` handle subtasks that fall within local model competence boundaries.
 
+> **Superseded by ADR-015:** Promotion execution is now the Ensemble Designer's responsibility. The conductor recommends promotion; the designer executes it.
+
 The conductor uses `set_project` to point llm-orc at the skill's own directory when invoking its internal ensembles, and at the user's project directory when invoking task-specific ensembles.
 
 **Context switching protocol:** The user's project directory is the default context. Before invoking an internal ensemble, the conductor switches to the skill directory. After the internal invocation completes, the conductor immediately switches back to the user's project directory. The conductor never leaves the context pointing at the skill directory between user-visible operations.

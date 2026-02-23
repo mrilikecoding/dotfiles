@@ -4,7 +4,8 @@
 
 | Term | Definition | Related Terms |
 |------|-----------|---------------|
-| **Conductor** | The Claude Code skill that acts as workflow architect, decomposing meta-tasks and orchestrating execution across Claude and local models via llm-orc | Meta-Task, Workflow Plan |
+| **Conductor** | The Claude Code skill that acts as workflow architect, decomposing meta-tasks and orchestrating execution across Claude and local models via llm-orc. Owns the orchestration layer: triage, routing, invocation, evaluation, token tracking, and workflow adaptation. Does not own ensemble design (see Ensemble Designer) | Meta-Task, Workflow Plan, Ensemble Designer |
+| **Ensemble Designer** | A separate skill (or future separate skill) that owns ensemble composition: DAG architecture selection, profile choice (including complementarity measurement), script authoring, verification script integration, calibration interpretation, promotion, and design knowledge accumulation. Coordinates with the Conductor via artifacts: receives routing needs and evaluation data, produces validated ensembles and design knowledge. Runs on Opus for architectural judgment | Conductor, Ensemble, Design Pattern Library, Verification Script |
 | **Meta-Task** | A complex, multi-phase goal described in natural language that the conductor decomposes into subtasks. Examples: "build a PromotionHandler," "run an RDD research cycle" | Subtask, Workflow Plan, Task |
 | **Task** | A unit of work that can be routed as-is to an ensemble or handled by Claude. A simple task is routed directly; a meta-task is decomposed into subtasks first | Task Type, Routing Decision |
 | **Subtask** | An individual unit of work within a decomposed meta-task. The level at which competence boundaries and routing decisions apply | Meta-Task, Task Type, Workflow Plan |
@@ -12,24 +13,32 @@
 | **Delegability Category** | One of three classifications for a task type: agent-delegable (single small model handles it), ensemble-delegable (exceeds agent competence but passes the DAG decomposability test), or Claude-only (fails the DAG decomposability test) | Task Type, DAG Decomposability Test |
 | **Workflow Plan** | The conductor's decomposition of a meta-task into an ordered sequence of subtasks, each assigned to either an ensemble or Claude-direct. Includes estimated token savings. Presented to the user for approval before execution | Meta-Task, Subtask, Delegation Assignment |
 | **Delegation Assignment** | The mapping of a single subtask within a workflow plan to its handler: a specific ensemble, a new ensemble to be created, or Claude-direct | Workflow Plan, Subtask, Ensemble |
-| **Ensemble** | A programmable system of agents in llm-orc that collectively process input and produce output. May contain LLM agents, script agents, and ensemble agents orchestrated via dependencies, fan-out, and conditional execution | Agent, Profile, Ensemble Tier |
+| **Ensemble** | A programmable system of agents in llm-orc that collectively process input and produce output. May contain LLM agents, script agents, verification scripts, and ensemble agents orchestrated via dependencies, fan-out, and conditional execution | Agent, Profile, Ensemble Tier |
 | **Multi-Stage Ensemble** | An ensemble that combines script agents (gathering/parsing), fan-out LLM agents (per-item analysis), and a synthesizer. Follows the gather-analyze-synthesize pattern. Handles ensemble-delegable tasks that exceed any individual agent's competence | Ensemble, Script Agent, Fan-out, Template Architecture |
 | **Universal Ensemble** | An ensemble covering a subtask pattern that recurs across virtually all software projects. Created proactively as infrastructure the conductor depends on, not reactively | Ensemble, Starter Kit |
 | **Starter Kit** | The set of universal ensembles the conductor creates during its first session: extract-code-patterns, generate-test-cases, fix-lint-violations, write-changelog, write-commit-message | Universal Ensemble |
 | **Agent** | A processing unit within an ensemble. Three types: LLM agent (model with system prompt and profile), script agent (Python/bash script with JSON I/O), ensemble agent (sub-ensemble invocation). Agents are connected via dependencies in a DAG | Profile, Ensemble, Script Agent, Ensemble Agent |
 | **LLM Agent** | An agent that uses a local model to process input. Configured with a system prompt and model profile. Subject to agent-level competence boundaries: bounded, single-concern work only | Agent, Profile, Competence Boundary |
-| **Script Agent** | An agent that runs an arbitrary Python or bash script taking JSON input and returning JSON output. Handles non-LLM complexity: file I/O, web searches, AST parsing, static analysis tools, ML classifiers, test runners. Scripts absorb the complexity that would otherwise make tasks Claude-only | Agent, Multi-Stage Ensemble |
+| **Script Agent** | An agent that runs an arbitrary Python or bash script taking JSON input and returning JSON output. Handles non-LLM complexity: file I/O, web searches, AST parsing, static analysis tools, test runners. May also host classical ML models for verification (see Verification Script). Scripts absorb the complexity that would otherwise make tasks Claude-only | Agent, Multi-Stage Ensemble, Verification Script |
+| **Verification Script** | A script agent hosting classical ML models that provides deterministic quality signals within an ensemble DAG. Three primary techniques: embedding-based confidence (MiniLM, 22M params, cosine similarity), NLI-based consistency (DeBERTa, 86M params, contradiction detection), and log-probability entropy (numpy, no model needed). Replaces LLM self-verification, which is unreliable for models under ~13B | Script Agent, Confidence-Based Selection |
 | **Ensemble Agent** | An agent that invokes an entire sub-ensemble as a pipeline step. Enables recursive composition of ensemble capabilities | Agent, Ensemble |
 | **Profile** | A named configuration binding a model identifier and provider to a system prompt and parameters | Model Tier, Agent |
-| **Model Tier** | A capability classification for local models: micro (sub-1B), small (1-3B), medium (4-7B), ceiling (12B) | Profile |
-| **Conductor Profile** | One of three standard model profiles for conductor-internal ensemble use: conductor-micro (qwen3:0.6b, per-item extraction/comparison), conductor-small (gemma3:1b, bounded analysis/template fill), conductor-medium (llama3 8B default; gemma3:12b only when synthesizing 4+ upstream outputs per ADR-005 ceiling rule) | Profile, Model Tier, Multi-Stage Ensemble |
+| **Model Tier** | A capability classification for local models: micro (sub-1B), small (1-3B), medium (4-7B), ceiling (14B). The ceiling tier is for synthesis across 4+ upstream outputs or tasks where composition of smaller models demonstrably underperforms | Profile |
+| **Conductor Profile** | One of three standard model profiles for conductor-internal ensemble use: conductor-micro (qwen3:0.6b, per-item extraction/comparison), conductor-small (gemma3:1b, bounded analysis/template fill), conductor-medium (llama3 8B default; qwen3:14b when synthesizing 4+ upstream outputs per the ceiling rule) | Profile, Model Tier, Multi-Stage Ensemble |
 | **Swarm** | An ensemble pattern where many small extractors feed medium analyzers feed a larger synthesizer; composition over scale | Ensemble, Model Tier |
 | **Fan-out** | An orchestration primitive where an upstream agent outputs an array and the downstream agent spawns one instance per element, processing in parallel. Results are gathered back (fan-in) into an ordered array. The scalability mechanism for multi-stage ensembles | Multi-Stage Ensemble, Agent |
 | **Input Key Selection** | An orchestration primitive where an agent selects a specific JSON key from upstream output, enabling routing patterns where a classifier directs different data to different downstream agents | Agent, Ensemble |
 | **Conditional Dependency** | An orchestration primitive where agent execution is gated on upstream output values, enabling branching within an ensemble | Agent, Ensemble |
-| **Template Architecture** | A reusable multi-stage ensemble pattern that the conductor customizes per-project. Examples: document consistency checker, cross-file code analyzer, knowledge researcher, multi-file test generator, debugging evidence gatherer. All follow the gather-analyze-synthesize pattern | Multi-Stage Ensemble, Ensemble |
-| **DAG Decomposability Test** | The practical discriminator for whether a task is ensemble-delegable. A task passes if it meets four conditions: (1) DAG-decomposable — no cycles or backtracking, (2) script-absorbable — non-LLM complexity handled by scripts, (3) fan-out-parallelizable — LLM work divides into bounded per-item tasks, (4) structured-synthesizable — synthesis combines structured per-item outputs. If all four hold: ensemble-delegable. If any fails: Claude-only | Delegability Category, Task Type, Multi-Stage Ensemble |
+| **Template Architecture** | A reusable multi-stage ensemble pattern that the designer customizes per-project. Examples: document consistency checker, cross-file code analyzer, knowledge researcher, multi-file test generator, debugging evidence gatherer. All follow the gather-analyze-synthesize pattern | Multi-Stage Ensemble, Ensemble, Design Pattern Library |
+| **DAG Decomposability Test** | The practical discriminator for whether a task is ensemble-delegable. A task passes if it meets four conditions: (1) DAG-decomposable — no cycles or backtracking, (2) script-absorbable — non-LLM complexity handled by scripts (including ML-equipped verification scripts), (3) fan-out-parallelizable — LLM work divides into bounded per-item tasks, (4) structured-synthesizable — synthesis combines structured per-item outputs. If all four hold: ensemble-delegable. If any fails: Claude-only | Delegability Category, Task Type, Multi-Stage Ensemble, Verification Script |
 | **Ensemble-Prepared Claude** | A workflow pattern where an ensemble handles the gathering and analysis phases of a Claude-only task, producing a structured brief. Claude receives the brief and performs only the final judgment, consuming dramatically fewer tokens than processing raw input | Multi-Stage Ensemble, Routing Decision, Token Savings |
+| **Confidence-Based Selection** | An arbitration mechanism where a verification script selects one winner from multiple candidate outputs based on computed confidence scores (embedding similarity, NLI consistency, log-probability entropy). Preferred over synthesis-based arbitration, which risks contamination from weaker outputs entering a synthesis prompt | Verification Script, Architectural Complementarity |
+| **Architectural Complementarity** | A conditional design pattern: running two architecturally different models (e.g., Qwen + Mistral) on the same task and arbitrating via confidence-based selection. Valid for reasoning and verification tasks where union accuracy is high and contradiction penalty is low. Not applied to open-ended generation tasks, where quality dominates diversity | Confidence-Based Selection, Union Accuracy, Contradiction Penalty |
+| **Union Accuracy** | The fraction of problems where at least one model in a complementary pair produces a correct answer. Must be high for architectural complementarity to provide coverage gains over a single model. Measured during calibration | Architectural Complementarity |
+| **Contradiction Penalty** | The frequency with which one model in a complementary pair is confidently wrong while the other is right. Must be low for architectural complementarity to be safe. High contradiction penalty means the verification script may select the wrong output | Architectural Complementarity |
+| **Design Pattern Library** | The accumulated knowledge of what works for ensemble design: which DAG shapes suit which task types, which model pairs are complementary, which script patterns are reusable, which verification techniques apply. Maintained by the Ensemble Designer. Every ensemble built is an experiment that adds to the library | Ensemble Designer, Template Architecture, Architectural Complementarity |
+| **Provenance** | The causal chain from a routing or design decision to its outcome. Maps to W3C PROV: ensemble specs are Entities, calibration runs are Activities, routing decisions use specific configurations. Enables "what led to this result" graph traversals. Stored in the Memory Layer | Evaluation, Ensemble, Memory Layer |
+| **Memory Layer** | Graph-structured shared memory (target: Plexus knowledge graph) that stores operational and design data with provenance. Both the Conductor and Ensemble Designer read and write. Supports queries that flat storage cannot: "what led to this outcome," "what has worked for similar tasks," "which ensembles are ready for promotion." Replaces flat JSONL/YAML for relationship-dependent queries | Provenance, Design Pattern Library, Conductor, Ensemble Designer |
 | **Routing Decision** | The conductor's choice to delegate a subtask to a local ensemble or handle it directly via Claude. Made per-subtask within a workflow plan | Task Type, Ensemble, Evaluation, Delegability Category |
 | **Invocation** | A single execution of an ensemble via llm-orc's MCP `invoke` tool | Ensemble, Artifact |
 | **Artifact** | The execution result from an llm-orc invocation, containing per-agent outputs, token usage, timing, and model metadata | Invocation, Token Usage |
@@ -54,7 +63,7 @@
 | **Library Tier** | Community-contributed ensembles in the `llm-orchestra-library` git repo | Ensemble Tier |
 | **Promotion** | Moving an ensemble from one tier to a higher one (local → global → library) based on quality evidence and generality | Ensemble Tier, Generality Assessment |
 | **Generality Assessment** | Claude's evaluation of whether an ensemble is project-specific or portable across projects | Promotion, Ensemble |
-| **Competence Boundary** | The empirically-determined limit of what can be reliably handled, operating at two levels. Agent-level: no individual LLM agent handles multi-step reasoning (3+ steps), complex instructions (>4 constraints), or tasks requiring world knowledge or holistic judgment. Ensemble-level: a composed system of script agents, fan-out LLM agents, and synthesizers can handle tasks exceeding agent competence, provided the task passes the DAG decomposability test | Model Tier, Task Type, Routing Decision, DAG Decomposability Test |
+| **Competence Boundary** | The empirically-determined limit of what can be reliably handled, operating at two levels. Agent-level: no individual LLM agent handles multi-step reasoning (3+ steps), complex instructions (>4 constraints), or tasks requiring world knowledge or holistic judgment. Ensemble-level: a composed system of script agents (including ML-equipped verification scripts), fan-out LLM agents, and synthesizers can handle tasks exceeding agent competence, provided the task passes the DAG decomposability test. ML-equipped verification scripts expand ensemble-level competence by providing quality signals that SLMs cannot self-produce | Model Tier, Task Type, Routing Decision, DAG Decomposability Test, Verification Script |
 
 ### Synonyms to Avoid
 
@@ -79,6 +88,13 @@
 | Ensemble-Prepared Claude | Assisted Claude, Pre-processed | "Ensemble-Prepared" conveys that the ensemble prepares context for Claude's judgment |
 | Multi-Stage Ensemble | Pipeline, Multi-step ensemble | "Multi-Stage" distinguishes from single-agent ensembles; avoids "pipeline" (reserved for non-ensemble flows) |
 | Delegability Category | Routing category, Task class | "Delegability Category" names the three-way classification explicitly |
+| Ensemble Designer | Ensemble Builder, Design Agent | "Designer" conveys architectural judgment, not mechanical assembly |
+| Verification Script | Validator, Checker, Quality Agent | "Verification Script" is a script agent subtype; "validator" is too generic |
+| Confidence-Based Selection | Voting, Consensus, Best-of-N | "Selection" means picking one winner; "voting" implies aggregation; "best-of-N" implies same model |
+| Architectural Complementarity | Diversity, Multi-model, Redundancy | "Complementarity" names the specific mechanism (different failure modes); "diversity" is vague |
+| Design Pattern Library | Knowledge Base, Playbook | "Pattern Library" is the specific collection of reusable design patterns |
+| Provenance | History, Audit trail, Logs | "Provenance" is the W3C PROV term for causal lineage; "history" is too broad |
+| Memory Layer | Database, Store, Cache | "Memory Layer" names the architectural layer; "database" implies implementation |
 
 ## Actions (Verbs)
 
@@ -89,29 +105,36 @@
 | **Triage** | Conductor | Subtask | Classify a subtask by task type, apply the DAG decomposability test, and assign a delegability category (agent-delegable, ensemble-delegable, or Claude-only) |
 | **Route** | Conductor | Subtask | Dispatch a subtask to an ensemble (local) or handle directly (Claude) per the workflow plan |
 | **Discover** | Conductor | Ensembles, Models | Query llm-orc for available ensembles (`list_ensembles`) and models (`get_provider_status`) |
-| **Compose** | Conductor | Ensemble | Design and create a new ensemble to fill a gap identified in the workflow plan. For multi-stage ensembles, includes authoring script agents and selecting template architectures |
-| **Author Script** | Conductor | Script Agent | Write a Python or bash script as part of multi-stage ensemble composition. Claude writes the script (a judgment task); the script then runs locally without Claude. Includes validating JSON I/O contracts |
 | **Invoke** | Conductor | Ensemble | Execute an ensemble via llm-orc MCP with input data |
 | **Evaluate** | Conductor (as judge) | Artifact | Score ensemble output quality using a 3-point rubric with CoT reflection |
 | **Reflect** | Conductor | Evaluation | Produce verbal reasoning about why output succeeded or failed before scoring |
 | **Calibrate** | Conductor | Ensemble | Evaluate every invocation during an ensemble's first 5 uses to establish baseline quality |
 | **Sample** | Conductor | Invocation | Probabilistically select invocations for evaluation (10-20% after calibration) |
 | **Quantify** | Conductor | Token Savings | Calculate the delta between local tokens used and estimated Claude equivalent |
-| **Adapt** | Conductor | Workflow Plan | Modify the plan during execution — fall back to Claude if ensemble output is poor, create new ensembles if patterns emerge |
-| **Promote** | Conductor (with user consent) | Ensemble | Copy an ensemble from one tier to a higher one, including profile dependencies |
-| **Assess Generality** | Conductor | Ensemble | Read ensemble YAML and evaluate whether it is project-specific or portable |
-| **Contribute** | Conductor (with user consent) | Ensemble | Push a library-worthy ensemble to the llm-orchestra-library repo via git |
-| **Flag** | Conductor | Task Type | Mark a task type as a LoRA candidate after repeated poor evaluations |
+| **Adapt** | Conductor | Workflow Plan | Modify the plan during execution — fall back to Claude if ensemble output is poor, request new ensembles from the designer if patterns emerge |
 | **Adjust** | Conductor | Routing Config | Update routing thresholds based on accumulated evaluation evidence |
 | **Bootstrap** | Conductor | Starter Kit | Create the set of universal ensembles during the conductor's first session in a project |
 | **Test DAG Decomposability** | Conductor | Subtask | Evaluate whether a subtask passes the four conditions (DAG-decomposable, script-absorbable, fan-out-parallelizable, structured-synthesizable) to determine if it is ensemble-delegable |
 | **Prepare** | Conductor | Ensemble-Prepared Claude | Run an ensemble to gather and analyze context, then present a structured brief to Claude for final judgment on a Claude-only subtask |
+| **Request Ensemble** | Conductor | Ensemble Designer | Signal that a new or improved ensemble is needed for a task type, providing routing needs and evaluation data as handoff artifacts |
+| **Record** | Conductor / Ensemble Designer | Memory Layer | Write operational or design data to the knowledge graph with provenance metadata |
+| **Compose** | Ensemble Designer | Ensemble | Design and create a new ensemble: select DAG architecture from the pattern library, choose profiles, integrate verification scripts, validate the ensemble |
+| **Author Script** | Ensemble Designer | Script Agent | Write a Python or bash script as part of ensemble composition. Claude writes the script (a judgment task); the script then runs locally without Claude. Includes validating JSON I/O contracts |
+| **Author Verification Script** | Ensemble Designer | Verification Script | Write a script agent hosting classical ML (MiniLM, DeBERTa, entropy) for deterministic quality assessment within an ensemble DAG |
+| **Measure Complementarity** | Ensemble Designer | Model Pair | Assess whether two architecturally different models are complementary for a task type by measuring union accuracy and contradiction penalty during calibration |
+| **Promote** | Ensemble Designer (with user consent) | Ensemble | Copy an ensemble from one tier to a higher one, including profile and script dependencies |
+| **Assess Generality** | Ensemble Designer | Ensemble | Read ensemble YAML and evaluate whether it is project-specific or portable |
+| **Contribute** | Ensemble Designer (with user consent) | Ensemble | Push a library-worthy ensemble to the llm-orchestra-library repo via git |
+| **Flag** | Ensemble Designer | Task Type | Mark a task type as a LoRA candidate after repeated poor evaluations |
+| **Verify** | Verification Script | Agent Output | Compute a deterministic quality signal (embedding similarity, NLI consistency, or log-probability entropy) for an LLM agent's output within an ensemble DAG |
+| **Select** | Verification Script | Candidate Outputs | Choose one winner from multiple candidate outputs based on computed confidence scores. Used as the arbitration mechanism for architectural complementarity |
 
 ## Relationships
 
+### Orchestration Layer
 - **Conductor** decomposes **Meta-Tasks** into **Subtasks**
 - **Conductor** plans, executes, and adapts **Workflow Plans**
-- **Conductor** triages, routes, evaluates, promotes, and authors scripts — it is the sole actor
+- **Conductor** triages, routes, invokes, evaluates, quantifies, and adapts — it owns the workflow lifecycle
 - **Meta-Task** decomposes into one or more **Subtasks**
 - **Subtask** has one **Task Type**
 - **Task Type** belongs to one **Delegability Category** (agent-delegable, ensemble-delegable, or Claude-only)
@@ -120,10 +143,26 @@
 - **Delegation Assignment** maps a **Subtask** to either an **Ensemble** or Claude-direct
 - **Routing Decision** maps a **Subtask** to either an **Ensemble** or Claude-direct
 - **Routing Decision** is informed by **Routing Config** and **Task Profiles**
+- **Ensemble-Prepared Claude** uses a **Multi-Stage Ensemble** to prepare context, then routes the judgment phase to Claude-direct
+- **Complexity Floor** determines whether delegating a **Subtask** is worth the overhead
+- **Repetition Threshold** gates **Ensemble** creation for newly observed **Subtask** patterns
+
+### Design Layer
+- **Ensemble Designer** composes, validates, promotes, and contributes **Ensembles**
+- **Ensemble Designer** authors **Script Agents** and **Verification Scripts**
+- **Ensemble Designer** measures **Architectural Complementarity** for model pairs
+- **Ensemble Designer** maintains the **Design Pattern Library**
+- **Conductor** requests ensembles from the **Ensemble Designer** via artifact-based handoff
+- **Conductor** provides **Evaluation** data to the **Ensemble Designer** as feedback
+- **Template Architecture** is instantiated as a **Multi-Stage Ensemble** customized for a specific project or task
+- **Template Architecture** is stored in the **Design Pattern Library**
+
+### Ensemble Structure
 - **Ensemble** contains one or more **Agents**
 - **Agent** is one of three types: **LLM Agent**, **Script Agent**, or **Ensemble Agent**
 - **LLM Agent** references exactly one **Profile**
 - **Script Agent** runs a script with JSON I/O; no profile needed
+- **Verification Script** is a **Script Agent** hosting classical ML models
 - **Ensemble Agent** invokes a sub-**Ensemble**
 - **Profile** specifies a **Model Tier**
 - **Conductor Profile** is a **Profile** standardized for conductor-internal use (micro, small, medium)
@@ -132,6 +171,21 @@
 - **Multi-Stage Ensemble** is an **Ensemble** that combines **Script Agents**, **Fan-out**, and **LLM Agents** in a gather-analyze-synthesize pattern
 - **Multi-Stage Ensemble** may follow a **Template Architecture**
 - **Fan-out** spawns parallel instances of a downstream **Agent** from an upstream array
+
+### Verification Layer
+- **Verification Script** computes quality signals for **LLM Agent** outputs
+- **Confidence-Based Selection** uses **Verification Script** scores to pick one winner from candidate outputs
+- **Architectural Complementarity** requires **Confidence-Based Selection** as its arbitration mechanism
+- **Architectural Complementarity** is measured by **Union Accuracy** (must be high) and **Contradiction Penalty** (must be low)
+- **Verification Scripts** expand ensemble-level **Competence Boundaries** by providing quality signals SLMs cannot self-produce
+
+### Memory Layer
+- **Memory Layer** stores **Provenance** for routing decisions and design outcomes
+- Both **Conductor** and **Ensemble Designer** read from and write to the **Memory Layer**
+- **Design Pattern Library** is persisted in the **Memory Layer**
+- **Provenance** links ensemble specs (Entities), calibration runs (Activities), and routing decisions (Activities that use specific configurations)
+
+### Evaluation & Learning
 - **Invocation** executes one **Ensemble** and produces one **Artifact**
 - **Artifact** contains **Token Usage** (per-agent and totals)
 - **Evaluation** scores one **Artifact** and produces one **Score** + one **Reflection**
@@ -144,10 +198,6 @@
 - **Token Savings** are computed from **Token Usage** (actual) vs estimated Claude equivalent
 - **LoRA Candidate** is flagged from a **Task Type** with 3+ poor **Evaluations** sharing a **Failure Mode**
 - **Competence Boundary** operates at two levels: agent-level (constrains individual **LLM Agents**) and ensemble-level (constrains composed systems via the **DAG Decomposability Test**)
-- **Complexity Floor** determines whether delegating a **Subtask** is worth the overhead
-- **Repetition Threshold** gates **Ensemble** creation for newly observed **Subtask** patterns
-- **Ensemble-Prepared Claude** uses a **Multi-Stage Ensemble** to prepare context, then routes the judgment phase to Claude-direct
-- **Template Architecture** is instantiated as a **Multi-Stage Ensemble** customized for a specific project or task
 
 ## Invariants
 
@@ -155,7 +205,7 @@
 
 2. **Claude is the safe default.** When the conductor cannot confidently route a subtask to a local ensemble — due to subtask complexity, missing ensembles, or insufficient evaluation history — the subtask stays with Claude.
 
-3. **Composition over scale.** The conductor prefers swarms of small models (≤7B) over reaching for larger models (12B). 12B is the ceiling, not the norm. The swarm pattern — many extractors → fewer analyzers → one synthesizer — is the primary architecture. This extends to multi-stage ensembles: scripts + small LLMs compose into systems that handle what no model alone could.
+3. **Composition over scale.** The conductor prefers swarms of small models (≤7B) over reaching for larger models (14B). 14B is the ceiling, not the norm. The swarm pattern — many extractors → fewer analyzers → one synthesizer — is the primary architecture. The ceiling tier is reserved for synthesis across 4+ upstream outputs or tasks where composition of smaller models demonstrably underperforms. This extends to multi-stage ensembles: scripts + small LLMs compose into systems that handle what no model alone could.
 
 4. **New ensembles must be calibrated.** The first 5 invocations of any new ensemble are always evaluated. No ensemble enters the "established" category without calibration data. Ensembles are usable during calibration (trust-but-verify); calibration gates skipping evaluation, not usage.
 
@@ -169,13 +219,19 @@
 
 9. **Routing config is versioned.** Every adjustment to routing thresholds creates a new version. Degradation can be rolled back to any prior version.
 
-10. **Competence boundaries operate at two levels.** Agent level: no individual LLM agent within an ensemble handles multi-step reasoning (3+ steps), complex instructions (>4 constraints), or tasks requiring world knowledge or holistic judgment — regardless of model size. Ensemble level: a composed system of script agents, fan-out LLM agents, and synthesizers can handle tasks that exceed any individual agent's competence, provided the task decomposes into a DAG where each LLM node stays within agent-level boundaries. Tasks are genuinely Claude-only only when they require recursive reconsideration, interacting constraints, holistic judgment, novel insight, or aesthetic judgment that no decomposition can produce.
+10. **Competence boundaries operate at two levels.** Agent level: no individual LLM agent within an ensemble handles multi-step reasoning (3+ steps), complex instructions (>4 constraints), or tasks requiring world knowledge or holistic judgment — regardless of model size. Ensemble level: a composed system of script agents (including ML-equipped verification scripts), fan-out LLM agents, and synthesizers can handle tasks that exceed any individual agent's competence, provided the task decomposes into a DAG where each LLM node stays within agent-level boundaries. ML-equipped verification scripts expand what is practically ensemble-delegable by providing quality signals that SLMs cannot self-produce (embedding similarity, NLI consistency, entropy analysis). Tasks are genuinely Claude-only only when they require recursive reconsideration, interacting constraints, holistic judgment, novel insight, or aesthetic judgment that no decomposition can produce.
 
-11. **Ensembles carry their dependencies.** When promoting an ensemble, the conductor checks that all referenced profiles exist at the destination tier and offers to copy missing ones. For multi-stage ensembles, the conductor also verifies script portability: no hardcoded project paths, declared Python/system dependencies available at the destination. A promoted ensemble must be runnable at its destination.
+11. **Ensembles carry their dependencies.** When promoting an ensemble, the designer checks that all referenced profiles exist at the destination tier and offers to copy missing ones. For multi-stage ensembles, the designer also verifies script portability: no hardcoded project paths, declared Python/system dependencies available at the destination. A promoted ensemble must be runnable at its destination.
 
-12. **The conductor is the workflow architect.** When invoked with a meta-task, the conductor decomposes it into subtasks and designs a workflow plan that maximizes local model leverage — reserving Claude for subtasks that genuinely require frontier reasoning. The conductor owns the workflow, not individual routing decisions in isolation.
+12. **The conductor is the workflow architect; the designer is the instrument builder.** The conductor owns the workflow lifecycle: decomposition, routing, invocation, evaluation, adaptation, and token tracking. The ensemble designer owns ensemble composition: DAG architecture, profile selection, script authoring, verification script integration, calibration interpretation, promotion, and design knowledge accumulation. They coordinate via artifacts — routing needs and evaluation data flow from conductor to designer; validated ensembles and design knowledge flow back. The user gates transitions between them.
 
 13. **Workflow plans precede execution.** The conductor presents its workflow plan — decomposition, delegation assignments, ensemble creation needs, and estimated savings — to the user before beginning work on a meta-task.
+
+14. **Verification replaces self-assessment.** Quality signals within ensemble DAGs come from classical ML in verification scripts (embedding models, NLI classifiers, entropy computation), not from LLM self-verification. SLMs under ~13B cannot reliably assess their own output quality. When an ensemble requires quality arbitration between candidate outputs, a verification script provides the signal deterministically.
+
+15. **Complementarity is conditional, not default.** Architectural complementarity — running two different model architectures on the same task — is applied only when: (a) the task involves reasoning or verification with determinable correct answers, (b) union accuracy for the model pair is high, (c) contradiction penalty is low, and (d) the arbitration mechanism is confidence-based selection, not synthesis. Self-MoA (same model repeated) outperforms mixed-model MoA for open-ended generation. Debate between models is strictly worse than independent generation plus arbitration.
+
+16. **Every ensemble is an experiment.** The ensemble designer treats each ensemble as an experiment generating design knowledge. Calibration data, DAG shape choices, profile pairings, verification script effectiveness, and failure modes are recorded in the design pattern library. The system learns to build better instruments with each instrument it builds.
 
 ## Amendment Log
 
@@ -190,3 +246,9 @@
 | 7 | 2026-02-20 | Inv 3 | **STRENGTHENED** — Extended "composition over scale" to explicitly include multi-stage ensembles (scripts + small LLMs compose into systems) | Consistent with prior wording; no documents contradict |
 | 8 | 2026-02-21 | Inv 10 | **AMENDED** — Added "aesthetic judgment" to irreducible Claude-only criteria. Audit found ADR-012 and essay listed 5 criteria but invariant listed only 4 | ADR-012 now consistent with invariant |
 | 9 | 2026-02-21 | Inv 11 | **STRENGTHENED** — Extended from "profile dependencies" to "all dependencies" including script portability for multi-stage ensembles | ADR-013 script promotion guidance now has invariant backing |
+| 10 | 2026-02-23 | Inv 3 | **AMENDED** — Ceiling raised from 12B to 14B. Added: "ceiling tier is reserved for synthesis across 4+ upstream outputs or tasks where composition of smaller models demonstrably underperforms." Principle (composition over scale) preserved; specific number updated to reflect available models (qwen3:14b) and inference scaling crossover evidence | SKILL.md §Ensemble Composition ceiling references need update from 12B→14B. ADR-005 ceiling rule needs update. Conductor Profile definition updated (gemma3:12b→qwen3:14b) |
+| 11 | 2026-02-23 | Inv 10 | **AMENDED** — Added: "ML-equipped verification scripts expand what is practically ensemble-delegable by providing quality signals that SLMs cannot self-produce (embedding similarity, NLI consistency, entropy analysis)." Verification scripts are a new capability dimension in the DAG decomposability test's "script-absorbable" condition | SKILL.md competence boundary section needs update. DAG decomposability test now explicitly accounts for ML-equipped scripts. New concept: Verification Script |
+| 12 | 2026-02-23 | Inv 12 | **AMENDED** — Expanded from "the conductor is the workflow architect" to a dual-responsibility statement: conductor owns workflow lifecycle, designer owns ensemble composition. Added artifact-based coordination mechanism and user-gated transitions | SKILL.md needs structural split: orchestration sections stay in conductor, composition/promotion/LoRA sections move to designer skill. All ADRs referencing "conductor composes" need review. Actions table split: 6 actions moved from Conductor to Ensemble Designer |
+| 13 | 2026-02-23 | Inv 14 | **ADDED** — Verification replaces self-assessment. Quality signals from classical ML in verification scripts, not LLM self-verification. SLMs under ~13B cannot reliably self-verify | New concept: Verification Script. Ensemble design patterns that rely on LLM-based quality judgment within the ensemble need redesign. SKILL.md evaluation section (Claude as judge) is unaffected — this invariant is about within-ensemble verification, not conductor-level evaluation |
+| 14 | 2026-02-23 | Inv 15 | **ADDED** — Complementarity is conditional. Applied only for reasoning/verification tasks with high union accuracy, low contradiction penalty, and confidence-based selection. Not for generation. Debate is worse than independent generation + arbitration | New concepts: Architectural Complementarity, Confidence-Based Selection, Union Accuracy, Contradiction Penalty. Design patterns using complementarity must include measurement gates |
+| 15 | 2026-02-23 | Inv 16 | **ADDED** — Every ensemble is an experiment. Designer accumulates design knowledge in the pattern library | New concepts: Design Pattern Library, Ensemble Designer. Reinforces the "laboratory" framing from the essay |

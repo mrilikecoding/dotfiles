@@ -33,6 +33,8 @@ from the second session onward. Create starter kit?
 
 The user decides (Invariant 1). Starter kit ensembles enter calibration like any new ensemble (Invariant 4). Once calibrated with good evaluations, they are candidates for promotion to global tier (Invariant 6).
 
+> **Superseded by ADR-015:** Ensemble creation is now the Ensemble Designer's responsibility. The conductor proposes the starter kit; the designer composes the ensembles.
+
 Starter kit ensemble designs follow ADR-005 (swarm as default pattern), sized appropriately — most are single-agent since they handle single-concern subtasks.
 
 ## Consequences

@@ -1,769 +1,518 @@
-# Research Log: Ensemble-as-System — Expanding Delegability Through Composition
+# Research Log: Purpose-Built vs. General-Purpose Ensemble Composition
 
-## Question 1: What "Claude-only" task patterns become delegable when ensembles use script agents, fan-out, and meta-agent orchestration?
+## Question 1: Does the evidence favor task-specific purpose-built pipelines or general-purpose self-routing ensembles for SLMs under ~14B?
 
-**Method:** Analysis of llm-orc's full capability set (script agents, fan-out/fan-in, ensemble agents, input key selection, conditional dependencies, primitives) applied systematically against each current Claude-only task type and competence boundary. Used the self-evaluation meta-task as a worked example.
+**Method:** Web search across routing systems, ensemble architectures, cascade designs, fine-tuning benchmarks, and surveys (2023-2025). Targeted: RouteLLM, FrugalGPT, AutoMix, SLM-MUX, DisCIPL, MixLLM, Cascade Routing, Speculative Cascades, NVIDIA SLM agents survey, SLM-LLM Collaboration Survey, RouterArena.
 
 **Findings:**
 
-### The capability gap was misidentified
+The evidence converges strongly: **task-specific pipeline compositions outperform general-purpose self-routing ensembles for SLMs under ~14B**. But the nuance matters — the strongest systems are heterogeneous, task-aware, and structured as pipelines with escalation.
 
-The prior research drew competence boundaries around **individual LLM agent capabilities**: small models can't do cross-file analysis, multi-step reasoning, or complex judgment. This is true — but it conflates the agent with the ensemble.
+### Key evidence points
 
-llm-orc ensembles are not "groups of small LLMs." They are **programmable systems** with three agent types:
+1. **General-purpose routers fail out-of-distribution.** RouteLLM (UC Berkeley/Anyscale, ICLR 2025): routers trained on 65K chatbot preference pairs performed at near-random on MMLU. Adding just ~1,500 task-specific samples fixed it. General routers generalize across model pairs but NOT across task domains.
 
-1. **Script agents** — arbitrary Python/bash that takes JSON in, returns JSON out. Can run any tool: file I/O, web search, static analysis, ML classifiers, test runners, parsers. No LLM reasoning needed.
-2. **LLM agents** — small models doing bounded reasoning tasks (extraction, classification, summarization).
-3. **Ensemble agents** — recursive composition, invoking entire sub-ensembles as pipeline steps.
+2. **Routing collapse is real.** Lai & Ye (2025): general-purpose routers systematically default to the most expensive model. Root cause: scalar score prediction creates an "objective-decision mismatch" — small prediction errors flip orderings for closely-matched models. Rank-based routing (EquiRouter) reduces cost ~17%.
 
-Plus orchestration primitives: fan-out/fan-in over arrays, input key selection for routing, conditional dependencies for branching, parallel execution of independent agents.
+3. **Fine-tuned SLMs dramatically outperform general-purpose models on specific tasks.** Distil Labs: Qwen3-4B matched a 120B teacher on 7/8 tasks, outperformed by 19 points on SQuAD 2.0. A 0.6B model: 90.9% accuracy vs. 87.5% for the 120B teacher at 40ms latency.
 
-The critical insight: **scripts handle the parts that make tasks "Claude-only."** Cross-file gathering? A script globs and reads files. Multi-step sequencing? The pipeline enforces step order. Knowledge retrieval? A script calls a search API. The LLM agents within the ensemble only need to handle bounded, single-concern tasks — well within small model competence.
+4. **Optimal ensemble composition is task-dependent.** SLM-MUX (2025): optimal model count varies by benchmark — 2 for GPQA/GSM8K, 5+ for MATH. What makes models complementary (union accuracy vs. contradiction penalty) is task-specific. No single ensemble configuration works universally.
 
-### Systematic re-examination of Claude-only types
+5. **Task-specific decomposition + SLM followers beats GPT-4o.** DisCIPL (MIT/Yale, 2025): a 1B model with task-specific program generation jumped from 0.07 to 0.76 on constrained generation, dramatically outperforming GPT-4o (0.32). 80.2% cost savings.
 
-**1. Cross-file code analysis → DELEGABLE via ensemble**
+6. **Cascade architectures work best with task-specific stopping criteria.** FrugalGPT: 98% cost reduction with learned per-task quality scoring. Cascade Routing (ETH Zurich, ICLR 2025): optimal strategy is task-dependent — the framework derives different configurations for different quality/cost tradeoffs.
 
-Current boundary: "requires understanding relationships across multiple files"
+7. **The industry consensus is moving to heterogeneous multi-SLM systems.** Belcak & Heinrich (NVIDIA, 2025): "Lego-like composition of agentic intelligence — scaling out by adding small, specialized experts instead of scaling up." Case studies: 40-70% of agent invocations replaceable by SLMs.
 
-Ensemble pattern:
-```
-script: glob files, read contents, parse structure →
-  fan-out LLM: analyze ONE file each (bounded extraction) →
-    LLM synthesizer: combine per-file findings
-```
+8. **No single router dominates across all metrics.** RouterArena (2025): 8,400 queries across 9 domains. GPT-5 ranks 7th, NotDiamond ranks 12th. The tradeoff surface is inherently task-dependent.
 
-No individual agent does cross-file analysis. Scripts gather across files. LLMs analyze within bounded scope. The synthesizer combines structured per-file outputs — a simpler task than analyzing raw files from scratch.
+### What this means for the two strategies
 
-**2. Multi-step reasoning (3+ steps) → CONDITIONALLY DELEGABLE**
+**Strategy A (llm-conductor SKILL.md):** Claude as orchestrator, purpose-built ensembles per task type. Each ensemble is a bespoke DAG designed for one job. The conductor is the intelligence; the ensemble is the instrument.
 
-Ensemble pattern:
-```
-agent-step-1: perform reasoning step 1 →
-  agent-step-2: perform step 2 using step 1's output →
-    agent-step-3: perform step 3 using step 2's output
-```
+**Strategy B (synthesis):** General-purpose ensembles with internal routing (classifier → parallel analysts → synthesizer). The ensemble internalizes its own task awareness. Claude is one composable profile among several.
 
-Each agent does ONE reasoning step. The pipeline enforces sequencing. Works when steps are decomposable — each step's input is fully specified by the previous step's output.
+The evidence favors Strategy A's core premise: **task-specific compositions outperform general-purpose ones**. But Strategy B contributes valid patterns that A should absorb:
 
-**Remains Claude-only when:** Steps require backtracking or recursive reconsideration (step 3 needs to revise step 1 in light of step 2).
+- **Architectural complementarity** (Qwen + Mistral on the same task) is well-supported by SLM-MUX's "union accuracy" evidence
+- **Confidence-based cascade** (cheap first, escalate when confidence is low) is well-supported by FrugalGPT, AutoMix, Cascade Routing
+- **Role-based profiles** (router, analyst, reasoner, synthesizer) carry more semantic information than tier-based profiles
 
-**3. Debugging → PARTIALLY DELEGABLE**
+### What neither strategy addresses: the laboratory
 
-Ensemble pattern:
-```
-script: run tests, capture output, parse stack traces →
-  script: identify relevant source files from traces →
-    fan-out LLM: analyze each layer/component in isolation →
-      LLM synthesizer: combine per-layer hypotheses
-```
+Both strategies treat ensemble design as a means to an end (getting work done). But if purpose-built ensembles are systematically better, then **the process of building them is the most valuable activity** — not just as infrastructure, but as a learning loop. Every ensemble created is an experiment that generates data about what works: which profiles, which DAG shapes, which script patterns, which task decompositions.
 
-Script agents run tests, parse traces, identify files — all mechanical. Each LLM analyzes one component. The synthesizer combines hypotheses for obvious failures.
+This connects to a question the user raised: the RDD skill decomposition approach — separate skills for research, modeling, decision, and building — might apply here. The conductor currently does both ensemble *design* and workflow *orchestration*. These are different concerns with different knowledge requirements.
 
-**Remains Claude-only:** Subtle cross-layer interactions (callback chains, race conditions, type mismatches across interfaces) where the insight requires seeing the whole picture simultaneously.
-
-**4. Knowledge-intensive Q&A → DELEGABLE via web search**
-
-Ensemble pattern:
-```
-script: perform web searches via API →
-  script: parse results into structured data →
-    fan-out LLM: extract/summarize each result →
-      LLM synthesizer: combine into answer
-```
-
-Web search provides the knowledge. LLM agents extract from bounded results — that's summarization, well within competence.
-
-**Remains Claude-only:** Nuanced synthesis across domains, or questions requiring reasoning about retrieved knowledge rather than retrieving it.
-
-**5. Security analysis → PARTIALLY DELEGABLE**
-
-Ensemble pattern:
-```
-script: run bandit/semgrep/safety tools →
-  script: parse tool output into structured findings →
-    fan-out LLM: classify and explain each finding →
-      LLM synthesizer: prioritize and summarize
-```
-
-Security tools do detection. LLMs classify known patterns. The existing `security-review` ensemble in llm-orc already demonstrates this.
-
-**Remains Claude-only:** Novel vulnerability analysis (finding what tools don't detect).
-
-**6. Architectural design → GATHERING DELEGABLE, JUDGMENT CLAUDE-ONLY**
-
-An ensemble can prepare a comprehensive structured brief (file structure, dependency graph, existing patterns, per-component analysis). But the design *choice* — which approach, which pattern — requires judgment small models lack.
-
-**Value:** Reduces Claude's work from "read 15 files and design" to "review this structured analysis and decide."
-
-**7. Multi-constraint code generation → CLAUDE-ONLY when constraints interact**
-
-Truly interacting constraints can't be decomposed. If constraint 3 affects how constraint 1 should be implemented, a single reasoning context is needed.
-
-**Exception:** If constraints are independent (affect different parts of the code), they can be handled by separate agents.
-
-**8. Judgment (design taste, naming, API shape) → GENUINELY CLAUDE-ONLY**
-
-No ensemble architecture compensates for the fundamental capability gap. Aesthetic and design judgment requires broad training and nuanced reasoning.
-
-### Summary: the revised competence boundary map
-
-| Task Pattern | Old Classification | New Classification | Enabling Pattern |
-|-------------|-------------------|-------------------|-----------------|
-| Cross-file code analysis | Claude-only | **Delegable** | Script gather → fan-out LLM → synthesize |
-| Multi-step reasoning (decomposable) | Claude-only | **Delegable** | Pipeline of single-step agents |
-| Multi-step reasoning (recursive) | Claude-only | Claude-only | Steps interdependent |
-| Debugging (evidence gathering + per-layer) | Claude-only | **Delegable** | Script test/parse → fan-out LLM → synthesize |
-| Debugging (novel cross-layer insight) | Claude-only | Claude-only | Requires holistic view |
-| Knowledge-intensive Q&A (factual) | Claude-only | **Delegable** | Script search → LLM extract → synthesize |
-| Knowledge-intensive Q&A (nuanced) | Claude-only | Claude-only | Requires reasoning about knowledge |
-| Security analysis (tool-based) | Claude-only | **Delegable** | Script scan → LLM classify → synthesize |
-| Security analysis (novel) | Claude-only | Claude-only | Requires deep expertise |
-| Architectural design (information gathering) | Claude-only | **Delegable** | Script gather → fan-out LLM analyze |
-| Architectural design (choice) | Claude-only | Claude-only | Requires judgment |
-| Multi-constraint code gen (interacting) | Claude-only | Claude-only | Constraints can't be decomposed |
-| Multi-constraint code gen (independent) | Claude-only | **Delegable** | Separate agents per constraint |
-| Judgment (taste, naming, API shape) | Claude-only | Claude-only | Fundamental capability gap |
-
-### Worked example: the self-evaluation meta-task
-
-I classified the entire self-evaluation as "Claude-direct — every subtask required cross-file judgment and multi-step reasoning." Revisiting with ensemble capabilities:
-
-| Subtask | Original | Ensemble Architecture | Revised |
-|---------|----------|----------------------|---------|
-| SKILL.md consistency | Claude-only | Script: parse invariant refs, section refs, MCP table → fan-out LLM: check each ref → synthesizer | ~70% delegable |
-| Vocabulary cross-check | Claude-only | Script: extract concepts from domain model → script: find occurrences in SKILL.md → fan-out LLM: compare each → synthesizer | ~80% delegable |
-| ADR verification | Claude-only | Script: extract ADR decisions → fan-out LLM: check each against SKILL.md section → synthesizer | ~75% delegable |
-| Scenario coverage | Claude-only | Script: parse scenarios → script: parse SKILL.md behaviors → fan-out LLM: check each pairing → synthesizer | ~70% delegable |
-| Readiness assessment | Claude-only | Requires judgment synthesis across all findings | Claude-only |
-
-What I called "entirely Claude-direct" was **~70% delegable.** Scripts handle cross-file gathering and parsing. Fan-out LLMs each do one bounded comparison. Only the final judgment synthesis is genuinely Claude-only.
-
-### The recurring ensemble architecture
-
-A dominant pattern emerges across all these re-examinations:
-
-```
-script: gather/parse/structure (mechanical, no LLM needed) →
-  fan-out LLM: bounded analysis of each item (extraction/comparison) →
-    LLM synthesizer: combine structured findings (summarization)
-```
-
-This is the **gather → analyze → synthesize** pattern. Each stage operates within clear competence boundaries:
-- **Gather:** Script agents — unlimited capability (any Python/bash)
-- **Analyze:** Small LLM agents — bounded, single-item, single-concern
-- **Synthesize:** Medium LLM agent — combining structured outputs (easier than raw analysis)
-
-The pattern works because scripts absorb the complexity that makes tasks "Claude-only." The LLM agents never see the full cross-file picture — they see one file, one comparison, one item at a time.
-
-### Implications
-
-1. **Invariant 10 needs amendment.** The competence boundaries should apply to individual *agent tasks within an ensemble*, not to the overall task the ensemble handles. An ensemble can handle cross-file analysis even though no individual agent can.
-
-2. **The task type taxonomy needs a third category.** Not just "delegable" and "Claude-only" but also "ensemble-delegable" — tasks that exceed individual agent competence but become delegable through script + fan-out + synthesis composition.
-
-3. **The conductor's delegation potential is much larger than estimated.** The prior analysis found 52% of subtasks delegable in the PromotionHandler session. With ensemble-as-system patterns, many of the remaining 48% become partially delegable (the gathering/analysis portion, with Claude handling only the judgment portion).
-
-4. **Script agents are the key enabler.** Without scripts, ensembles are limited to what LLM agents can do alone. With scripts, ensembles can gather, parse, search, run tools, invoke APIs — making the LLM agents' jobs simpler and more bounded.
-
-5. **The self-evaluation demonstrates this concretely.** A task I classified as 100% Claude-direct was ~70% delegable once I designed ensemble architectures using scripts and fan-out.
+**Implications:**
+- Strategy A is the stronger foundation, but should absorb Strategy B's complementarity and cascade patterns
+- The "laboratory" framing reframes ensemble creation from overhead to learning investment
+- The skill-split question (conductor vs. ensemble designer) needs its own investigation
+- The model profiles in the synthesis need updating to match available models (qwen3 family, not qwen2.5)
 
 **Sources:**
-- llm-orc source code analysis (script agents, fan-out, ensemble agents, input key selection)
-- llm-orc ensemble YAML examples (routing-demo, semantic-extraction, security-review, fan-out-test)
-- llm-orc ADRs: ADR-001 (Pydantic schemas), ADR-013 (ensemble agents), ADR-014 (input key selection)
-- Self-evaluation worked example from this session
+- RouteLLM: arXiv:2406.18665 (ICLR 2025)
+- Routing Collapse: arXiv:2602.03478
+- "Doing More with Less" Survey: arXiv:2502.00409
+- Distil Labs SLM Benchmark: distillabs.ai/blog
+- DisCIPL: MIT/Yale (MarkTechPost coverage)
+- SLM-MUX: arXiv:2510.05077
+- FrugalGPT: arXiv:2305.05176 (TMLR 2024)
+- Cascade Routing: arXiv:2410.10347 (ICLR 2025)
+- AutoMix: arXiv:2310.12963 (NeurIPS 2024)
+- MixLLM: NAACL 2025
+- Speculative Cascades: arXiv:2405.19261 (ICLR 2025)
+- Belcak & Heinrich (NVIDIA): arXiv:2506.02153
+- SLM-LLM Collaboration Survey: arXiv:2510.13890
+- RouterArena: arXiv:2510.00202
 
 ---
 
-## Question 2: What are the concrete ensemble architectures for these expanded patterns?
+## Question 2: Where should routing intelligence live — external orchestrator, internal self-routing, or hybrid?
 
-**Method:** Design-from-capabilities — applying llm-orc's full feature set (script agents, fan-out/fan-in, ensemble agents, input key selection, conditional dependencies, existing primitives) to design specific ensemble architectures for real use cases. Grounded in available Ollama models (qwen3:0.6b, gemma3:1b, gemma3:12b, llama3, mistral) and existing primitives (file_ops, data_transform, control_flow, user_interaction).
+**Method:** Web search across multi-agent frameworks (LangGraph, CrewAI, MetaGPT, AutoGen, OpenAI Swarm, Google ADK), trained routers (RouteLLM, xRouter, Router-R1, MixLLM, SCORE), self-routing systems (AutoMix, ModelSwitch, Self-REF), hybrid systems (FrugalGPT, Cascade Routing, MoA), and the Google DeepMind scaling agent systems study.
 
 **Findings:**
 
-### The gather → analyze → synthesize meta-pattern
-
-Q1 identified a dominant architecture across all expanded delegability patterns. Q2 makes it concrete with five ensemble designs, each targeting a previously Claude-only task pattern. All five share the same three-stage structure:
-
-| Stage | Agent Type | Role | Competence Level |
-|-------|-----------|------|-----------------|
-| **Gather** | Script agent(s) | File I/O, parsing, searching, tool execution | Unlimited (any Python/bash) |
-| **Analyze** | Fan-out LLM agents | Bounded, single-item reasoning | Micro/small (0.6B-1B) |
-| **Synthesize** | LLM agent | Combine structured per-item outputs | Small/medium (1B-7B) |
-
-The key insight: **scripts absorb task complexity so LLM agents never exceed their competence.** A cross-file analysis task becomes N single-file extraction tasks plus one structured-output synthesis task.
-
-### Architecture 1: Document Consistency Checker
-
-**Replaces:** Cross-file analysis (self-evaluation pattern)
-**Use cases:** Vocabulary audits, invariant cross-referencing, ADR-to-implementation verification, scenario coverage checks
-
-```yaml
-name: document-consistency-check
-description: >
-  Compare structured elements across multiple documents for consistency.
-  Script parses documents into element pairs, LLM checks each pair,
-  synthesizer produces a consistency report.
-
-agents:
-  - name: document-parser
-    script: scripts/conductor/parse_documents.py
-    parameters:
-      extract: [terms, invariant_refs, cross_refs, schemas]
-      # Returns array of {element_type, element_name, source_doc,
-      # source_text, target_doc, target_text} — one per comparison
-
-  - name: element-checker
-    model_profile: conductor-micro   # qwen3:0.6b
-    depends_on: [document-parser]
-    fan_out: true
-    output_format: json
-    system_prompt: |
-      Compare a single element between source and target documents.
-      Return JSON:
-      {
-        "element": "name",
-        "status": "matched | mismatched | missing",
-        "source_text": "...",
-        "target_text": "... | null",
-        "issue": "description if mismatched/missing, null if matched"
-      }
-
-  - name: report-synthesizer
-    model_profile: conductor-small   # gemma3:1b
-    depends_on: [element-checker]
-    system_prompt: |
-      Group comparison results by status (matched, mismatched, missing).
-      Produce a structured consistency report with:
-      - Summary counts
-      - Mismatched items with details
-      - Missing items
-      Keep it concise.
-```
-
-**Script requirements:** `parse_documents.py` — reads multiple markdown files, uses regex to extract terms from tables, invariant references (`Invariant \d+`), section cross-references, JSON schema fields. Returns a fan-out array of comparison pairs.
-
-**Per-agent task complexity:** Each element-checker sees one comparison pair — a bounded string comparison with context. Well within 0.6B competence. The synthesizer combines structured JSON outputs — a summarization task for a 1B model.
-
-**Estimated savings vs. Claude-direct:** The self-evaluation used ~35K Claude tokens across 4 parallel agents. This ensemble would use ~0 Claude tokens for the gathering/comparison work, reserving Claude only for the final severity assessment and recommendations.
-
-### Architecture 2: Cross-File Code Analyzer
-
-**Replaces:** Cross-file code analysis
-**Use cases:** Pattern extraction across codebases, dependency mapping, convention checking, pre-design briefs
-
-```yaml
-name: cross-file-analyzer
-description: >
-  Analyze structural patterns and conventions across multiple code files.
-  Script discovers and reads files, LLM extracts structure per-file,
-  synthesizer identifies cross-file patterns.
-
-agents:
-  - name: file-discoverer
-    script: scripts/conductor/discover_files.py
-    parameters:
-      patterns: ["**/*.py"]
-      exclude: ["**/test_*", "**/__pycache__/**"]
-      # Returns {data: [{path, size, modified}]}
-
-  - name: file-reader
-    script: scripts/conductor/read_and_chunk.py
-    depends_on: [file-discoverer]
-    fan_out: true
-    parameters:
-      max_chunk_lines: 150
-      # Reads one file, chunks if large
-      # Returns {data: [{path, chunk_index, content, lines}]}
-
-  - name: structure-extractor
-    model_profile: conductor-micro   # qwen3:0.6b
-    depends_on: [file-reader]
-    fan_out: true
-    output_format: json
-    system_prompt: |
-      Extract structural elements from this code chunk:
-      {
-        "file": "path",
-        "classes": [{"name": "...", "bases": [...], "methods": [...]}],
-        "functions": [{"name": "...", "params": [...], "returns": "..."}],
-        "imports": ["..."],
-        "decorators": ["..."],
-        "constants": ["..."]
-      }
-
-  - name: pattern-synthesizer
-    model_profile: conductor-small   # gemma3:1b
-    depends_on: [structure-extractor]
-    system_prompt: |
-      You receive structural extractions from multiple code files.
-      Identify:
-      1. Common patterns (repeated class shapes, shared bases)
-      2. Import dependencies between files
-      3. Convention violations (inconsistent naming)
-      4. Structural summary
-      Return structured analysis, not file-by-file listing.
-```
-
-**Double fan-out:** file-discoverer → N files → file-reader fans out per file → M chunks → structure-extractor fans out per chunk. Handles arbitrarily large codebases without any single agent seeing more than 150 lines.
-
-**Script requirements:**
-- `discover_files.py` — wraps glob, returns file paths array
-- `read_and_chunk.py` — reads one file (from fan-out), chunks by line count, returns chunks array for secondary fan-out
-
-**What Claude still does:** With the structured brief from this ensemble, Claude can make design decisions in a fraction of the tokens — reviewing a structured analysis instead of reading 15 raw files.
-
-### Architecture 3: Knowledge-Augmented Research
-
-**Replaces:** Knowledge-intensive Q&A
-**Use cases:** Technology comparison, library capability research, "what does X support?", factual questions beyond model training data
-
-```yaml
-name: knowledge-researcher
-description: >
-  Answer knowledge-intensive questions by searching the web,
-  extracting relevant facts, and synthesizing an answer.
-
-agents:
-  - name: web-searcher
-    script: scripts/conductor/web_search.py
-    parameters:
-      max_results: 10
-      # Calls search API, returns {data: [{url, title, snippet}]}
-
-  - name: content-parser
-    script: scripts/conductor/parse_html.py
-    depends_on: [web-searcher]
-    fan_out: true
-    parameters:
-      max_chars: 3000
-      # Fetches URL, strips HTML, returns {url, title, clean_text}
-
-  - name: result-extractor
-    model_profile: conductor-small   # gemma3:1b
-    depends_on: [content-parser]
-    fan_out: true
-    output_format: json
-    system_prompt: |
-      Extract ONLY information relevant to the research question.
-      Return JSON:
-      {
-        "source_url": "...",
-        "relevant_facts": ["fact 1", "fact 2"],
-        "confidence": 0.0-1.0,
-        "contradicts_other_sources": false
-      }
-
-  - name: answer-synthesizer
-    model_profile: conductor-medium   # llama3
-    depends_on: [result-extractor]
-    system_prompt: |
-      Synthesize extracted facts from multiple web sources.
-      Note contradictions between sources. Cite source URLs.
-      Produce a concise, sourced answer.
-```
-
-**Script requirements:**
-- `web_search.py` — calls DuckDuckGo/SearXNG API, returns results array
-- `parse_html.py` — fetches URL, strips HTML with BeautifulSoup, truncates to max_chars
-
-**Per-agent complexity:** Each result-extractor sees one web page's clean text + a question — bounded extraction. The synthesizer combines 10 structured extraction results — a summarization task.
-
-**What remains Claude-only:** Questions requiring nuanced synthesis across domains, interpreting ambiguous or conflicting information, or reasoning about implications of retrieved knowledge.
-
-### Architecture 4: Multi-File Test Generator
-
-**Replaces/expands:** generate-test-cases starter kit ensemble
-**Use cases:** Generate test cases across a codebase following established patterns, test gap analysis
-
-```yaml
-name: test-generator
-description: >
-  Discover test patterns, identify untested functions, and generate
-  test cases following established conventions.
-
-agents:
-  - name: test-discoverer
-    script: scripts/conductor/discover_test_targets.py
-    parameters:
-      test_patterns: ["**/test_*.py", "**/*_test.py"]
-      source_patterns: ["**/*.py"]
-
-  - name: pattern-extractor
-    script: scripts/conductor/extract_test_pattern.py
-    depends_on: [test-discoverer]
-    parameters:
-      max_example_tests: 3
-      # Uses AST to extract fixture style, assertion patterns,
-      # mock setup, import conventions from existing tests
-
-  - name: gap-finder
-    script: scripts/conductor/find_untested_functions.py
-    depends_on: [test-discoverer, pattern-extractor]
-    # Compares source function signatures against test names
-    # Returns array of {function_name, signature, file, source_code,
-    #   test_pattern, fixture_setup}
-
-  - name: test-writer
-    model_profile: conductor-small   # gemma3:1b
-    depends_on: [gap-finder]
-    fan_out: true
-    system_prompt: |
-      Generate one test case following the demonstrated pattern.
-      Match import style, fixture naming, assertion style, mock patterns.
-      Return ONLY the test function code, no imports or class wrapper.
-
-  - name: syntax-validator
-    script: scripts/conductor/validate_python_syntax.py
-    depends_on: [test-writer]
-    fan_out: true
-    # Runs ast.parse() on each test, returns pass/fail + error
-```
-
-**The power here:** Four script agents do all the hard work — AST parsing, pattern extraction, gap analysis, syntax validation. The LLM's job is reduced to template-fill: "given this demonstrated pattern and this function signature, produce a test." That's exactly the task type small models handle well.
-
-**Script requirements:**
-- `discover_test_targets.py` — glob for test + source files, pair them
-- `extract_test_pattern.py` — AST-parse example tests, extract patterns as structured data
-- `find_untested_functions.py` — compare source function names vs test names, return gaps
-- `validate_python_syntax.py` — `ast.parse()` on generated code, return pass/fail
-
-### Architecture 5: Debugging Evidence Gatherer
-
-**Partially replaces:** Debugging
-**Use cases:** Test failure analysis, error categorization, debugging prioritization
-
-```yaml
-name: debug-evidence-gatherer
-description: >
-  Run tests, parse failures, analyze each failure in isolation,
-  and produce a structured debugging brief.
-
-agents:
-  - name: test-runner
-    script: scripts/conductor/run_tests_capture.py
-    parameters:
-      command: "pytest -v --tb=long"
-      timeout: 120
-      # Returns {stdout, stderr, exit_code, duration}
-
-  - name: failure-parser
-    script: scripts/conductor/parse_test_failures.py
-    depends_on: [test-runner]
-    # Extracts: test name, error type, traceback,
-    # referenced source files + line numbers
-    # Returns {data: [{test, error, traceback, source_files}]}
-
-  - name: source-reader
-    script: primitives/file_ops/read_file.py
-    depends_on: [failure-parser]
-    fan_out: true
-    # Reads each file referenced in tracebacks
-
-  - name: failure-analyst
-    model_profile: conductor-small   # gemma3:1b
-    depends_on: [source-reader, failure-parser]
-    fan_out: true
-    output_format: json
-    system_prompt: |
-      Analyze one test failure in isolation. Return JSON:
-      {
-        "test_name": "...",
-        "error_type": "...",
-        "likely_cause": "description",
-        "affected_lines": [{"file": "...", "line": N}],
-        "category": "type_error | logic_error | missing_mock |
-                      import_error | assertion_error | other",
-        "fix_complexity": "trivial | moderate | complex"
-      }
-
-  - name: debug-synthesizer
-    model_profile: conductor-medium   # llama3
-    depends_on: [failure-analyst]
-    system_prompt: |
-      Group test failures by category and likely root cause.
-      Identify failures sharing a common cause.
-      Produce a debugging brief:
-      1. Summary (N failures, categories)
-      2. Likely root causes (grouped)
-      3. Investigation order (most impactful first)
-```
-
-**What it handles:** ~80% of debugging — evidence gathering, per-failure analysis, categorization, prioritization. Claude receives a structured debugging brief instead of raw test output.
-
-**What remains Claude-only:** Connecting subtle cross-component interactions, understanding why a specific test *should* have passed, novel failure modes not covered by the category taxonomy.
-
-### Cross-cutting observations
-
-**1. Script agent count matters more than LLM agent count.**
-
-Each architecture has 2-4 script agents and only 1-2 LLM agent types (with fan-out creating N instances). The scripts do the heavy lifting; the LLMs do bounded reasoning. This inverts the assumption that ensembles are primarily about LLM agents.
-
-**2. The conductor needs a script authoring protocol.**
-
-None of these scripts exist yet. The conductor must be able to create scripts as part of ensemble composition — write the Python, validate it produces correct JSON I/O, and place it in `.llm-orc/scripts/conductor/`. Claude writes the scripts (a judgment task), but the scripts then run locally without Claude.
-
-**3. Fan-out is the scalability mechanism.**
-
-Every architecture uses fan-out to parallelize work across items. This means the ensemble's cost is proportional to the number of items (files, comparisons, test cases), not to the total size of the task. N files × micro-model = still cheap.
-
-**4. The synthesizer is the quality bottleneck.**
-
-In every architecture, the synthesizer must combine N structured outputs into a coherent whole. This is the hardest LLM task in the pipeline. For simple synthesis (grouping, counting), a 1B model suffices. For synthesis requiring judgment about relative importance or subtle patterns, a 7B model or even 12B may be needed.
-
-**5. Three new profile tiers emerge.**
-
-| Profile | Model | Role |
-|---------|-------|------|
-| `conductor-micro` | qwen3:0.6b | Per-item extraction, comparison, classification |
-| `conductor-small` | gemma3:1b | Bounded analysis, template fill, simple synthesis |
-| `conductor-medium` | llama3 or gemma3:12b | Multi-source synthesis, report generation |
-
-These map to the gather→analyze→synthesize stages. The `conductor-micro` profile handles the fan-out items. The `conductor-small` handles moderate analysis. The `conductor-medium` handles synthesis.
-
-**6. Existing primitives cover ~30% of script needs.**
-
-`file_ops/read_file` and `data_transform/json_extract` are directly usable. But most architectures need custom scripts for domain-specific parsing (markdown tables, AST extraction, test output parsing, web search). The conductor should build a library of conductor-specific scripts over time.
-
-### Model availability gap
-
-The current Ollama install has qwen3:0.6b, gemma3:1b, gemma3:12b, llama3, and mistral. However, the existing profiles reference models not installed:
-- `micro-local` references `qwen2:0.5b` (not installed — qwen3:0.6b is)
-- `default-local` and `high-context-local` reference `llama3.1:8b` (not installed — llama3:latest is)
-
-The conductor should reconcile profiles with available models during pre-flight discovery and suggest updates.
-
-### Implications
-
-1. **The conductor needs a script authoring capability.** Ensemble composition now includes writing Python scripts, not just configuring LLM agents and system prompts. Claude writes the scripts; the scripts then run locally.
-
-2. **The starter kit should include these architectures as templates.** Rather than just 5 single-agent ensembles, the starter kit could include template architectures (document consistency, cross-file analysis, test generation) that the conductor customizes per-project.
-
-3. **The delegation potential is dramatically higher than the 52% estimate.** With ensemble-as-system patterns, the conductor can delegate the gathering + per-item analysis portions of even "Claude-only" tasks. Claude's role shrinks to judgment and novel insight — perhaps 20-30% of total work, not 48%.
-
-4. **Competence boundaries need a two-level rewrite.** Level 1: agent-level boundaries (what a single model can do). Level 2: ensemble-level capabilities (what a composed system can do). The conductor routes at Level 2, composes at Level 1.
-
-5. **The self-evaluation benchmarks the savings.** The 4-agent Claude evaluation used ~35K+ tokens. An ensemble doing the same gathering + comparison work would use 0 Claude tokens. Claude would only be needed for the final ~5K tokens of judgment synthesis — a ~85% reduction.
+### The DeepMind study settles it for our use case
+
+Google DeepMind's "Towards a Science of Scaling Agent Systems" (2025) — 3,975 cases across 4 benchmarks — provides the most comprehensive empirical comparison:
+
+| Architecture | Error Amplification | Token Overhead |
+|---|---|---|
+| Single Agent | 1x (baseline) | 1x |
+| Independent Multi-Agent | 17.2x | 1.58x |
+| Centralized (orchestrator) | 4.4x | 2.85x |
+| Decentralized | varies | 2.63x |
+| Hybrid | varies | 5.15x |
+
+**Critical finding: "Orchestrator capability dominates overall system performance."** The quality of the routing agent matters more than the quality of the worker agents. Centralized two-stage planning achieves the best accuracy-efficiency tradeoff. A predictive model correctly identifies the optimal coordination strategy for 87% of unseen task configurations.
+
+### Small models cannot reliably self-route
+
+The evidence is consistent: **SLMs under ~13B are poor self-verifiers.**
+
+- AutoMix (NeurIPS 2024) exists precisely because self-verification signals from small models are too noisy — hence the POMDP formulation to handle uncertainty.
+- "Small Language Models Need Strong Verifiers to Self-Correct Reasoning" (2024): models at 13B and below cannot reliably judge their own output quality.
+- ModelSwitch uses self-consistency (agreement across samples) rather than self-verification — a simpler signal that works better for small models.
+
+### The three patterns mapped to our architecture
+
+**External orchestrator (Claude as conductor):**
+- Validated by DeepMind study, RouteLLM, xRouter, Router-R1, MixLLM, SCORE
+- Lowest error amplification (4.4x vs 17.2x for independent)
+- High debuggability (explicit routing decisions)
+- For our system: Claude makes all triage/routing/evaluation decisions
+
+**Internal self-routing (ensemble routes itself):**
+- Fails for SLMs under ~13B due to self-verification limitations
+- AutoMix's POMDP is a workaround, not a validation of the pattern
+- For our system: ensembles should NOT contain their own routing logic
+
+**Hybrid (FrugalGPT pattern):**
+- External router for model selection order + internal quality judgment for stopping
+- Cascade Routing (ETH Zurich): combining routing + cascading improves performance 8-14% over either alone
+- For our system: the conductor routes externally; within an ensemble, simple confidence signals (self-consistency, not self-verification) can trigger escalation
+
+### Router overhead for small models
+
+| System | Router Type | Overhead | Cost Reduction |
+|---|---|---|---|
+| RouteLLM (BERT) | Classifier | 1-10ms | 85% |
+| xRouter | 7B LLM | Full inference pass | 60-80% |
+| AutoMix | Self-verification | ~0 latency | 50% |
+| MixLLM | Lightweight predictor | Low ms | 76% |
+| SCORE | Prediction layer | Low ms | 63% |
+
+For SLMs specifically, router overhead is a meaningful fraction of total inference cost. A BERT-class classifier (1-10ms) is negligible. A 7B router is expensive but justified for expensive downstream calls. Self-verification is essentially free but unreliable under 13B.
+
+### Implications for the conductor
+
+1. **Claude as external orchestrator is empirically validated.** The DeepMind study's finding that orchestrator capability dominates system performance directly supports the SKILL.md's architecture.
+
+2. **Ensembles should be stateless executors, not self-routing systems.** The synthesis's "classifier → analysts → synthesizer" pattern puts routing inside the ensemble. The evidence says this is wrong for SLMs — the classifier agent would need to be a capable self-verifier, which small models aren't.
+
+3. **Within-ensemble confidence signals should be simple.** Self-consistency (do multiple samples agree?) works. Self-verification (is my output correct?) doesn't, under 13B. If an ensemble needs escalation logic, it should use agreement-based signals, not quality-assessment signals.
+
+4. **The conductor's routing intelligence is a feature, not overhead.** Claude's ability to triage, evaluate, and adapt is the system's competitive advantage. Pushing routing into the ensemble would degrade it.
 
 **Sources:**
-- llm-orc source: script agent runner, fan-out coordinator, ensemble agent runner, dependency resolver, input key selection
-- llm-orc ensemble examples: semantic-extraction (script→fan-out→synthesize), routing-demo (classify→route→fan-out), fan-out-test (chunker→parallel)
-- llm-orc primitives: file_ops, data_transform, control_flow, user_interaction
-- Available Ollama models: qwen3:0.6b, gemma3:1b, gemma3:12b, llama3, mistral
+- Google DeepMind Scaling Agent Systems: arXiv:2512.08296
+- AutoMix: arXiv:2310.12963 (NeurIPS 2024)
+- Small LMs Need Strong Verifiers: arXiv:2404.17140
+- Self-Verification Limitations: arXiv:2402.08115
+- ModelSwitch: arXiv:2504.00762
+- RouteLLM: arXiv:2406.18665
+- xRouter (Salesforce): arXiv:2510.08439
+- Router-R1 (UIUC, NeurIPS 2025): arXiv:2506.09033
+- MixLLM: NAACL 2025
+- SCORE: ICLR 2025
+- FrugalGPT: arXiv:2305.05176
+- Cascade Routing (ETH Zurich): arXiv:2410.10347
+- LangGraph, CrewAI, MetaGPT, AutoGen, OpenAI Swarm, Google ADK (framework documentation)
 
 ---
 
-## Question 3: How should Invariant 10 and the competence boundary model change?
+## Question 3: Is architectural complementarity (running two different model architectures on the same task) validated for SLMs under ~14B?
 
-**Method:** Analysis — applying the findings from Q1 (revised competence map) and Q2 (concrete ensemble architectures) to redesign the competence boundary framework. Cross-referenced against existing invariants, the self-evaluation findings, and the task type taxonomy.
+**Method:** Web search targeting SLM-MUX follow-ups, model diversity in ensembles, agreement-based confidence, voting vs. synthesis, correlated errors, and inference scaling laws.
 
 **Findings:**
 
-### The conflation in current Invariant 10
+### Direct validation: SLM-MUX
 
-Current wording: "The conductor does not route multi-step reasoning (3+ steps), knowledge-intensive Q&A, or complex instructions (>4 constraints) **to local models** regardless of available model size."
+SLM-MUX (Wang et al., Oct 2025) is the strongest direct evidence. Tested on Llama 3.1 8B, Qwen2.5 7B, Mixtral 8x7B, Mistral Small 24B, Gemma 2 27B:
 
-The phrase "to local models" conflates two levels of operation:
-- Routing a task to an individual LLM agent (Level 1)
-- Routing a task to an ensemble system of scripts + LLMs + fan-out (Level 2)
+- **Mechanism:** Independent generation (models never see each other's output). Each SLM generates k samples at temperature > 0. Confidence = frequency of most common answer per model. Downstream selector picks the most confident model's answer.
+- **Results:** Two SLMs outperform Qwen 2.5 72B on GPQA and GSM8K. Best pairs: Mistral Small 24B + Qwen2.5 7B on MATH (+4.5%), GPQA (+4.4%), GSM8K (+4.3%).
+- **Key metric:** Union accuracy (at least one model is right) minus contradiction penalty (one model confidently wrong while another is right).
+- **Critical finding:** Model selection matters more than model count. Bad pairs actively hurt.
 
-Q1 and Q2 demonstrated that tasks blocked by this invariant — cross-file analysis, knowledge Q&A, decomposable multi-step reasoning — become delegable when the ensemble handles the complexity that exceeds any individual model. The invariant correctly protects individual agents but incorrectly blocks ensemble-level delegation.
+### The mechanism matters: selection vs. synthesis
 
-### The two-level competence model
+**Confidence-based selection works.** SLM-MUX picks ONE winner based on confidence. The weak model's output is simply not chosen. This avoids contamination.
 
-**Level 1: Agent-level competence (unchanged)**
+**Synthesis (merging outputs) is riskier.** "Rethinking Mixture-of-Agents" (Feb 2025): Self-MoA (same model repeated) outperforms mixed-model MoA by 6.6% on AlpacaEval 2.0. Why? When a synthesizer reads both outputs, weak model outputs contaminate the synthesis. Quality coefficient (alpha=2.558) significantly exceeds diversity coefficient (beta=1.841).
 
-What a single LLM agent within an ensemble can handle. These boundaries are correct and empirically grounded:
+**This is a task-type distinction:**
+- For **reasoning/verification tasks** (MATH, GPQA, GSM8K): complementarity + confidence selection → strong gains
+- For **open-ended generation tasks** (AlpacaEval): quality > diversity → self-MoA beats mixed-MoA
 
-- No multi-step reasoning (3+ sequential steps) per agent
-- No tasks requiring world knowledge the model lacks
-- No handling of 4+ interacting constraints simultaneously
-- No cross-document relationship understanding per agent
-- No aesthetic or design judgment
+### Independent + arbitrate beats debate
 
-Every LLM node in every Q2 architecture respects these boundaries. A fan-out agent sees one file, one comparison, one item. The boundaries constrain ensemble *composition*, not ensemble *routing*.
+Multiple independent confirmations:
+- "Debate or Vote" (NeurIPS 2025 spotlight): multi-agent debate induces a martingale — it doesn't systematically improve beliefs. On GSM8K with Qwen2.5-7B: voting = 0.9400, debate = 0.8533. **Voting beat debate.**
+- "Can LLM Agents Really Debate?" (Nov 2025): "Current MAD methods fail to consistently outperform simpler single-agent strategies." Eloquent but incorrect agents sway correct ones.
 
-**Level 2: Ensemble-level capability (new)**
+This validates the SKILL.md's existing approach: agents never see each other's output, only the synthesizer does.
 
-What a composed system can handle, provided each individual agent stays within Level 1. An ensemble can handle a task that exceeds any individual agent's competence when four conditions hold:
+### Correlated errors bound the benefit
 
-1. **DAG-decomposable** — the task decomposes into a directed acyclic graph of agents. No cycles, no backtracking.
-2. **Script-absorbable** — the non-LLM complexity (file I/O, parsing, searching, tool execution) can be handled by script agents.
-3. **Fan-out-parallelizable** — the LLM work can be divided into bounded per-item tasks via fan-out.
-4. **Structured-synthesizable** — the synthesis step combines structured per-item outputs, not raw unstructured data.
+"Correlated Errors in Large Language Models" (Jun 2025): On leaderboard datasets, models agree 60% of the time when both err (vs 33% random baseline). Cross-family correlation is substantial (0.9987 agreement between unrelated models on some metrics). **Architectural diversity helps but doesn't guarantee decorrelated errors.** The benefit is real but bounded.
 
-When all four hold: **ensemble-delegable.** When any fails: Claude-only.
+### Cost: 2x7B vs. 1x14B
 
-**Level 3: Irreducibly Claude-only**
+Inference Scaling Laws (Aug 2024): "Llemma-7B achieves competitive accuracy to Llemma-34B while using approximately 2x fewer FLOPs." Smaller models dominate at constrained compute budgets. **Crossover exists:** on harder tasks, the larger model eventually wins. The practical sweet spot depends on task difficulty distribution.
 
-Tasks that fail the four-condition test. Five irreducible criteria:
+### Implications for ensemble design
 
-| Criterion | Why it can't be ensembled | Example |
-|-----------|--------------------------|---------|
-| **Recursive reconsideration** | Later reasoning must revise earlier conclusions — not a DAG | Debugging where fixing attempt A reveals the real bug is B |
-| **Interacting constraints** | Constraints form a cycle, not decomposable | Code where requirement 3 changes how requirement 1 should work |
-| **Holistic judgment** | Answer depends on seeing everything simultaneously | "What's the best API shape for this module?" |
-| **Novel insight** | The connection isn't in any per-item analysis | Noticing that two unrelated modules have a race condition |
-| **Aesthetic judgment** | Fundamental model capability gap | Design taste, naming quality, code elegance |
+1. **Complementarity is a validated pattern for SLMs** on reasoning/verification tasks, with confidence-based selection as the arbitration mechanism.
 
-The **DAG decomposability test** is the practical discriminator: if you can draw the task as a flow where scripts gather, LLMs analyze per-item, and a synthesizer combines — it's ensemble-delegable. If any step needs to see the whole picture or revise prior steps, it's Claude-only.
+2. **It should NOT be the default for all ensembles.** For generation/synthesis tasks, running one better model beats running two different ones. The task type determines whether complementarity helps.
 
-### The three-category task type taxonomy
+3. **The ensemble designer (not the conductor) should decide when to apply complementarity.** It's a design-time decision about DAG shape, not a runtime routing decision.
 
-The binary "delegable / Claude-only" taxonomy becomes three categories:
+4. **When applied, use confidence-based selection, not synthesis.** Pick the winner; don't try to merge. This avoids the contamination problem from "Rethinking MoA."
 
-| Category | Definition | How Routed |
-|----------|-----------|------------|
-| **Agent-delegable** | A single small model handles it. Bounded, single-concern, fits extraction/classification/template-fill/summarization/mechanical-transform/boilerplate-gen. | Simple ensemble (single agent or basic swarm) |
-| **Ensemble-delegable** | Exceeds individual agent competence but passes the four-condition test. Scripts handle gathering, fan-out LLMs handle per-item analysis, synthesizer combines. | Multi-stage ensemble (script → fan-out → synthesize) |
-| **Claude-only** | Fails the DAG decomposability test. Requires recursive reasoning, interacting constraints, holistic judgment, or novel insight. | Claude-direct (possibly with ensemble-prepared input) |
+5. **Measuring complementarity requires experimentation.** You can't know a priori whether Qwen3 + Mistral will be complementary on YOUR task. This is another argument for the "laboratory" framing — you need to build, calibrate, and learn which pairs work for which tasks.
 
-### How existing "Claude-only" types reclassify
+**Sources:**
+- SLM-MUX: arXiv:2510.05077
+- Rethinking Mixture-of-Agents: arXiv:2502.00674
+- Debate or Vote (NeurIPS 2025): arXiv:2508.17536
+- Correlated Errors in LLMs: arXiv:2506.07962
+- Scaling Laws for Compound Inference: arXiv:2403.02419
+- Wisdom and Delusion of LLM Ensembles for Code: arXiv:2510.21513
+- LLM-TOPLA (EMNLP 2024): arXiv:2410.03953
+- Complementary-MoA (NeurIPS 2025)
+- Inference Scaling Laws: arXiv:2408.00724
+- Zero-Shot SLM Ensembles for Sentiment Analysis (2025)
+- Can LLM Agents Really Debate? arXiv:2511.07784
 
-| Old Type | New Classification | Key Insight |
-|----------|-------------------|-------------|
-| Cross-file code analysis | **Ensemble-delegable** | Scripts gather across files; LLMs analyze per-file |
-| Architectural design | **Split:** gathering = ensemble-delegable, choice = Claude-only | Ensemble prepares brief; Claude decides |
-| Debugging | **Split:** evidence = ensemble-delegable (~80%), insight = Claude-only | Scripts run tests/parse; Claude connects dots |
-| Multi-step reasoning (sequential) | **Ensemble-delegable** | Pipeline of single-step agents |
-| Multi-step reasoning (recursive) | **Claude-only** | Backtracking requires single context |
-| Multi-constraint code gen (independent) | **Ensemble-delegable** | Separate agents per constraint |
-| Multi-constraint code gen (interacting) | **Claude-only** | Constraints form cycle |
-| Knowledge-intensive Q&A (factual) | **Ensemble-delegable** | Script search + LLM extract |
-| Knowledge-intensive Q&A (nuanced) | **Claude-only** | Requires reasoning about knowledge |
-| Security analysis (tool-based) | **Ensemble-delegable** | Script scan + LLM classify |
-| Security analysis (novel) | **Claude-only** | Requires deep expertise |
-| Judgment / taste | **Claude-only** | Fundamental capability gap |
+---
 
-The pattern: most old "Claude-only" types **split** into an ensemble-delegable preparation phase and a Claude-only judgment phase. This is the key practical consequence — even when a task is ultimately Claude-only, the ensemble handles the preparation.
+## Question 4: What's the right decomposition boundary between an ensemble designer skill and the conductor?
 
-### The "ensemble-prepared Claude" pattern
+**Method:** Analysis — applying the RDD skill decomposition pattern to the conductor's two concerns (orchestration vs. ensemble design), informed by MCP tool categorization, Q1-Q3 evidence, and the "laboratory" framing.
 
-A new workflow emerges for split tasks:
+**Findings:**
+
+### The RDD pattern as structural template
+
+The RDD skills decompose by **mode of thinking**, not by step count:
+
+| Skill | Mode | Produces | Consumes |
+|---|---|---|---|
+| `/rdd-research` | Divergent exploration | Essay (forcing function for understanding) | User questions |
+| `/rdd-model` | Naming and bounding | Domain model (constitutional authority) | Essay |
+| `/rdd-decide` | Committing to choices | ADRs + scenarios | Domain model + essay |
+| `/rdd-build` | Executing to spec | Working code + tests | Scenarios + ADRs + domain model |
+| `/rdd` (parent) | Orchestrating gates | Flow control | Phase artifacts |
+
+Key structural properties:
+- Each skill owns ONE concern, coordinates via artifacts
+- Artifacts are forcing functions (you don't understand it until you can explain it)
+- Three authority layers: invariants > ADRs > scenarios
+- The parent skill is lightweight — gates and flow, not execution
+- Backward jumps are first-class (building reveals flaws → rewind)
+
+### The conductor's two concerns mapped
+
+The current SKILL.md contains 15 MCP tools for ensemble design vs. 7 for orchestration. By section, it's ~70% orchestration, ~30% design. But those percentages are misleading — the design sections carry more conceptual density (DAG patterns, complementarity, script authoring, calibration interpretation, promotion gates, LoRA flagging).
+
+**Orchestration mode** (operational/evaluative):
+- Decompose meta-tasks into subtasks
+- Classify delegability (agent-delegable, ensemble-delegable, Claude-only)
+- Route to existing ensembles or Claude
+- Invoke ensembles, track tokens
+- Sample and evaluate quality
+- Adapt during execution (fallback on poor scores)
+- Learn across sessions (task profiles, routing config)
+
+**Design mode** (creative/architectural):
+- Choose DAG shapes and template architectures
+- Select profiles for complementarity (Q3 evidence: this requires task-specific measurement)
+- Author scripts for multi-stage ensembles
+- Validate ensembles, verify runnability
+- Interpret calibration data, recommend improvements
+- Assess promotion readiness, manage cross-tier dependencies
+- Accumulate design knowledge (what works for which task types)
+
+These are genuinely different modes of thinking. Orchestration is about *dispatching work efficiently*. Design is about *building instruments well*.
+
+### The handoff pattern
+
+Applying the RDD artifact-based handoff model:
 
 ```
-ensemble: gather evidence, analyze per-item, synthesize structured brief →
-  Claude: make judgment decision on the brief
+Conductor → Designer: "I need an ensemble for {task type}.
+  Constraints: {available models, task examples, output format}."
+
+Designer → Conductor: "Here is ensemble '{name}', validated and ready.
+  Pattern: {swarm | multi-stage}. Profiles: {list}. Scripts: {list}."
+
+Conductor → Designer (feedback loop): "Calibration data: {N} invocations,
+  {scores}. Failure modes: {list}."
+
+Designer → Conductor: "Revised ensemble '{name}'. Changes: {list}."
 ```
 
-Claude receives a structured analysis instead of raw files. This dramatically reduces Claude's token consumption — from "read 15 files and design" to "review this structured brief and decide."
+The conductor produces **routing needs and evaluation data**. The designer produces **validated ensembles and design knowledge**. Neither needs the other's internals — they coordinate via artifacts.
 
-This pattern applies to:
-- Architectural design (ensemble prepares component analysis → Claude chooses approach)
-- Debugging (ensemble gathers evidence + per-layer analysis → Claude identifies root cause)
-- Complex code gen (ensemble generates per-constraint drafts → Claude integrates)
-- Nuanced Q&A (ensemble retrieves + extracts facts → Claude synthesizes nuanced answer)
+### What each skill would own
 
-**Token savings:** In the self-evaluation, 4 parallel Claude agents used ~35K+ tokens for gathering + analysis. An ensemble doing the same work uses 0 Claude tokens. Claude would only spend ~5K tokens on the final judgment synthesis — an ~85% reduction.
+**llm-conductor** (the orchestrator):
+- Task decomposition and workflow planning
+- Delegability triage (three-category taxonomy)
+- Routing decisions (standing auth, task profiles, available ensembles)
+- Ensemble invocation and token tracking
+- Quality evaluation and calibration management
+- Workflow execution, adaptation, session wrap-up
+- Routing config management and versioning
+- MCP tools: `set_project`, `invoke`, `analyze_execution`, `list_ensembles`, `get_provider_status`, `list_profiles`, `check_ensemble_runnable`
 
-### Proposed Invariant 10 amendment
+**llm-ensemble-designer** (the instrument builder):
+- DAG architecture selection (swarm, multi-stage, template matching)
+- Profile selection and complementarity measurement
+- Script authoring for multi-stage ensembles
+- Ensemble validation and runnability verification
+- Calibration interpretation and ensemble improvement
+- Promotion assessment and cross-tier management
+- Pattern library accumulation (design knowledge)
+- MCP tools: `create_ensemble`, `validate_ensemble`, `create_profile`, `update_ensemble`, `promote_ensemble`, `check_promotion_readiness`, `list_dependencies`, `demote_ensemble`, `library_browse`, `library_copy`, `create_script`, `list_scripts`, `get_script`, `test_script`, `delete_script`
 
-**Current:**
-> "Local models operate within competence boundaries. The conductor does not route multi-step reasoning (3+ steps), knowledge-intensive Q&A, or complex instructions (>4 constraints) to local models regardless of available model size. These boundaries are evidence-based and adjustable only through the reflective loop. Competence boundaries constrain individual subtask routing decisions; the conductor may decompose any meta-task regardless of its overall complexity."
+### The laboratory framing: what separation enables
 
-**Proposed:**
-> "Competence boundaries operate at two levels. **Agent level:** no individual LLM agent within an ensemble handles multi-step reasoning (3+ steps), complex instructions (>4 constraints), or tasks requiring world knowledge or holistic judgment — regardless of model size. **Ensemble level:** a composed system of script agents, fan-out LLM agents, and synthesizers can handle tasks that exceed any individual agent's competence, provided the task decomposes into a DAG where each LLM node stays within agent-level boundaries. Tasks are genuinely Claude-only only when they require recursive reconsideration, interacting constraints, holistic judgment, or novel insight that no decomposition can produce. These boundaries are evidence-based and adjustable through the reflective loop."
+With a separate designer skill, ensemble creation becomes a **first-class research activity**, not a subordinate task within orchestration. The designer can:
 
-Key changes:
-1. "Local models" → "individual LLM agent within an ensemble" (Level 1)
-2. New sentence establishing ensemble-level capability (Level 2)
-3. Specific irreducible criteria replace the blanket exclusion list
-4. The DAG decomposability test is the practical discriminator
-5. Evidence-based adjustability preserved
+1. **Maintain its own knowledge base** — which DAG shapes work for which task types, which model pairs are complementary, which script patterns are reusable. This is analogous to `/rdd-model`'s domain model.
 
-### How the triage decision tree changes
+2. **Run its own evaluation loop** — not just "did the ensemble produce good output?" (the conductor's question) but "why did this design work and that one didn't?" (a design question). The conductor collects calibration data; the designer interprets it.
 
-The current tree's critical gap (Claude-only types classified but not enforced) resolves differently under the three-category model. The binary classification that caused the gap is replaced.
+3. **Evolve design heuristics independently** — the evidence from Q3 (complementarity is task-dependent, confidence selection beats synthesis for reasoning tasks) becomes design knowledge that persists across projects. Each ensemble built is an experiment.
 
-**Proposed triage flow:**
+4. **Separate creation cadence from execution cadence** — the conductor needs to be fast (every invocation). The designer can be thoughtful (when building or improving ensembles). These different time pressures map to different model selections: conductor work can use Sonnet for speed, designer work benefits from Opus for architectural judgment.
 
-1. **Classify into three categories** using the DAG decomposability test:
-   - Can a single small model handle it as-is? → **Agent-delegable**
-   - Can it be decomposed into a script-gather → fan-out-analyze → synthesize DAG? → **Ensemble-delegable**
-   - Does it require recursive reasoning, interacting constraints, holistic judgment, or novel insight? → **Claude-only**
+### The tension: on-demand creation during workflow execution
 
-2. **For agent-delegable:** Follow the existing routing steps (standing auth → task profiles → available ensembles → compose simple ensemble or default to Claude)
+The main argument against splitting is **tight coupling during workflow planning.** When the conductor identifies a gap (Step 2: "no ensemble for this task type"), it currently composes one on the spot. Splitting means a skill handoff mid-workflow.
 
-3. **For ensemble-delegable:** Check if a matching multi-stage ensemble exists. If yes, invoke it. If no, compose one using template architectures from Q2 (including script authoring). This is the new capability.
+But the RDD pattern handles this. `/rdd-build` can trigger a backward jump to `/rdd-decide` when implementation reveals a flaw. Similarly:
 
-4. **For Claude-only:** Handle via Claude-direct. But first ask: **is there an ensemble-delegable preparation phase?** If the task splits into gathering + judgment, run the preparation ensemble first, feed its structured output to Claude.
+- The conductor identifies a gap during workflow planning
+- The conductor invokes the designer: "I need an ensemble for {task type}"
+- The designer composes, validates, returns to the conductor
+- The conductor continues the workflow
 
-Step 4 is the key innovation. The conductor doesn't just classify and route — for Claude-only tasks, it actively looks for ways to reduce Claude's workload through ensemble-prepared input.
+This is not fundamentally different from how `/rdd` coordinates its phases. The overhead is a skill invocation, not a context switch — the conductor retains its workflow state.
 
-### How this interacts with other invariants
+### The split also clarifies the synthesis's contribution
 
-**Invariant 3 (Composition over scale):** Already philosophically aligned. "Prefer swarms of small models over reaching for larger models" now means composition at the system level — scripts + small LLMs compose into systems that handle complex tasks. The invariant's spirit was always right; we're extending what "composition" means.
+The synthesis's general-purpose ensembles (general-analysis, document-research, code-review) are **designer artifacts** — they represent design decisions about DAG shape, profile selection, and complementarity. The evidence says these should be purpose-built per task type, not general-purpose. But the *design patterns* they encode (parallel complementary analysts, script anchoring, cascade escalation) are valuable as **templates in the designer's pattern library**.
 
-**Invariant 12 (Workflow architect):** Strengthened. The conductor's delegation potential grows significantly. When planning a workflow, the conductor now has three routing options per subtask instead of two, and can compose multi-stage ensembles that handle previously "Claude-only" preparation work.
+The synthesis was right about *how to design ensembles*. It was wrong about *how broadly to scope them*. A separate designer skill is the right place to capture that design knowledge without conflating it with the conductor's routing logic.
 
-**Invariant 4 (Calibration):** Unchanged. Multi-stage ensembles enter calibration like any ensemble — first 5 invocations evaluated. The ensemble is evaluated as a system (its final output), not per-agent.
+### Proposed skill structure
 
-**Invariant 5 (Sampled evaluation):** Unchanged. Evaluation samples the ensemble's output, not individual agent outputs within it.
+| Skill | Analogy | Mode | Invoked by |
+|---|---|---|---|
+| `llm-conductor` | `/rdd` parent + `/rdd-build` | Orchestrate + execute | User directly |
+| `llm-ensemble-designer` | `/rdd-research` + `/rdd-decide` | Understand + architect | Conductor (on-demand) or user directly |
 
-### What genuinely remains Claude-only: the irreducible core
+The conductor is both the parent orchestrator AND the executor (unlike RDD where `/rdd` and `/rdd-build` are separate). This makes sense — the conductor's execution is lightweight (invoke and evaluate), not heavy like code implementation.
 
-After this analysis, the irreducible Claude-only work is:
+The designer combines understanding (what DAG shape fits?) with architecture (how should this ensemble be structured?). This also makes sense — ensemble design is a compact enough activity that it doesn't need further decomposition.
 
-1. **The design decision itself** — not gathering information about options, but choosing between them
-2. **The debugging "aha moment"** — not collecting evidence, but connecting unrelated observations
-3. **Code generation with tightly interacting requirements** — where changing one part cascades through all others
-4. **Novel pattern recognition** — seeing what no per-item analysis would reveal
-5. **Aesthetic judgment** — quality of names, APIs, architecture elegance
+### What doesn't need to split
 
-This is a much smaller set than the current Claude-only classification. It represents perhaps 15-30% of total work in a typical session, down from the current ~48%.
-
-### What the conductor needs to implement this
-
-1. **Script authoring capability.** Composing multi-stage ensembles requires writing Python scripts for the gather/parse/structure phases. Claude writes the scripts (a judgment task), validates JSON I/O, places them in `.llm-orc/scripts/conductor/`.
-
-2. **Template architecture library.** The five architectures from Q2 become templates. The conductor doesn't design multi-stage ensembles from scratch each time — it selects and customizes a template.
-
-3. **Conductor-specific profiles.** Three tiers for internal ensemble composition:
-   - `conductor-micro` (qwen3:0.6b) — per-item extraction, comparison, classification
-   - `conductor-small` (gemma3:1b) — bounded analysis, template fill, simple synthesis
-   - `conductor-medium` (llama3 or gemma3:12b) — multi-source synthesis, report generation
-
-4. **The DAG decomposability test as a concrete procedure.** Heuristics for the conductor to determine whether a task is ensemble-delegable:
-   - Can I list the items to process? (files, comparisons, search results) → fan-out candidate
-   - Can I write a script that gathers the data without LLM reasoning? → script-absorbable
-   - Does each item's analysis stand alone (no cross-item dependencies)? → parallelizable
-   - Can the final step combine per-item JSONs? → synthesizable
-   - If all yes → ensemble-delegable
-
-### Self-evaluation findings integration
-
-The self-evaluation found 8 issues to fix. Under the revised model:
-
-1. **Critical: Claude-only type enforcement gap** → **Resolved differently.** The binary classification is replaced by three categories. The "gap" disappears because ensemble-delegable types are actively routed to multi-stage ensembles, not blocked and not falling through.
-
-2. **MCP promotion tools not used** → Still valid. Unchanged by this research.
-
-3. **User-decline fall-through** → Still valid. Unchanged.
-
-4. **Vocabulary alignment** → Needs expansion. New terms: "agent-delegable," "ensemble-delegable," "DAG decomposability test," "ensemble-prepared Claude," "template architecture," "script authoring."
-
-5. **`routing-config.yaml` missing fields** → Needs additional fields for three-category routing thresholds.
-
-6. **Invariant wording mismatches** → Invariant 10 needs full rewrite; domain model needs amendment.
+- **Pre-flight discovery** stays in the conductor — it's operational information gathering for routing decisions
+- **Evaluation and reflection** stays in the conductor — it's quality assessment during execution
+- **Token tracking** stays in the conductor — it's an execution concern
+- **Persistence** is shared — both skills read/write to `.llm-orc/evaluations/`, with the conductor owning routing logs and the designer owning design knowledge
 
 ### Implications
 
-1. **Invariant 10 needs a significant amendment**, not a minor tweak. The two-level competence model is a conceptual shift: boundaries apply at the agent level, capabilities emerge at the ensemble level.
+1. **The conductor SKILL.md shrinks by ~30%** — the Ensemble Composition and Ensemble Promotion sections move to the designer, along with LoRA candidate flagging.
 
-2. **The task type taxonomy expands from 2 to 3 categories.** "Ensemble-delegable" is the new middle ground where scripts + fan-out + synthesis handle what individual models cannot.
+2. **The designer skill inherits the synthesis's best patterns** — template architectures, complementarity measurement, confidence-based vs. synthesis-based arbitration selection — as part of its design knowledge base.
 
-3. **Most old "Claude-only" types split** into ensemble-delegable preparation and Claude-only judgment. This is the biggest practical consequence — the conductor actively reduces Claude's workload for every task, even genuinely Claude-only ones.
+3. **The "laboratory" is the designer's evaluation loop** — every ensemble built generates data about what works. The designer accumulates this across projects (via promotion to global tier and library).
 
-4. **The "ensemble-prepared Claude" pattern** is the key innovation. Claude receives structured briefs instead of raw files. Token savings of ~85% on preparation work.
+4. **The conductor becomes more focused** — its invariants can be tighter because they only cover orchestration. Design invariants (like the 12B ceiling, composition over scale) move to the designer.
 
-5. **The conductor needs new capabilities**: script authoring, template architectures, conductor-specific profiles, and a concrete DAG decomposability test.
-
-6. **The delegation potential rises from ~52% to ~70-85%.** With ensemble-as-system patterns, the conductor delegates not just simple extraction/classification but cross-file analysis, knowledge retrieval, test generation, and debugging evidence — reserving Claude for irreducible judgment.
+5. **Model selection maps naturally** — the conductor can run on Sonnet (fast routing and evaluation). The designer should run on Opus (architectural judgment, script authoring). This matches the CLAUDE.md guidance: "Opus is the writer and architect, not the bricklayer."
 
 **Sources:**
-- Q1 findings: revised competence boundary map
-- Q2 findings: five concrete ensemble architectures demonstrating the pattern
-- Self-evaluation findings: triage gap resolution under three-category model
-- Existing invariants: cross-referencing against Invariants 3, 4, 5, 10, 12
-- Domain model: amendment implications for Invariant 10
+- RDD skill decomposition analysis (rdd.md, rdd-research.md, rdd-model.md, rdd-decide.md, rdd-build.md)
+- Conductor MCP tool categorization (SKILL.md section-by-section analysis)
+- Q1-Q3 findings from this research cycle
+
+---
+
+## Question 5: Can a knowledge graph with provenance (Plexus) serve as shared memory between the conductor and ensemble designer?
+
+**Method:** Web search across KG-based agent memory, ML experiment provenance, pipeline optimization metadata, meta-learning with KGs, and AI ontologies.
+
+**Findings:**
+
+### Graph structure provides capabilities flat storage cannot
+
+| Capability | Flat JSONL/YAML | Knowledge Graph | Evidence |
+|---|---|---|---|
+| Pipeline recommendation accuracy | 51% | 78% | AIMKG, Frontiers in Big Data 2024 |
+| Multi-hop reasoning | Baseline | ~2x improvement | A-MEM, 2025 |
+| Token efficiency for retrieval | Baseline | 85-93% reduction | A-MEM |
+| Temporal reasoning | Timestamp sort | +38.4% | Zep/Graphiti, 2025 |
+| Expensive model call reduction | N/A | 40% via KG-informed routing | SkewRoute, EMNLP 2025 |
+| Fine-grained lineage reuse | Manual | 12.4x speedup | LIMA, SIGMOD 2021 |
+
+### Three roles for the KG
+
+**1. Provenance layer.** W3C PROV maps to our entities: ensemble specs = Entities, calibration runs = Activities, routing decisions = Activities that `used` specific configurations. Zep/Graphiti's bi-temporal model tracks both when an ensemble was valid and when we learned about its performance. When the conductor gets a poor result, tracing back (which spec, which profiles, what changed?) is a graph traversal — flat logs require manual reconstruction every time.
+
+**2. Design knowledge accumulation.** AIMKG (HPE, 2024) — 1.6M pipeline metadata KG — achieves 76.3% retrieval accuracy for recommending pipeline configurations. For the designer: "For tasks similar to X, which DAG shapes, profile combinations, and script patterns produced best calibration results?" is a similarity + graph traversal query.
+
+**3. Cross-project meta-learning.** MetaKG (IEEE TKDE, 2022) shows KGs enable cold-start decisions via structured knowledge about related tasks. Trainable Graph Memory (2025) showed 25.8% improvement specifically for smaller/less-capable systems. This is the "laboratory at scale."
+
+### Implementation path with Plexus
+
+- **Node types:** Task, Ensemble, Profile, Script, CalibrationRun, RoutingDecision, EvaluationResult, TaskProfile
+- **Edge types:** `usedEnsemble`, `producedResult`, `calibratedBy`, `promotedFrom`, `designedFor`, `complementaryWith`, `replacedBy`
+- **Provenance edges:** W3C PROV (`wasGeneratedBy`, `used`, `wasDerivedFrom`, `wasInformedBy`)
+- **Temporal model:** Bi-temporal (validity time + knowledge time)
+- Flat JSONL becomes the write-ahead log; KG becomes the queryable memory
+
+### Implications
+
+1. **53% improvement in pipeline recommendation** is not marginal — Plexus is a structurally better substrate than flat files.
+2. **Design knowledge is inherently relational** (this DAG shape works for this task type with these profiles). Graphs represent relations natively.
+3. **Cross-project learning becomes native** rather than manual file promotion.
+4. **The laboratory gets its infrastructure** — full provenance chain from task → design → ensemble → calibration → evaluation → promotion.
+5. **Incremental adoption is viable** — provenance first, then recommendation, then meta-learning.
+
+**Sources:**
+- Zep/Graphiti: arXiv:2501.13956
+- A-MEM: arXiv:2502.12110
+- Trainable Graph Memory: arXiv:2511.07800
+- yProv4ML: arXiv:2507.01075
+- AIMKG (HPE): Frontiers in Big Data 2024
+- SkewRoute: EMNLP 2025
+- MetaKG: IEEE TKDE 2022
+- AI Ontology: 2024
+
+---
+
+## Question 6: What classical ML techniques can script agents employ to improve ensemble results?
+
+**Method:** Web search across embedding evaluation, trained classifiers, NLI validation, hallucination detection, clustering, process reward models, and statistical methods.
+
+**Findings:**
+
+### Script agents can host lightweight ML that solves the self-verification problem
+
+Q2 established SLMs under ~13B can't self-verify. Script agents with embedded ML models (~80-170MB) provide quality signals that are cheaper, faster, and more reliable than additional LLM inference.
+
+### Priority-ordered techniques
+
+**Tier 1: Zero additional cost**
+
+| Technique | How | Evidence |
+|---|---|---|
+| Log-prob entropy | Compute per-token entropy from logprobs with numpy | Available from any local model exposing logprobs |
+| Exact-match voting | Regex + Counter on extracted answers | Self-Consistency (Wang et al., ICLR 2023) |
+
+**Tier 2: Small embedding model (~80MB, ~4k/sec CPU)**
+
+| Technique | Model | Evidence |
+|---|---|---|
+| BERTScore/cosine similarity | all-MiniLM-L6-v2, 22M params, ONNX native | 0.759-0.904 correlation with human judgment (WMT 2025) |
+| Semantic Self-Consistency | MiniLM embeddings + centroid proximity weighting | Outperforms naive majority voting (arXiv:2410.07839) |
+| Semantic clustering | MiniLM + scikit-learn KMeans/DBSCAN | Outlier detection, consensus identification |
+
+**Tier 3: Small NLI model (~170MB quantized, ~10-50ms CPU)**
+
+| Technique | Model | Evidence |
+|---|---|---|
+| NLI consistency validation | DeBERTa-v3-base, 86M params, ONNX | SelfCheckGPT: 92.50 AUC-PR for non-factual detection |
+| Zero-shot classification | Same DeBERTa, no training needed | 9.4% improvement over prior zero-shot (HuggingFace) |
+
+**Tier 4: Hidden state access (high impact, medium effort)**
+
+| Technique | Method | Evidence |
+|---|---|---|
+| XGBoost on hidden states | LiLaVe pattern | Outperforms neural alternatives (arXiv:2504.16760) |
+| Linear probes | PCA + LDA (ELHSR) | <0.005% of reward model parameters (arXiv:2505.12225) |
+| Hallucination detection | EigenScore (eigenvalue decomposition) | Pure linear algebra, no model needed |
+
+### How this integrates with ensemble design
+
+These techniques become script agent building blocks in the ensemble DAG:
+
+**Complementary model arbitration (solves Q3's mechanism question):**
+```
+LLM-A (qwen3) ──→ script: embed + confidence ──→ script: select winner
+LLM-B (mistral) → script: embed + confidence ──↗   (deterministic)
+```
+
+Instead of a synthesizer LLM judging which output is better (self-verification, which fails for SLMs), a script agent with MiniLM computes embedding-based confidence and selects — deterministically.
+
+**Quality gate pattern:**
+```
+LLM agent → script: NLI consistency check → pass/fail gate → next stage
+                                              ↓ (fail)
+                                         escalation to conductor
+```
+
+**Escalation trigger:**
+```
+LLM agent → script: log-prob entropy → below threshold → continue
+                                        above threshold → route to Claude
+```
+
+### Implications
+
+1. **Script agents are dramatically underutilized.** With ~80-170MB embedded models, they solve the self-verification gap from Q2.
+2. **Complementarity arbitration becomes deterministic.** No LLM judgment needed for output selection — embedding-based confidence replaces synthesizer-as-judge.
+3. **The ensemble designer's toolkit expands.** Confidence scripts, NLI scripts, similarity scripts join the pattern library alongside LLM agent profiles.
+4. **Hidden state access is the high-value architectural investment** for llm-orc — enables Tier 4 techniques.
+
+**Sources:**
+- BERTScore: WMT 2025; ExPerT (ACL 2025)
+- Semantic Self-Consistency: arXiv:2410.07839
+- SelfCheckGPT: arXiv:2303.08896
+- DeBERTa zero-shot NLI: HuggingFace MoritzLaurer
+- LiLaVe: arXiv:2504.16760
+- ELHSR: arXiv:2505.12225
+- EigenScore: arXiv:2510.08389
+- Semantic Entropy Probes: arXiv:2406.15927
+- all-MiniLM-L6-v2: HuggingFace ONNX

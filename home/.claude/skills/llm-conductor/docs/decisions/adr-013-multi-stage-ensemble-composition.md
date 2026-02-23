@@ -23,6 +23,8 @@ script agent(s): gather/parse/structure data → JSON array
 
 **Script authoring.** The conductor authors Python or bash scripts as part of multi-stage ensemble composition. Scripts take JSON input and return JSON output. Claude writes the scripts (a judgment task); the scripts then run locally without Claude. Script authoring includes validating JSON I/O contracts between agents.
 
+> **Superseded by ADR-015:** Script authoring is now the Ensemble Designer's responsibility. The conductor can request scripts via evaluation feedback.
+
 **Template architectures.** Five reusable multi-stage patterns serve as starting points:
 
 | Template | Use Case | Structure |
@@ -42,6 +44,8 @@ The conductor selects the matching template and customizes scripts and prompts f
 | `conductor-micro` | qwen3:0.6b | Per-item extraction, comparison, classification |
 | `conductor-small` | gemma3:1b | Bounded analysis, template fill, simple synthesis |
 | `conductor-medium` | llama3 (8B default); gemma3:12b only when synthesizing 4+ upstream outputs (per ADR-005 ceiling rule) | Multi-source synthesis, report generation |
+
+> **Superseded by ADR-018:** The ceiling model is now qwen3:14b. The ceiling rule (4+ upstream outputs) is unchanged.
 
 These map to the gather → analyze → synthesize stages. The existing model tier assignment (ADR-005) still applies: conductor-micro for extractors, conductor-small for analyzers, conductor-medium for synthesizers.
 

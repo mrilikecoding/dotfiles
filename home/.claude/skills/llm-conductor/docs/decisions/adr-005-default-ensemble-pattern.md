@@ -12,6 +12,8 @@ The swarm pattern (many micro/small extractors → fewer medium analyzers → on
 
 When the conductor composes a new ensemble, the default pattern is a swarm:
 
+> **Superseded by ADR-015:** Ensemble composition is now the Ensemble Designer's responsibility.
+
 1. **Extractors** (micro tier, ≤1B) — one per distinct extraction concern, operating on the same input in parallel
 2. **Analyzers** (small/medium tier, 4-7B) — one per analytical dimension, receiving extractor outputs
 3. **Synthesizer** (medium tier, 7B; ceiling tier 12B only if justified) — one agent combining analyzer outputs into final result
@@ -22,6 +24,8 @@ The conductor sizes the swarm based on the task's structure:
 - Complex tasks (4+ concerns): full swarm with extractors → analyzers → synthesizer
 
 The 12B ceiling tier is used only for the synthesizer role, and only when the task requires synthesis across 4+ analyzer outputs. This preserves Invariant 3.
+
+> **Superseded by ADR-018:** The ceiling tier is now 14B (qwen3:14b), not 12B. The ceiling rule (reserved for 4+ upstream outputs) is unchanged.
 
 ## Consequences
 

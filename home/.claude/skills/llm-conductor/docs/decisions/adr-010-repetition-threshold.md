@@ -12,6 +12,8 @@ The break-even analysis shows ~11 uses to recoup creation cost. But within a sin
 
 The **repetition threshold** for proposing on-the-fly ensemble creation is **3+ expected repetitions** of a subtask pattern. Below 3, the conductor handles the subtask via Claude directly.
 
+> **Superseded by ADR-015:** Ensemble creation is the Ensemble Designer's responsibility. The conductor identifies the need and proposes creation; the designer composes.
+
 The threshold operates in two modes:
 
 **Predictive (during workflow planning):** The conductor analyzes the meta-task and predicts repetition counts. "The testing phase has 30 test cases following the same pattern — that exceeds the threshold." The ensemble is planned as part of the workflow and created before execution of that phase.
