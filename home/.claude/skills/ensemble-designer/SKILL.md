@@ -43,41 +43,11 @@ The designer operates at two lifecycle boundaries. All coordination with the con
 
 ### Design Phase Boundary: Receiving Ensemble Requests
 
-**Ensemble-request artifact** — the conductor has identified a delegable task type with no ensemble and transitioned to you:
-
-```yaml
-request_type: "new | revision"
-task_type: "extraction"
-delegability_category: "agent-delegable | ensemble-delegable"
-dag_test_result: {dag: true, script: true, fanout: true, synthesis: true}
-sample_inputs:
-  - "Extract all API endpoints from server.py"
-  - "Extract class names from models.py"
-expected_output_format: "JSON array of {method, path, handler}"
-repetition_count: 6
-evaluation_data:  # for revision requests
-  scores: [good, good, poor, poor, poor]
-  dominant_failure_mode: "incomplete"
-  sample_poor_outputs: ["..."]
-context: "Workflow plan for handler refactoring — 6 extraction subtasks identified"
-```
+**Ensemble-request artifact** — the conductor has identified a delegable task type with no ensemble and transitioned to you. See `../llm-conductor/docs/artifacts.md` for the schema.
 
 ### Promote Phase Boundary: Receiving Feedback
 
-**Feedback artifact** — the conductor has identified an ensemble ready for promotion (or needing revision) and transitioned to you:
-
-```yaml
-feedback_type: "calibration_summary | poor_evaluation | promotion_candidate"
-ensemble: "extract-semantics"
-scores: {good: 2, acceptable: 0, poor: 3}
-dominant_failure_mode: "incomplete"
-sample_evaluations:
-  - input: "..."
-    output: "..."
-    score: "poor"
-    reasoning: "Missing 3 of 8 expected fields"
-recommendation: "Revise DAG — extraction stage may need chunking for large files"
-```
+**Feedback artifact** — the conductor has identified an ensemble ready for promotion (or needing revision) and transitioned to you. See `../llm-conductor/docs/artifacts.md` for the schema.
 
 ### Returning to the Conductor (Design Phase → Calibrate)
 

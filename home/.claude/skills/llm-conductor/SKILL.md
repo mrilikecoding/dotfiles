@@ -39,8 +39,6 @@ These are constitutional. They override all other instructions in this skill. If
 
 ## ENSEMBLE LIFECYCLE (Invariant 2)
 
-Like RDD's explicit skill-phase flow (`/rdd-research` → `/rdd-model` → `/rdd-decide` → `/rdd-build`), the conductor drives every delegable task type through a lifecycle with explicit skill-phase transitions. This is the conductor's core operating model — not a background process, but the primary mechanism for shifting tokens from Claude to local ensembles.
-
 ### The Five Phases
 
 | Phase | Owner | What Happens | Transition Trigger |
@@ -52,8 +50,6 @@ Like RDD's explicit skill-phase flow (`/rdd-research` → `/rdd-model` → `/rdd
 | **Promote** | conductor → `/ensemble-designer` | Conductor identifies promotion readiness, emits feedback artifact, hands off to the Designer for promotion workflow (local → global → library). | Ensemble promoted; cross-project reuse begins |
 
 ### Skill-Phase Transitions
-
-The lifecycle crosses skill boundaries at two points — just as RDD crosses from research to modeling to decision to build:
 
 **Design transition (conductor → designer):**
 1. Conductor identifies delegable task type with no matching ensemble
@@ -79,14 +75,7 @@ If the designer determines the task type cannot be composed into a functioning e
 
 ### Claude as Interim — Not Default
 
-During the Design phase, Claude handles the immediate task while the designer builds the ensemble. This is explicitly temporary:
-
-```
-Handling '{task}' via Claude (interim — ensemble being designed).
-Once the designer returns the ensemble, future '{type}' tasks will route locally.
-```
-
-The conductor MUST NOT silently absorb delegable work into Claude without surfacing the gap. Every delegable task without an ensemble triggers a design-phase recommendation.
+During the Design phase, Claude handles the immediate task while the designer builds the ensemble. The conductor MUST NOT silently absorb delegable work into Claude without surfacing the gap. Every delegable task without an ensemble triggers a design-phase recommendation.
 
 ### Lifecycle Status Tracking
 
@@ -464,15 +453,7 @@ Local: {N} tokens | Estimated Claude equivalent: ~{M} tokens
 
 ### Context Switching for Internal Ensembles
 
-The conductor maintains its own ensembles at `~/.claude/skills/llm-conductor/.llm-orc/`. When invoking an internal ensemble:
-
-1. Note the user's current project directory
-2. Call `set_project` pointing to `~/.claude/skills/llm-conductor/`
-3. Invoke the internal ensemble
-4. **Immediately** call `set_project` pointing back to the user's project directory
-5. Never leave the context pointing at the skill directory between user-visible operations
-
-The user's project directory is always the default context.
+The conductor maintains its own ensembles at `~/.claude/skills/llm-conductor/.llm-orc/`. When invoking an internal ensemble, call `set_project` to the skill directory, invoke, then **immediately** restore `set_project` to the user's project directory. Never leave context pointing at the skill directory between user-visible operations.
 
 ---
 
@@ -508,7 +489,7 @@ After 5 evaluated invocations, determine the calibration outcome:
 
 Present calibration outcomes to the user. The user may override — keeping a mixed ensemble in service, or retiring a failed one instead of revising.
 
-**Pattern-as-calibration:** When an ensemble is created after observing Claude perform the same subtask (adaptive observation from Workflow Planning Step 6), Claude's prior outputs serve as implicit calibration data encoded in the system prompt. Note this in the evaluation record: `calibration_context: "pattern-from-observation"`. This does not reduce the calibration period (still 5 evaluated invocations) but increases confidence in early invocations.
+**Pattern-as-calibration:** When an ensemble is created from adaptive observation (Workflow Planning Step 6), Claude's prior outputs serve as implicit calibration data. Note `calibration_context: "pattern-from-observation"` in the evaluation record. Calibration period remains 5 invocations.
 
 ### Evaluation Protocol
 
@@ -588,55 +569,13 @@ The **repetition threshold** (3+ expected uses, stored in `routing-config.yaml`,
 
 Cross-session frequency also factors: if `task-profiles.yaml` shows a subtask type appeared frequently in prior sessions, even 1 in-session occurrence justifies a request.
 
-### Ensemble-Request Artifact
+### Artifact Schemas
 
-When requesting a new ensemble from the designer, emit:
-
-```yaml
-request_type: "new | revision"
-task_type: "extraction"
-delegability_category: "agent-delegable | ensemble-delegable"
-dag_test_result: {dag: true, script: true, fanout: true, synthesis: true}
-sample_inputs:
-  - "Extract all API endpoints from server.py"
-  - "Extract class names from models.py"
-expected_output_format: "JSON array of {method, path, handler}"
-repetition_count: 6
-evaluation_data:  # for revision requests
-  scores: [good, good, poor, poor, poor]
-  dominant_failure_mode: "incomplete"
-  sample_poor_outputs: ["..."]
-context: "Workflow plan for handler refactoring — 6 extraction subtasks identified"
-```
-
-### Feedback Artifact
-
-When providing evaluation feedback on an existing ensemble to the designer:
-
-```yaml
-feedback_type: "calibration_summary | poor_evaluation | promotion_candidate"
-ensemble: "extract-semantics"
-scores: {good: 2, acceptable: 0, poor: 3}
-dominant_failure_mode: "incomplete"
-sample_evaluations:
-  - input: "..."
-    output: "..."
-    score: "poor"
-    reasoning: "Missing 3 of 8 expected fields"
-recommendation: "Revise DAG — extraction stage may need chunking for large files"
-```
+See `docs/artifacts.md` for ensemble-request and feedback artifact schemas.
 
 ### Handoff Protocol
 
-1. **Conductor identifies need** — gap in workflow plan, user request, or adaptive observation
-2. **Conductor presents to user** — describes the need and recommends requesting from the designer
-3. **User approves transition** — the user gates the handoff (Invariant 1)
-4. **Conductor emits artifact** — ensemble-request or feedback artifact
-5. **Designer composes** — the Ensemble Designer skill receives the artifact and composes the ensemble (runs on Opus for architectural judgment)
-6. **Designer returns validated ensemble** — ready for invocation and calibration
-7. **Conductor resumes** — invokes the new ensemble, enters calibration loop
-
-During the handoff, the conductor continues with Claude-direct for affected subtasks. The designer does not intervene during active orchestration — design improvements apply to future invocations.
+Follow the skill-phase transition protocol in ENSEMBLE LIFECYCLE (Design transition or Promote transition). During the handoff, continue with Claude-direct for affected subtasks — design improvements apply to future invocations.
 
 ### Ensemble-Prepared Claude (ADR-014)
 
@@ -652,21 +591,7 @@ A workflow pattern for Claude-only subtasks that have a separable preparation ph
 - The preparation would be trivial (< 500 estimated tokens) — overhead exceeds savings
 - No matching ensemble exists and the preparation pattern won't repeat (below repetition threshold — this is a cost-efficiency check for preparation ensembles specifically, not a gate on ensemble creation in general)
 
-**Token tracking for ensemble-prepared Claude:**
-
-```
-Preparation: [ensemble output — structured brief]
-Local: {N} tokens
-
-Judgment: [Claude output — decision/synthesis]
-Claude: {M} tokens (estimated {F} without preparation — {P}% reduction)
-```
-
-The routing decision record for ensemble-prepared Claude subtasks includes:
-- `preparation_tokens_local` — tokens consumed by the preparation ensemble
-- `judgment_tokens_claude` — tokens consumed by Claude on the brief
-- `estimated_full_claude_tokens` — estimated tokens Claude would have consumed without preparation
-- `preparation_savings` — the delta
+**Token tracking for ensemble-prepared Claude:** The routing decision record includes `preparation_tokens_local`, `judgment_tokens_claude`, `estimated_full_claude_tokens`, and `preparation_savings` (the delta). Present preparation and judgment token counts separately.
 
 **Evaluation for ensemble-prepared Claude:**
 
@@ -684,41 +609,13 @@ The routing decision record for ensemble-prepared Claude subtasks includes:
 
 ## ENSEMBLE AWARENESS
 
-The conductor does not compose, promote, or flag LoRA candidates — the Ensemble Designer handles these (ADR-015). However, the conductor needs awareness of ensemble types to route effectively.
+The conductor does not compose, promote, or flag LoRA candidates — the Ensemble Designer handles these (ADR-015). The conductor needs awareness of ensemble types to route and evaluate effectively.
 
-### Ensemble Types the Conductor May Encounter
+**Routing:** All ensemble types (single-agent, swarm, multi-stage, complementary, verification-equipped) are invoked identically via `invoke`. Script failures within multi-stage ensembles are infrastructure failures — fall back to Claude, do not record a "poor" evaluation. Verification scripts (ADR-016) are internal to the ensemble; the conductor evaluates only the final output.
 
-| Type | Description | How to Route |
-|------|-------------|-------------|
-| **Single-agent** | One LLM agent, one concern | Standard invocation |
-| **Swarm** | Multiple extractors → analyzers → synthesizer | Standard invocation |
-| **Multi-stage** | Script agents + fan-out LLMs + synthesizer | Standard invocation; script failures handled separately |
-| **Complementary** | Two architecturally different LLMs + verification script | Standard invocation; evaluation tracks per-model correctness |
-| **Ensemble with verification scripts** | Any ensemble containing classical ML verification | Standard invocation; verification is internal to the ensemble |
+**Complementary ensembles (ADR-017):** During calibration, track per-model correctness to measure union accuracy and contradiction penalty. Include high contradiction penalty in feedback artifacts to the designer.
 
-### Verification Scripts (ADR-016)
-
-Some ensembles contain **verification scripts** — script agents hosting classical ML models (MiniLM for embeddings, DeBERTa for NLI, numpy for entropy) that provide quality signals within the DAG. These are authored by the designer.
-
-The conductor does not author or configure verification scripts, but should be aware that:
-- Verification scripts expand what is ensemble-delegable (a task requiring quality arbitration between candidate outputs may be ensemble-delegable if a verification script can provide the signal)
-- Complementary ensembles use verification scripts for confidence-based selection (picking one winner, not synthesizing both outputs)
-- Verification scripts are internal to the ensemble — the conductor evaluates the ensemble's final output as usual
-
-### Complementarity (ADR-017)
-
-Some ensembles use **architectural complementarity** — running two different model architectures on the same task and arbitrating via confidence-based selection. The conductor should know:
-- Complementary ensembles are valid only for reasoning/verification tasks (not generation)
-- The ensemble handles arbitration internally via a verification script
-- During calibration, the conductor tracks per-model correctness to help the designer measure union accuracy and contradiction penalty
-- If calibration shows high contradiction penalty, include this in the feedback artifact to the designer
-
-### Promotion and LoRA Recommendations
-
-When evaluation data suggests an ensemble is ready for promotion (3+ good scores) or a task type should be flagged as a LoRA candidate (3+ poor scores with consistent failure mode):
-- Surface the observation to the user
-- Recommend transitioning to the Ensemble Designer with the relevant feedback artifact
-- The designer owns the promotion workflow and LoRA flagging decisions
+**Promotion and LoRA:** When evaluation data suggests promotion readiness (3+ good) or LoRA candidacy (3+ poor with consistent failure mode), surface the observation and recommend transitioning to the designer with the relevant feedback artifact.
 
 ---
 
@@ -745,19 +642,7 @@ routing_thresholds:
 
 ### Versioning Protocol (Invariant 9)
 
-When adjusting any routing threshold or adding/removing standing authorizations:
-
-1. Copy current `routing-config.yaml` to `routing-config.v{N}.yaml` as backup
-2. Write the updated config with incremented version number
-3. Log the adjustment reason in the routing log
-
-### Rollback
-
-When the user requests rollback, or when evaluations show quality degradation after an adjustment:
-
-1. Identify the target version (default: previous version)
-2. Restore `routing-config.v{N}.yaml` as the current `routing-config.yaml`
-3. Log the rollback with reason
+When adjusting thresholds or standing authorizations: copy current config to `routing-config.v{N}.yaml`, write the update with incremented version, and log the reason. To rollback: restore the target version file as `routing-config.yaml` and log the reason.
 
 ---
 
@@ -795,49 +680,6 @@ extraction:
 ### Session Startup
 
 At the start of each session, read all persistence files to inform routing decisions. Prior session data carries forward — the conductor learns across sessions.
-
----
-
-## END-TO-END FLOW
-
-### Simple Task Flow
-
-When a simple task arrives:
-
-1. **Triage** — classify task type and delegability category (agent-delegable, ensemble-delegable, or Claude-only)
-2. **Route** — for agent-delegable: check standing auth, task profiles, available ensembles. For ensemble-delegable: apply DAG decomposability test, check for multi-stage ensembles. For Claude-only: handle via Claude
-3. **Invoke** — execute the ensemble (simple or multi-stage) or handle via Claude
-4. **Evaluate** — per calibration/sampling/trusted phase
-5. **Log** — record routing decision with delegability category and token savings
-6. **Present** — show result + evaluation + token savings
-7. **Learn** — update task profiles after calibration completes
-
-### Meta-Task Workflow Flow
-
-When a meta-task arrives:
-
-1. **Discover** — run pre-flight discovery (if not already done); offer starter kit if no ensembles exist
-2. **Decompose** — break meta-task into subtasks with delegability categories. Split Claude-only subtasks with separable preparation into ensemble-delegable preparation + Claude judgment
-3. **Plan** — create workflow plan with delegation assignments and estimated savings. For each delegable subtask type, identify the lifecycle phase (Design/Calibrate/Establish/Trust)
-4. **Present plan** — show the user the workflow plan with lifecycle phases, wait for approval (Invariant 13)
-5. **Design** — **before execution**, enter the Design phase for every delegable subtask type that lacks an ensemble. Hand off to the Ensemble Designer. Build the instruments before spending Claude tokens (Invariant 2)
-6. **Execute** — work through subtasks: invoke ensembles (entering Calibrate phase for new ones), ensemble-prepared Claude, or Claude-direct per assignment
-7. **Adapt** — fall back on poor calibration scores; enter Design phase for newly discovered delegable patterns mid-execution
-8. **Evaluate** — evaluate ensemble outputs per Calibrate/Establish/Trust phase
-9. **Promote** — for ensembles reaching 3+ good evaluations, recommend Promote phase transition to the designer
-10. **Wrap up** — log all decisions, report total savings with lifecycle progression:
-
-```
-Workflow complete. {D}/{N} subtasks handled locally.
-Local: {L} tokens | Claude savings: ~{S} tokens
-Lifecycle progression:
-  extraction: Design → Calibrate (3/5 evaluated)
-  summarization: Calibrate → Establish (quality confirmed)
-  cross-file-analysis: Design (ensemble requested, awaiting designer)
-Interim Claude debt: {C} delegable tasks handled by Claude
-```
-
-Each session makes the next session cheaper. Each project makes the next project cheaper.
 
 ---
 
