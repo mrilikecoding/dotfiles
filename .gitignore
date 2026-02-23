@@ -4,6 +4,7 @@
 home/.config/nvim/bookmarks.db.*
 home/.zsh/secrets.zsh
 home/.claude/settings.local.json
+home/.claude/.claude/
 home/.tmux/plugins/
 
 home/.config/glab-cli/
