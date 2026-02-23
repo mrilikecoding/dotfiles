@@ -36,6 +36,9 @@ fi
 ITEMS=(
     ".bash_profile"
     ".bashrc"
+    ".claude/CLAUDE.md"
+    ".claude/.mcp.json"
+    ".claude/settings.json"
     ".config"
     ".gitconfig"
     ".gitignore_global"
