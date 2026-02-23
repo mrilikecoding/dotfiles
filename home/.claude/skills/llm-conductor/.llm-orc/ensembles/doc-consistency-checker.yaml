@@ -1,0 +1,69 @@
+agents:
+- name: document-reader
+  parameters:
+    base_path: /Users/nathangreen/.claude/skills/llm-conductor
+  script: scripts/gathering/read-skill-documents.py
+- depends_on:
+  - document-reader
+  name: document-chunker
+  script: scripts/gathering/chunk-documents.py
+- depends_on:
+  - document-chunker
+  fan_out: true
+  model_profile: conductor-micro
+  name: term-invariant-extractor
+  output_format: json
+  system_prompt: 'You are a vocabulary and invariant extractor. Given a chunk of a
+    document, extract:
+
+
+    1. All domain-specific terms used (with how they are used)
+
+    2. All rules, constraints, or invariants stated
+
+
+    Return JSON:
+
+    {"document": "<name>", "section": "<section_heading>", "terms": [{"term": "...",
+    "usage": "definition|reference|action", "snippet": "..."}], "invariants": [{"id":
+    "...", "statement": "..."}]}
+
+
+    Be exhaustive. Capture every domain term and every rule.
+
+
+    /no_think'
+  timeout_seconds: 60
+- depends_on:
+  - term-invariant-extractor
+  model_profile: conductor-medium
+  name: consistency-synthesizer
+  output_format: json
+  system_prompt: 'You are a consistency analyst. You receive per-chunk extractions
+    of terms and invariants from multiple skill documents.
+
+
+    Analyze cross-document consistency:
+
+    1. Terms used differently across documents (different definitions, synonyms, missing
+    terms)
+
+    2. Invariants contradicted by other document sections
+
+    3. Terms used in documents but undefined in the domain model
+
+    4. Domain model terms not used in SKILL.md instructions
+
+
+    Return a structured JSON report:
+
+    {"vocabulary_mismatches": [{"term": "...", "doc_a": "...", "doc_b": "...", "issue":
+    "..."}], "invariant_violations": [{"invariant": "...", "violating_doc": "...",
+    "explanation": "..."}], "undefined_terms": [{"term": "...", "found_in": "..."}],
+    "unused_domain_terms": [{"term": "...", "defined_in": "domain-model"}], "summary":
+    "..."}'
+  timeout_seconds: 180
+description: 'Multi-stage ensemble: script gathers documents, chunking script splits
+  into bounded sections, fan-out LLM extracts terms/invariants per chunk, synthesizer
+  finds cross-document inconsistencies.'
+name: doc-consistency-checker

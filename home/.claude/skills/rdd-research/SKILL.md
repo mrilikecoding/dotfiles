@@ -53,7 +53,7 @@ Before running a spike, present the question and plan to the user. After the spi
 
 ### Step 3: Synthesize into Research Log
 
-**Archive previous logs.** If `./docs/research-log.md` already exists from a prior research cycle, move it alongside its essay before starting the new log. For example, if the previous cycle produced essay `docs/research/semantic/essays/07-first-adapter-pair.md`, archive the log to `docs/research/semantic/logs/07-first-adapter-pair.md`. The essay is the durable artifact; the log preserves the process for posterity.
+**Archive previous logs.** If `./docs/research-log.md` already exists from a prior research cycle, move it to `./docs/logs/<matching-essay-name>.md` before starting the new log. For example, if the previous cycle produced essay `docs/essays/event-sourcing-tradeoffs.md`, archive the log to `docs/logs/event-sourcing-tradeoffs.md`. Create the `./docs/logs/` directory if it doesn't exist. The essay is the durable artifact; the log preserves the process for posterity.
 
 After each research iteration, update the running log:
 
@@ -86,7 +86,7 @@ The essay should:
 
 If a domain model with invariants already exists (`./docs/domain-model.md`), read its invariants before writing the essay. If the essay's findings contradict existing invariants, explicitly surface this tension. The user needs to decide: does the invariant change (amendment, handled in `/rdd-model`), or does the research finding need qualification? Never silently proceed past a contradiction between new research and existing invariants.
 
-Write the essay to `./docs/essay.md`.
+Write the essay to `./docs/essays/<descriptive-name>.md`, where `<descriptive-name>` is a short, kebab-case name describing the essay's topic (e.g., `codebase-analysis-multi-lens-approach.md`, `event-sourcing-tradeoffs.md`). Create the `./docs/essays/` directory if it doesn't exist.
 
 Present the essay to the user for approval. If invariant tensions were found, highlight them explicitly — these require a decision before proceeding.
 

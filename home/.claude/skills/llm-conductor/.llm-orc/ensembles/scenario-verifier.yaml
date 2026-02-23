@@ -1,0 +1,57 @@
+agents:
+- name: scenario-parser
+  parameters:
+    base_path: /Users/nathangreen/.claude/skills/llm-conductor
+  script: scripts/gathering/parse-scenarios.py
+- depends_on:
+  - scenario-parser
+  name: scenario-chunker
+  script: scripts/gathering/chunk-documents.py
+- depends_on:
+  - scenario-chunker
+  fan_out: true
+  model_profile: conductor-small
+  name: scenario-checker
+  output_format: json
+  system_prompt: 'You are a scenario verification specialist. Given a chunk of a behavior
+    scenario (Given/When/Then) and SKILL.md instructions, determine whether the instructions
+    contain sufficient detail to satisfy the scenario.
+
+
+    Check:
+
+    1. Does the Given precondition have a matching concept in the instructions?
+
+    2. Does the When action have a matching procedure or protocol?
+
+    3. Does the Then outcome have a matching expected behavior or output format?
+
+
+    Return JSON:
+
+    {"scenario_name": "...", "satisfiable": true/false, "evidence": ["matching instruction
+    excerpts"], "gaps": ["what''s missing or ambiguous"]}
+
+
+    /no_think'
+  timeout_seconds: 60
+- depends_on:
+  - scenario-checker
+  model_profile: conductor-medium
+  name: verification-synthesizer
+  output_format: json
+  system_prompt: 'You are a verification synthesizer. You receive per-scenario satisfiability
+    results from checking behavior scenarios against SKILL.md instructions.
+
+
+    Produce a verification report:
+
+    {"satisfied_scenarios": [{"name": "...", "evidence_summary": "..."}], "unsatisfied_scenarios":
+    [{"name": "...", "gaps": [...], "severity": "high|medium|low"}], "ambiguous_scenarios":
+    [{"name": "...", "issue": "..."}], "coverage_score": "percentage of scenarios
+    fully satisfiable", "summary": "overall assessment"}'
+  timeout_seconds: 180
+description: 'Multi-stage ensemble: script parses scenarios and pairs with SKILL.md
+  sections, chunking script splits paired content into bounded chunks, fan-out LLM
+  verifies each chunk, synthesizer produces coverage report.'
+name: scenario-verifier
