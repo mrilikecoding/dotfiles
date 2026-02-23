@@ -31,6 +31,9 @@ These are constitutional. They override all other instructions in this skill. If
 11. **Ensembles carry their dependencies.** When promoting an ensemble, check that all referenced profiles exist at the destination tier and offer to copy missing ones. For multi-stage ensembles, also verify script portability: no hardcoded project paths, declared Python/system dependencies available at the destination. Promoted ensembles must be runnable at their destination tier.
 12. **The conductor is the workflow architect; the Ensemble Designer is the instrument builder.** The conductor owns the workflow lifecycle: decomposition, routing, invocation, evaluation, adaptation, and token tracking. The Ensemble Designer (a separate skill) owns ensemble composition: DAG architecture, profile selection, script authoring, verification script integration, calibration interpretation, promotion, and design knowledge accumulation. They coordinate via artifacts. The user gates transitions between them.
 13. **Workflow plans precede execution.** Present your workflow plan — decomposition, delegation assignments, ensemble creation needs, and estimated savings — to the user before beginning work on a meta-task.
+14. **Verification replaces self-assessment.** Quality signals within ensemble DAGs come from classical ML in verification scripts, not from LLM self-verification. SLMs under ~13B cannot reliably assess their own output quality. The conductor evaluates ensemble *final output* (that's Claude-as-judge, not self-assessment); this invariant governs *within-ensemble* quality arbitration.
+15. **Complementarity is conditional, not default.** Architectural complementarity is applied only for reasoning/verification tasks with high union accuracy, low contradiction penalty, and confidence-based selection — not for open-ended generation. The conductor routes to complementary ensembles like any other; the designer decides when to apply the pattern.
+16. **Every ensemble is an experiment.** Each ensemble generates design knowledge. Calibration data, DAG shapes, profile pairings, and failure modes feed the design pattern library. The conductor's evaluation data is the raw input for this learning.
 
 ---
 
@@ -59,6 +62,12 @@ The lifecycle crosses skill boundaries at two points — just as RDD crosses fro
 4. Conductor emits ensemble-request artifact with task type, sample inputs, delegability data
 5. Designer skill takes over — composes, validates, returns the ensemble
 6. Conductor resumes with the validated ensemble, enters Calibrate phase
+
+**Design rejection (designer → conductor):**
+If the designer determines the task type cannot be composed into a functioning ensemble, it returns a rejection artifact with the reason (e.g., "task requires backtracking that violates DAG constraint," "no model at available tiers can handle the per-item analysis"). The conductor:
+1. Marks the task type as Claude-only in `task-profiles.yaml` with `design_rejected: true` and the rejection reason
+2. Does not re-request ensemble design for this task type unless the user or new research (e.g., new models, new verification scripts) suggests otherwise
+3. Reports: "Designer determined '{type}' cannot be composed into an ensemble: {reason}. Marking as Claude-only."
 
 **Promote transition (conductor → designer):**
 1. Conductor identifies ensemble with 3+ good evaluations (promotion candidate)
@@ -343,7 +352,7 @@ Classify the task (or subtask, within a workflow plan) into one of three delegab
 If all four hold → ensemble-delegable. Route to a multi-stage ensemble (or propose creating one).
 If any fails → Claude-only.
 
-**When uncertain about decomposability** — default to Claude-only (Invariant 2). Triage itself is a Claude-level judgment task; when in doubt, be conservative. Log the triage decision for future reference — cached decisions in task profiles avoid re-paying this cost.
+**When uncertain about decomposability** — surface the uncertainty to the user (Invariants 1, 2). Present the DAG decomposability assessment with the specific condition(s) in doubt and let the user decide. Claude has a natural bias toward handling tasks itself; defaulting to Claude-only without user input undermines the local-first mission. Log the triage decision and the user's choice for future reference — cached decisions in task profiles avoid re-paying this cost.
 
 ```
 This requires [reason] — handling via Claude.
@@ -440,10 +449,10 @@ When routing to a local ensemble (after user confirmation or standing authorizat
 
 ### Token Savings Quantification (Invariant 7)
 
-For every local invocation, compute token savings and append to the routing decision record:
+For every local invocation, compute token savings and append to the routing decision record. llm-orc reports actual per-agent token counts in the execution artifact.
 
-- **total_tokens_local** — sum of all agent tokens from the artifact
-- **estimated_claude_tokens** — estimate from output length (local models use roughly 1.2x the tokens Claude would for equivalent output, so: `estimated_claude_tokens = total_tokens_local / 1.2`)
+- **total_tokens_local** — sum of all agent tokens from the artifact (reported by llm-orc)
+- **estimated_claude_tokens** — heuristic estimate: `total_tokens_local / 1.2`. The 1.2x ratio is an initial approximation (local models tend to use more tokens than Claude for equivalent output). Refine this ratio from actual routing-log data as it accumulates — compare local token counts against Claude token counts for the same task types when both have been used.
 - **tokens_saved** — the estimated Claude tokens that were NOT consumed
 
 Present with each result:
@@ -475,9 +484,9 @@ After each ensemble invocation, decide whether to evaluate the output.
 
 | Phase | Condition | Evaluate? | Output usable? |
 |-------|-----------|-----------|---------------|
-| **Calibration** | Invocations 1-5 of any ensemble | Always (Invariant 4) | Yes — trust-but-verify |
-| **Established** | Invocations 6-20 | 10-20% probabilistic sample | Yes |
-| **Trusted** | >20 invocations, >80% scored acceptable-or-good | Skip routine evaluation | Yes |
+| **Calibrate** | Invocations 1-5 of any ensemble | Always (Invariant 4) | Yes — trust-but-verify |
+| **Establish** | Invocations 6-20 | 10-20% probabilistic sample | Yes |
+| **Trust** | >20 invocations, >80% scored acceptable-or-good | Skip routine evaluation | Yes |
 | **Triggered** | User indicates output is unsatisfactory | Always, regardless of phase | Re-evaluate |
 
 To determine the current phase, count the ensemble's entries in `evaluations.jsonl`.
@@ -488,6 +497,16 @@ During calibration, ensemble output is presented to the user immediately — cal
 
 - If any calibration invocation scores **"poor"**: fall back to Claude for remaining subtasks of that type in the current session. Report: "Ensemble '{name}' scored poor during calibration — falling back to Claude."
 - If calibration invocations score "good" or "acceptable": continue using the ensemble.
+
+### Calibration Outcome (after 5 evaluated invocations)
+
+After 5 evaluated invocations, determine the calibration outcome:
+
+- **Pass (0 poor scores):** Advance to Establish phase. All scores were good or acceptable — the ensemble is quality-confirmed.
+- **Mixed (1 poor score, session fallback was triggered):** The ensemble remains in Calibrate. On next session, it gets another calibration window (5 more evaluated invocations). If it fails again, emit a feedback artifact to the designer for revision — the ensemble re-enters Design phase.
+- **Fail (2+ poor scores across calibration):** Emit a feedback artifact to the designer with failure analysis. The ensemble re-enters Design phase for revision. Log: "Ensemble '{name}' failed calibration ({poor_count} poor) — returning to Design for revision."
+
+Present calibration outcomes to the user. The user may override — keeping a mixed ensemble in service, or retiring a failed one instead of revising.
 
 **Pattern-as-calibration:** When an ensemble is created after observing Claude perform the same subtask (adaptive observation from Workflow Planning Step 6), Claude's prior outputs serve as implicit calibration data encoded in the system prompt. Note this in the evaluation record: `calibration_context: "pattern-from-observation"`. This does not reduce the calibration period (still 5 evaluated invocations) but increases confidence in early invocations.
 
@@ -536,7 +555,7 @@ Append to `{project}/.llm-orc/evaluations/evaluations.jsonl`:
   "routing_id": "links to routing-log entry",
   "ensemble": "ensemble-name",
   "invocation_number": 4,
-  "phase": "calibration | established | trusted | triggered",
+  "phase": "calibrate | establish | trust | triggered",
   "score": "good | acceptable | poor",
   "reasoning": "The extraction captured all 12 API endpoints with correct HTTP methods...",
   "failure_mode": "null | hallucination | incomplete | wrong-format | off-topic",
@@ -631,7 +650,7 @@ A workflow pattern for Claude-only subtasks that have a separable preparation ph
 **When NOT to apply:**
 - The Claude-only subtask is entirely judgment with no separable preparation (e.g., "What should we name this module?")
 - The preparation would be trivial (< 500 estimated tokens) — overhead exceeds savings
-- No matching ensemble exists and the preparation pattern won't repeat (below repetition threshold)
+- No matching ensemble exists and the preparation pattern won't repeat (below repetition threshold — this is a cost-efficiency check for preparation ensembles specifically, not a gate on ensemble creation in general)
 
 **Token tracking for ensemble-prepared Claude:**
 
