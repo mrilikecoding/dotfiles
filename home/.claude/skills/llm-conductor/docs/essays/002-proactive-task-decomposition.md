@@ -1,5 +1,7 @@
 # Proactive Task Decomposition: The Conductor as Workflow Architect
 
+*2026-02-23*
+
 ## The Missing Half
 
 The first essay on hybrid orchestration established how the conductor routes whole tasks to local models: extract this, classify that, summarize the other. But most real work isn't a single task — it's a meta-task like "build a PromotionHandler" or "run an RDD research cycle" that weaves together reasoning, extraction, generation, and mechanical steps over hours. When the conductor sees "build a PromotionHandler" and classifies it as "reasoning," it falls back to Claude for the entire job. The local models sit idle.

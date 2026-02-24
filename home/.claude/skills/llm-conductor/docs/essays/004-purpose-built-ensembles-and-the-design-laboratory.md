@@ -1,5 +1,7 @@
 # Purpose-Built Ensembles and the Design Laboratory
 
+*2026-02-23*
+
 How task-specific SLM pipelines, external orchestration, and lightweight verification compose into a system that learns to build its own instruments.
 
 ---

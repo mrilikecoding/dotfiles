@@ -86,7 +86,7 @@ The essay should:
 
 If a domain model with invariants already exists (`./docs/domain-model.md`), read its invariants before writing the essay. If the essay's findings contradict existing invariants, explicitly surface this tension. The user needs to decide: does the invariant change (amendment, handled in `/rdd-model`), or does the research finding need qualification? Never silently proceed past a contradiction between new research and existing invariants.
 
-Write the essay to `./docs/essays/<descriptive-name>.md`, where `<descriptive-name>` is a short, kebab-case name describing the essay's topic (e.g., `codebase-analysis-multi-lens-approach.md`, `event-sourcing-tradeoffs.md`). Create the `./docs/essays/` directory if it doesn't exist.
+Write the essay to `./docs/essays/NNN-descriptive-name.md`, where NNN is a zero-padded sequential number (check existing essays to determine the next number) and the descriptive name is a short, kebab-case topic (e.g., `001-codebase-analysis-multi-lens-approach.md`). The essay header must include a date line immediately after the H1 title: `*YYYY-MM-DD*`. Create the `./docs/essays/` directory if it doesn't exist.
 
 Present the essay to the user for approval. If invariant tensions were found, highlight them explicitly — these require a decision before proceeding.
 

@@ -1,5 +1,7 @@
 # Ensemble as System: Expanding Delegability Through Composition
 
+*2026-02-23*
+
 ## The Missed Bet
 
 The prior essay on proactive task decomposition established the conductor as a workflow architect that decomposes meta-tasks into subtasks, routing each to the cheapest capable handler. It found 52% of subtasks in a "reasoning task" were delegable — extraction, template fill, mechanical transforms. The remaining 48% — cross-file analysis, debugging, multi-step reasoning, judgment — stayed with Claude. Invariant 10 drew the line, and we concluded: "The invariant was never wrong. We were applying it at the wrong altitude. No amendment needed."

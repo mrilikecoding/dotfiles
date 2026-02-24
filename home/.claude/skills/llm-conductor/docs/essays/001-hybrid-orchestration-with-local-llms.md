@@ -1,5 +1,7 @@
 # Hybrid Orchestration: Composing Local LLMs to Reduce Claude Token Usage
 
+*2026-02-23*
+
 ## The Problem
 
 Claude Code is powerful but expensive in tokens. Every task — from extracting a list of endpoints from a file to synthesizing architectural recommendations — consumes the same premium resource. Yet most tasks don't require frontier-model reasoning. Research shows that 77% of real-world LLM queries involve practical guidance, information-seeking, or writing that smaller models handle adequately. Organizations using model routing achieve 50-70% cost reduction by sending simple tasks to cheaper models while maintaining quality on complex ones.
