@@ -39,6 +39,8 @@ ITEMS=(
     ".claude/CLAUDE.md"
     ".claude/.mcp.json"
     ".claude/settings.json"
+    ".vibe/AGENTS.md"
+    ".vibe/skills"
     ".config"
     ".gitconfig"
     ".gitignore_global"
@@ -77,6 +79,7 @@ fi
 # Pre-create directories that must not be "folded" by stow
 # (stow would otherwise replace the dir with a single symlink)
 mkdir -p "$HOME/.claude"
+mkdir -p "$HOME/.vibe"
 
 # Create symlinks
 echo ""

@@ -11,3 +11,9 @@ home/.config/glab-cli/
 home/.config/cagent/.cagent_first_run
 home/.config/llm-orc/credentials.yaml
 
+home/.vibe/.env
+home/.vibe/logs/
+home/.vibe/vibehistory
+home/.vibe/update_cache.json
+home/.vibe/trusted_folders.toml
+
