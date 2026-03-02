@@ -119,7 +119,7 @@ Before presenting, evaluate the design against itself:
 
 Fix issues before presenting. If an issue requires a judgment call, present the options to the user.
 
-### Step 10: Write and Present
+### Step 10: Present for Approval
 
 Write the system design to `./docs/system-design.md` using the template below.
 
@@ -128,6 +128,8 @@ Present the complete design to the user. Highlight:
 - Concepts that could reasonably live in multiple modules (and why you chose the one you did)
 - Fitness criteria that will be enforced during build
 - Any points where you stopped due to uncertainty
+
+**The user must approve the system design before `/rdd-build` proceeds.** This is the gate between architectural design and implementation. Do not advance past this step without explicit user confirmation.
 
 ---
 
