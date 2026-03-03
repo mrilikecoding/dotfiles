@@ -99,7 +99,20 @@ For each dependency edge in the graph, define:
 - **Error handling** — how failures propagate across the boundary
 - **Ownership** — which side owns the contract definition
 
-### Step 8: Architectural Fitness Criteria
+### Step 8: Test Architecture
+
+Design the test strategy alongside the module structure. For each dependency edge in the graph, specify what integration test verifies the boundary works with real types (not stubs):
+
+- **Boundary tests** — for each edge in the dependency graph, name the integration test that verifies real data flows across it. If Module A depends on Module B, there must be at least one test where A calls B with real types, not mocks.
+- **Invariant enforcement tests** — for each domain invariant, identify which test(s) verify it. If no test can verify an invariant, flag it as an architectural gap.
+- **Test layers** — define what each layer verifies:
+  - **Unit tests** — verify logic within a single module, may mock neighbors
+  - **Integration tests** — verify real data flow across module boundaries, no mocks at the boundary under test
+  - **Acceptance tests** — verify scenarios end-to-end using real wiring
+
+The key rule: **every module boundary in the dependency graph must have at least one integration test that uses real types on both sides.** A boundary verified only with mocks is not verified.
+
+### Step 9: Architectural Fitness Criteria
 
 Define measurable properties the design must maintain. These become guardrails during build:
 - Maximum responsibilities per module (e.g., "no module owns more than N glossary entries")
@@ -109,7 +122,7 @@ Define measurable properties the design must maintain. These become guardrails d
 
 Each criterion must be verifiable — either by automated check or by inspection of the responsibility matrix and dependency graph.
 
-### Step 9: Design Audit
+### Step 10: Design Audit
 
 Before presenting, evaluate the design against itself:
 1. **Invariant coverage** — does the design honor all invariants? For each invariant, which module(s) enforce it?
@@ -121,7 +134,7 @@ Before presenting, evaluate the design against itself:
 
 Fix issues before presenting. If an issue requires a judgment call, present the options to the user.
 
-### Step 10: Present for Approval
+### Step 11: Present for Approval
 
 Write the system design to `./docs/system-design.md` using the template below.
 
@@ -183,6 +196,26 @@ Present the complete design to the user. Highlight:
 
 | Criterion | Measure | Threshold | Derived From |
 |-----------|---------|-----------|-------------|
+
+## Test Architecture
+
+### Boundary Integration Tests
+
+| Dependency Edge | Integration Test | What It Verifies |
+|----------------|-----------------|------------------|
+| [Module A → Module B] | [test name/description] | [real data flow across boundary] |
+
+### Invariant Enforcement Tests
+
+| Invariant | Enforcement Location | Test |
+|-----------|---------------------|------|
+| [invariant text] | [module:file] | [test name/description] |
+
+### Test Layers
+
+- **Unit:** [what they verify, where mocks are acceptable]
+- **Integration:** [which boundaries, real types required]
+- **Acceptance:** [end-to-end scenarios, full wiring]
 
 ## Design Amendment Log
 

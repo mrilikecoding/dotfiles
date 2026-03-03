@@ -209,6 +209,11 @@ A quick structural scan. For each module that received new code in this scenario
 3. **Cohesion** — is new code landing in the module the design assigns it to? Or is it gravitating toward a "convenient" module because that's where the calling code lives?
 4. **Size signal** — is any single file or class growing disproportionately relative to its peers? Not a hard metric, but a smell.
 5. **Fitness Criteria** — check against the measurable properties defined in the system design's Fitness Criteria table.
+6. **Test quality** — for tests written in this scenario group:
+   - **Vacuous tests** — does every test assert something meaningful about actual code behavior? A test that only exercises mocks without touching real code is not a test.
+   - **Assertion roulette** — does any test contain multiple unrelated assertions without clear messages? Each test should verify one cohesive behavior.
+   - **Boundary coverage** — for each module boundary crossed in this scenario group, does an integration test exist that uses real types on both sides (not stubs)? Check against the system design's Test Architecture table.
+   - **Wiring verification** — do acceptance tests exercise the real call chain, or are they testing through mocks that could mask integration failures?
 
 Present a brief conformance summary:
 
@@ -223,11 +228,16 @@ Present a brief conformance summary:
 
 Triggered when Tier 1 flags can't be resolved with simple tidying — the code is drifting from the design in a way that suggests the design or the code needs non-trivial adjustment.
 
-Run three focused analyses (not a full codebase audit — targeted to the flagged area):
+Run four focused analyses (not a full codebase audit — targeted to the flagged area):
 
 1. **Coupling analysis** — map actual dependencies in the flagged module(s) against the system design's dependency graph. Where do they diverge? Are new coupling paths emerging that the design didn't anticipate?
 2. **Intent-implementation alignment** — is the flagged module doing what the system design says it should? Or has its actual responsibility expanded beyond its designed purpose?
 3. **Invariant enforcement** — are the domain model invariants being enforced in the locations the system design specifies? Are enforcement gaps emerging?
+4. **Test-code correspondence** — for the flagged area, evaluate whether the test suite actually verifies the code:
+   - Are critical code paths tested, or are only trivial paths covered?
+   - Do integration tests use real types at boundaries, or do mocks mask wiring failures?
+   - For each boundary in the system design's Test Architecture table that was crossed, does a real integration test exist?
+   - Are there tests that pass even when the code under test is deleted or broken (indicating the test exercises mocks, not code)?
 
 Produce findings using the stewardship format:
 
