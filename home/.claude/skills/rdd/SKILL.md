@@ -1,6 +1,6 @@
 ---
 name: rdd
-description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Model (domain vocabulary), Decide (ADRs), Build (BDD → TDD). Use when starting a new project or feature that needs research before code.
+description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD). Use when starting a new project or feature that needs research before code.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit, Task, Bash
 ---
@@ -18,6 +18,7 @@ $ARGUMENTS
 | `/rdd-research` | Ideation → research/spike loop → essay | Topic or question |
 | `/rdd-model` | Extract domain vocabulary from essay | Essay |
 | `/rdd-decide` | ADRs + argument audit + refutable behavior scenarios | Essay + domain model + prior ADRs |
+| `/rdd-architect` | System design with responsibility allocation + provenance | Domain model + ADRs + scenarios |
 | `/rdd-build` | BDD scenarios → TDD loop → working software | Scenarios + domain model |
 | `/lit-review` | Systematic literature search and synthesis | Topic (used within `/rdd-research`) |
 
@@ -44,11 +45,15 @@ Phase 2: DECIDE
 └── /rdd-decide — ADRs → argument audit → behavior scenarios
     [Gate: User approves ADRs, scenarios, and audit fixes.]
 
-Phase 3: BUILD
+Phase 3: ARCHITECT
+└── /rdd-architect — System design → responsibility allocation → fitness criteria
+    [Gate: User approves system design before proceeding.]
+
+Phase 4: BUILD
 └── /rdd-build — BDD → TDD → working software
     [Gate: User approves at each scenario completion.]
 
-Phase 4: INTEGRATE
+Phase 5: INTEGRATE
 └── /rdd-build Step 5 — Integration verification
     [Gate: New components verified against real neighbors, not just stubs.]
 ```
@@ -73,7 +78,10 @@ Bridge: MODEL
 Phase 2: DECIDE
 └── /rdd-decide — ADRs → argument audit → behavior scenarios
 
-Phase 3: BUILD
+Phase 3: ARCHITECT
+└── /rdd-architect — System design → responsibility allocation → fitness criteria
+
+Phase 4: BUILD
 └── /rdd-build — BDD → TDD → working software
 ```
 
@@ -104,6 +112,7 @@ Maintain a running status table:
 | UNDERSTAND | /rdd-research | ▶ In Progress | Research loop #3 | Investigating caching strategies |
 | MODEL | /rdd-model | ☐ Pending | — | — |
 | DECIDE | /rdd-decide | ☐ Pending | — | — |
+| ARCHITECT | /rdd-architect | ☐ Pending | — | — |
 | BUILD | /rdd-build | ☐ Pending | — | — |
 | INTEGRATE | /rdd-build Step 5 | ☐ Pending | — | — |
 ```
@@ -117,10 +126,15 @@ Findings from earlier phases inform later ones:
 - `/rdd-model` vocabulary must be used consistently in `/rdd-decide` ADRs and scenarios
 - `/rdd-decide` runs `/argument-audit` on ADRs + essay + prior ADRs to verify logical consistency before writing scenarios
 - `/rdd-decide` conformance audit checks existing code against accepted ADRs — producing a debt list that informs scenario writing
-- `/rdd-decide` ADR decisions constrain what `/rdd-build` implements
+- `/rdd-decide` ADR decisions constrain what `/rdd-architect` designs and `/rdd-build` implements
 - `/rdd-decide` behavior scenarios drive `/rdd-build` test-first process
+- `/rdd-architect` composes ADRs, domain model, and scenarios into a system design with provenance chains linking design to research
+- `/rdd-architect` responsibility matrix prevents god-classes by allocating domain concepts/actions to modules before code is written
+- `/rdd-build` reads the system design as its primary context (compiled rollup), not the full artifact set
 - `/rdd-build` treats ADR violations as architectural tidying — resolve as `refactor:` commits before implementing scenarios
+- `/rdd-build` stewardship checkpoints verify architectural conformance at natural scenario boundaries
 - `/rdd-build` integration verification (Step 5) catches type mismatches, persistence divergence, and missing cross-component contracts that acceptance tests with stubs cannot detect
+- If `/rdd-build` stewardship review reveals a design flaw, a Design Amendment updates the system design (not the ADRs)
 - If `/rdd-build` reveals a flaw in a decision, go back and update the ADR
 - When any phase changes a domain model invariant, **backward propagation triggers**: all prior documents are swept for contradictions, supersession notes are added, and the amendment is logged in the domain model. This is a cross-cutting event that interrupts normal phase sequence.
 
@@ -133,6 +147,7 @@ Findings from earlier phases inform later ones:
 | MODEL | Domain model/glossary | `./docs/domain-model.md` |
 | DECIDE | ADRs | `./docs/decisions/adr-NNN-*.md` |
 | DECIDE | Behavior scenarios | `./docs/scenarios.md` |
+| ARCHITECT | System design | `./docs/system-design.md` |
 | BUILD | Tests + code | Project source |
 
 ### Invariant Amendments
