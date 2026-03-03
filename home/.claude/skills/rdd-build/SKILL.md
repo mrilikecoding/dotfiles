@@ -17,7 +17,7 @@ $ARGUMENTS
 Read in this order:
 
 1. **Domain model invariants** (`./docs/domain-model.md`, § Invariants) — constitutional authority. These are the highest-precedence statements in the entire artifact set.
-2. **System design** (`./docs/system-design.md`) — PRIMARY context document. Contains the module decomposition, responsibility allocation, dependency graph, and provenance chains. This is the compiled rollup of all upstream artifacts.
+2. **System design** (`./docs/system-design.md`) — PRIMARY context document. Contains the module decomposition, responsibility allocation, dependency graph, and provenance chains. This is the compiled rollup of all upstream artifacts. **If this file does not exist** (e.g., the user skipped `/rdd-architect`), note that stewardship checkpoints will not be available during build. Prompt the user: run `/rdd-architect` first, or proceed without architectural guardrails.
 3. **Behavior scenarios** (`./docs/scenarios.md`) — your acceptance criteria.
 4. **Existing project code** — understand what's already there before writing anything.
 
@@ -35,7 +35,7 @@ For each behavior scenario, in order:
 2. **TDD inner loop** — red/green/refactor until the acceptance test passes
 3. **Verify** — run the full test suite
 4. **Present to user** — show what was built, which scenario it satisfies
-5. If this scenario completes a logical group — a feature, a component boundary crossing, or a natural stopping point — run a **Tier 1 Stewardship Check** (see STEWARDSHIP CHECKPOINTS below) before proceeding to the next group.
+5. If this scenario completes a logical group — a feature or a component boundary crossing — run a **Tier 1 Stewardship Check** (see STEWARDSHIP CHECKPOINTS below) before proceeding to the next group.
 6. **User approves** — then next scenario
 
 Do not work ahead. One scenario at a time.
@@ -208,7 +208,7 @@ A quick structural scan. For each module that received new code in this scenario
 2. **Dependency direction** — check import/dependency directions against the system design's dependency graph. Flag violations (wrong direction, unexpected edges, cycles).
 3. **Cohesion** — is new code landing in the module the design assigns it to? Or is it gravitating toward a "convenient" module because that's where the calling code lives?
 4. **Size signal** — is any single file or class growing disproportionately relative to its peers? Not a hard metric, but a smell.
-5. **Fitness criteria** — check against the measurable properties defined in the system design.
+5. **Fitness Criteria** — check against the measurable properties defined in the system design's Fitness Criteria table.
 
 Present a brief conformance summary:
 
@@ -260,7 +260,7 @@ build scenario group
 
 ## DESIGN AMENDMENTS
 
-When building reveals that the system design needs to change — not the code, but the architectural design itself — use this process. Never silently modify the system design.
+When building reveals that the system design needs to change — not the code, but the architectural design itself — use this process. Never silently modify the system design. This process mirrors the amendment process defined in `/rdd-architect`; if one is updated, both should be kept consistent.
 
 ### When to Amend
 
