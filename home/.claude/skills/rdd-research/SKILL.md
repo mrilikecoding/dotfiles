@@ -77,7 +77,14 @@ Present a summary to the user and ask: **loop again with a new question, or proc
 
 When the user decides research is sufficient, synthesize all findings into a publishable-quality essay. This is the forcing function for understanding — if you can't explain it clearly in prose, you don't understand it well enough.
 
-The essay should:
+The essay must begin with an **Abstract** — a concise summary (3-5 sentences) stating:
+- The questions investigated
+- The research process used (web search, literature review, spikes)
+- The key conclusions and their implications
+
+The abstract serves as a context rollup for downstream phases (`/rdd-model`, `/rdd-architect`, `/rdd-build`). A reader should be able to decide whether to read the full essay from the abstract alone.
+
+The essay body should:
 - Explain the problem space and why it matters
 - Summarize what was learned through research and spikes
 - Identify key tradeoffs and constraints
@@ -86,7 +93,19 @@ The essay should:
 
 If a domain model with invariants already exists (`./docs/domain-model.md`), read its invariants before writing the essay. If the essay's findings contradict existing invariants, explicitly surface this tension. The user needs to decide: does the invariant change (amendment, handled in `/rdd-model`), or does the research finding need qualification? Never silently proceed past a contradiction between new research and existing invariants.
 
-Write the essay to `./docs/essays/NNN-descriptive-name.md`, where NNN is a zero-padded sequential number (check existing essays to determine the next number) and the descriptive name is a short, kebab-case topic (e.g., `001-codebase-analysis-multi-lens-approach.md`). The essay header must include a date line immediately after the H1 title: `*YYYY-MM-DD*`. Create the `./docs/essays/` directory if it doesn't exist.
+Write the essay to `./docs/essays/NNN-descriptive-name.md`, where NNN is a zero-padded sequential number (check existing essays to determine the next number) and the descriptive name is a short, kebab-case topic (e.g., `001-codebase-analysis-multi-lens-approach.md`). The essay header format:
+
+```markdown
+# [Title]
+*YYYY-MM-DD*
+
+## Abstract
+[3-5 sentence summary: questions, process, conclusions]
+
+## [Body sections...]
+```
+
+Create the `./docs/essays/` directory if it doesn't exist.
 
 Present the essay to the user for approval. If invariant tensions were found, highlight them explicitly — these require a decision before proceeding.
 
