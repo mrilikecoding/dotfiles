@@ -40,6 +40,33 @@ For each behavior scenario, in order:
 
 Do not work ahead. One scenario at a time.
 
+### Acceptance Test Boundary Rule
+
+**Acceptance tests must verify observable output, not internal state.** The Given/When/Then describes what a user would see or experience. The test must check at the system boundary:
+
+- **TUI app** → render to a buffer, assert on visible characters and styles
+- **API** → make a request, assert on the response
+- **CLI** → run the command, assert on stdout/stderr
+- **Library** → call the public API, assert on return values
+
+If the test only checks `app.some_flag == true`, it's a unit test masquerading as an acceptance test. The flag could be true while the screen shows nothing. **The scenario isn't satisfied until the output matches.**
+
+Example of the failure mode:
+- Scenario: "Settings Layer appears with configuration options"
+- Bad test: `assert!(app.settings_visible)` — passes, but nothing renders
+- Good test: render to a buffer, assert that configuration option text is present in the buffer cells
+
+### Integration Wiring Rule
+
+When wiring components together (event loops, UI layout, draw functions), **every user-visible element must trace back to a scenario.** If you add something visible that no scenario describes — a status bar, a mode indicator, a border — either:
+
+1. Find the scenario it satisfies, or
+2. Flag the gap to the user before adding it
+
+This prevents integration work from silently introducing behavior that contradicts existing scenarios. Plumbing is not exempt from scenario verification.
+
+Do not work ahead. One scenario at a time.
+
 ### Step 3: Inner Loop — TDD
 
 For each piece of implementation needed to make the acceptance test pass:

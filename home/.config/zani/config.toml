@@ -1,0 +1,5 @@
+palette = "Ember"
+focus_mode = "sentence"
+column_width = 66
+editing_mode = "vim"
+scroll_mode = "typewriter"
