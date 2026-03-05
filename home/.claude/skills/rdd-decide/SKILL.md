@@ -43,7 +43,7 @@ Use domain vocabulary from the glossary.]
 
 ## Decision
 
-[What we decided to do. Concrete and specific.]
+[The decision. Concrete and specific.]
 
 ## Consequences
 

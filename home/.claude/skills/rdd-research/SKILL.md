@@ -14,7 +14,7 @@ $ARGUMENTS
 
 ### Loop Mechanics
 
-1. **User poses a question or hypothesis** — what do we need to learn?
+1. **User poses a question or hypothesis** — what needs to be learned?
 2. **Research** — via web search, `/lit-review` (for academic topics), or a spike (for technical questions)
 3. **Synthesize** — record findings in the research log
 4. **User decides** — loop again with a new question, or proceed to the essay
@@ -45,7 +45,7 @@ Spikes answer focused technical questions through code. They are NOT feature wor
 - **Spike must start with a written question** (1 sentence, e.g., "Can library X handle streaming JSON parsing above 10MB?")
 - **Spike code lives in a scratch directory** (`./scratch/spike-<name>/`), never in the project source
 - **Spike scope is one focused question** — if the spike grows, stop and split it
-- **Spike output is prose**, recorded in the research log: "We learned X, tradeoffs are Y, recommendation is Z"
+- **Spike output is prose**, recorded in the research log: "Learned X, tradeoffs are Y, recommendation is Z"
 - **Spike code is deleted** after findings are recorded — `rm -rf ./scratch/spike-<name>/`
 - **No spike exceeds a single focused question** — if you find yourself building infrastructure, stop
 
@@ -62,7 +62,7 @@ After each research iteration, update the running log:
 
 ## Question 1: [question text]
 **Method:** [web search / lit-review / spike]
-**Findings:** [what we learned]
+**Findings:** [what was learned]
 **Implications:** [what this means for the project]
 
 ## Question 2: [question text]
@@ -90,6 +90,7 @@ The essay body should:
 - Identify key tradeoffs and constraints
 - State the approach that emerged from research, and why
 - Be written for a technical audience unfamiliar with the project
+- Use third person or impersonal voice — never "we", "our", or "us"
 
 If a domain model with invariants already exists (`./docs/domain-model.md`), read its invariants before writing the essay. If the essay's findings contradict existing invariants, explicitly surface this tension. The user needs to decide: does the invariant change (amendment, handled in `/rdd-model`), or does the research finding need qualification? Never silently proceed past a contradiction between new research and existing invariants.
 

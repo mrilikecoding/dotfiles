@@ -24,6 +24,17 @@ $ARGUMENTS
 
 ---
 
+## ARTIFACT LOCATION
+
+Before presenting workflow modes, ask the user where RDD artifacts should be stored. Provide two common options:
+
+1. **In the project repo** — `./docs/` (default). Appropriate when RDD artifacts should be versioned with the project.
+2. **In a personal notes folder** — the user specifies a path (e.g., `~/notes/project-name/`). Appropriate when RDD is a personal methodology and artifacts should not be committed to a shared repo.
+
+Store the chosen base path and use it as the root for all artifact locations throughout the pipeline. Pass this path to each skill invocation so that all phases write to the same location. If the user chooses a custom path, replace every `./docs/` reference with that path.
+
+---
+
 ## WORKFLOW MODES
 
 Present these options to the user and let them choose:
@@ -157,6 +168,14 @@ Invariant changes are the highest-impact events in the RDD cycle. They can inval
 - **When detected:** pause the current phase, run backward propagation (sweep all prior ADRs and essays for contradictions, add supersession notes, update the domain model's Amendment Log), then resume after propagation is complete.
 - **Cost calculus:** the cost of propagation now is far less than the cost of stale assumptions propagating into code later. A 10-minute sweep prevents hours of debugging dead ideas in future sessions.
 - **Who triggers it:** `/rdd-model` Step 3.5 detects amendments; `/rdd-decide` Step 3.7 executes backward propagation. But any phase that discovers an invariant contradiction should flag it for propagation.
+
+---
+
+## WRITING VOICE
+
+All RDD artifacts — essays, research logs, ADRs, domain models, system designs — must use **third person or impersonal voice**. Do not use "we", "our", "us", or any first-person plural. Use constructions like "the system", "this design", "the research found", or passive voice where appropriate.
+
+This applies to all prose produced by every phase. It is a cross-cutting rule.
 
 ---
 
