@@ -31,6 +31,9 @@
 | Desirable Difficulty | A condition that makes learning feel harder but produces better long-term retention. Epistemic acts introduce targeted desirable difficulties at gates. From Bjork (1994). | Epistemic Act |
 | Cognitive Level | The depth of cognitive engagement, mapped to Bloom's taxonomy (Remember, Understand, Apply, Analyze, Evaluate, Create). Approval gates engage only Evaluate. Epistemic gates engage Analyze and Create. | Epistemic Gate, Approval Gate |
 | Dreyfus Stage | The user's current stage of skill acquisition (Novice → Expert). Determines how much scaffolding is appropriate and when fading should occur. | Fading, Scaffolding |
+| Maintenance Cliff | The point where initial velocity advantages of AI-assisted development invert due to accumulated opacity. Debugging and extending uncomprehended code takes longer than manual development would have. The concrete, measurable consequence of the Opacity Problem. | Opacity Problem, Approval Gate |
+| Context Window Ceiling | The hard constraint where system complexity exceeds what AI can reason about holistically. At this point, the human's structural understanding becomes the irreplaceable bridge — the long-term architectural memory that the AI's context cannot be. | Opacity Problem, Maintenance Cliff |
+| Authority | The standing to explain, decide about, and take responsibility for a system. Requires understanding — ownership without comprehension is commissioning, not authorship. The word does double duty: knowledge sufficient to explain, and standing sufficient to decide. Authority is what Invariant 0 measures. | Common Ground, Epistemic Gate |
 
 **Synonym aliases to avoid in ADRs and skill text:**
 
@@ -76,8 +79,15 @@
 - Fading **is governed by** Dreyfus Stage
 - Artifact **serves as** Epistemic Artifact (dual role: deliverable + learning instrument)
 - Opacity Problem **compounds across** Phases when Epistemic Acts are absent
+- Opacity Problem **manifests as** Maintenance Cliff (at project scale)
+- Epistemic Gate **prevents** Maintenance Cliff (by interrupting compounding at each phase transition)
+- Context Window Ceiling **necessitates** human structural understanding (AI cannot substitute beyond this point)
+- Epistemic Gate **builds** Authority (through accumulated understanding across the pipeline)
+- Authority **requires** understanding (ownership without comprehension is commissioning, not authorship)
 
 ## Invariants
+
+0. **The user should be able to speak with authority about what was built.** After completing an RDD cycle, the user should be able to explain the system's design rationale, key decisions, and domain vocabulary without AI assistance. This is the outcome all other invariants serve. If the methodology satisfies invariants 1-7 but the user cannot do this, the methodology has failed.
 
 1. **Understanding requires generation, not review.** Passive review of AI output does not produce durable understanding. Every gate must require the user to produce something — an explanation, prediction, reconstruction, or articulation — not merely assess something.
 
@@ -97,3 +107,5 @@
 
 | # | Date | Invariant | Change | Propagation |
 |---|------|-----------|--------|-------------|
+| 1 | 2026-03-05 | Invariant 0 | ADDED: outcome-level invariant establishing that the user must be able to explain what was built without AI assistance | Essay §9 should reference this as the success criterion; all ADRs should trace back to it |
+| 2 | 2026-03-05 | Concepts | ADDED: Maintenance Cliff, Context Window Ceiling. ADDED relationships: Opacity Problem manifests as Maintenance Cliff; Epistemic Gate prevents Maintenance Cliff; Context Window Ceiling necessitates human structural understanding | Informed by essay §8 (requirements-only counterargument) |

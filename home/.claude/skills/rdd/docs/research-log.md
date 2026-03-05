@@ -276,3 +276,86 @@ Explaining a problem forces a shift from fast, assumption-laden thinking (System
 These mechanisms compound across the pipeline. The user's self-explanation at the RESEARCH gate surfaces assumptions that improve the MODEL. Retrieval practice at the MODEL gate reveals weak concepts that get strengthened before DECIDE. Elaborative interrogation at DECIDE makes rationale explicit for ARCHITECT. Each epistemic act enriches the context available to subsequent phases — the AI draws on both the formal artifact and the user's reasoned engagement with it.
 
 **Implication:** Epistemic gates improve software quality not despite costing time, but because the time spent on articulation surfaces assumptions and corrects misalignments that would otherwise become defects. The 30-45 minutes of epistemic activity is early defect detection, not a productivity tax.
+
+## Question 6: What does the research say about the "requirements-only" philosophy — defining acceptance criteria and letting AI brute-force against them without understanding the implementation?
+
+**Method:** Web search for AI-generated code quality metrics, vibe coding risks, and maintenance burden evidence (2024-2026).
+
+**Findings:**
+
+The requirements-only approach is the approval gate pattern taken to its logical extreme: automated approval (tests pass) with no human understanding of implementation.
+
+### Empirical Evidence on Code Quality Degradation
+
+- **GitClear (2025):** AI-assisted codebases show 8x increase in code duplication. Refactoring dropped from 25% to under 10% of changes. Code "works" but is structurally degraded — duplicated logic, missed abstractions, no one cleaning up because no one understands the structure well enough to refactor safely.
+- **Security:** 45% of AI-generated code contains OWASP vulnerabilities (Snyk). Vibe coders show 2.74x higher security vulnerability rates. Acceptance criteria rarely specify security properties — they specify business behavior.
+- **Delivery stability:** Google's DORA metrics show 7.2% decrease in delivery stability correlated with AI code generation adoption.
+- **QA abandonment:** 36% of vibe coders skip QA entirely — the logical conclusion of "if it meets criteria, ship it."
+
+### The Maintenance Cliff
+
+Multiple industry reports describe the same pattern: initial velocity is high, but teams hit a "maintenance cliff" where debugging AI-generated code takes longer than writing it manually would have. The speed advantage inverts. Developers spend more time understanding unfamiliar AI patterns than they saved in generation. This is the opacity problem made concrete.
+
+### Requirements Cannot Specify Everything That Matters
+
+Performance criteria test specific scenarios, not all load patterns. Security criteria test known vulnerabilities, not unknown ones. Behavioral criteria test expected paths, not emergent interactions. Structural quality (cohesion, coupling, duplication) is not expressible as acceptance criteria at all. The things criteria *cannot* specify are precisely the things that determine long-term system health.
+
+### What the Frameworks Say
+
+From Clark & Brennan: passing tests is automated approval — an even weaker form of grounding than human approval. No one ever establishes shared understanding of the implementation. From Kirsh & Maglio: the approach maximizes pragmatic actions and eliminates all epistemic actions. From the Anthropic study: this is the pure-delegation pattern that scored below 40% on comprehension.
+
+**Implications:**
+
+The requirements-only philosophy works for genuinely disposable artifacts (prototypes, one-off scripts, demos). It fails for systems that must evolve, because evolution requires understanding, and understanding requires engagement with implementation. The speed advantage of zero-understanding development inverts at the maintenance horizon.
+
+## Question 7: Would epistemic gates significantly reduce the maintenance cliff, and at what cost to initial velocity?
+
+**Method:** Analytical synthesis of Q1-Q6 findings, mapped against the user's reported experience of duplicated code paths and god classes in AI-assisted development.
+
+**Findings:**
+
+### Three Mechanisms That Reduce the Cliff
+
+1. **Tacit knowledge surfacing prevents the defects that cause the cliff.** God classes and duplicated code paths emerge when no one articulates module responsibilities and understands why those boundaries exist. The ARCHITECT phase's responsibility matrix addresses this structurally; the epistemic gate makes it stick. When the user articulates which module owns what and why, boundary violations become detectable during BUILD.
+
+2. **Grounding prevents drift.** Each epistemic act gives the AI signal about what the user actually understands. When the user explains "this service handles X and only X," code that quietly puts Y in the same service creates a detectable mismatch — because the user has an articulated mental model to compare against.
+
+3. **Compounding works in reverse.** The maintenance cliff happens because small misunderstandings compound: vague concept → ambiguous ADR → blurry module boundary → god class. Epistemic acts at each gate are early detection — they surface vague concepts before they propagate downstream.
+
+### The Velocity Trade-Off
+
+The absolute cost is small: 5-10 minutes per gate (Invariant 4), approximately 30-50 minutes across a full pipeline. The Anthropic study's strongest finding is that the conceptual inquiry pattern — the closest analog to epistemic gates — was the second-fastest pattern overall, faster than most patterns that produced worse understanding. The dichotomy between speed and understanding is an artifact of unstructured AI use, not an inherent trade-off.
+
+The net velocity effect is positive when measured across a full development lifecycle rather than a single sprint. If epistemic gates delay or prevent the maintenance cliff, the time saved in avoided debugging vastly exceeds the time spent on epistemic acts. The trade-off is not "fast now vs. slow now" — it is "slightly less fast now vs. dramatically slow later."
+
+### The Context Window Ceiling
+
+A further limitation of the requirements-only approach: it implicitly assumes the AI can always reason holistically about the system. But context windows are a hard constraint. At sufficient complexity, no AI can hold the entire system in context simultaneously. When the AI hits this ceiling, the only thing that bridges the gap is a human who understands the system's *intent* — not line-by-line code knowledge, but structural understanding of organizing principles, responsibility boundaries, and what should change together. Epistemic gates build precisely this kind of understanding: the human becomes the long-term architectural memory that the AI's context window cannot be.
+
+**Implications:**
+
+The user's reported experience (duplicated code paths, god classes, no organizational strategy) is a concrete instance of what the research predicts: structural degradation from the opacity problem compounding across development cycles. Epistemic gates address the root cause — not the code quality directly, but the *understanding* that enables a human to detect and prevent structural degradation as it forms. The context window ceiling adds urgency: as systems grow beyond what AI can reason about holistically, the human's structural understanding becomes not just beneficial but necessary for continued development.
+
+## Question 8: Even if practical arguments for understanding were resolved by better AI, why should a human understand what is being built?
+
+**Method:** Analytical synthesis — exploring the philosophical and economic dimensions beyond the practical/empirical arguments.
+
+**Findings:**
+
+### Understanding as Economic Moat
+
+If a system is fully comprehensible to AI and fully opaque to its builders, the system is a commodity. Anyone with the same AI and the same requirements can replicate it. The human understanding of the system — why it exists, what it should become, how it serves its users — is the competitive moat. A team that understands its system can make strategic decisions about its future. A team that does not is entirely dependent on whoever controls the AI tools. When no human understands the implementation, the distinction between "a system built with unique domain expertise" and "a system anyone could generate from a requirements doc" collapses.
+
+### Understanding as Authority
+
+Authority requires understanding. A developer who cannot explain why the system is structured as it is, what trade-offs were accepted, and what would break if a decision were reversed does not have authority over the system — regardless of ownership. They have commissioned the work, not authored it. When something goes wrong — a production incident, a design decision that needs revisiting — "the AI built it" is not a response strategy. "I understand why it works this way, and here is what needs to change" is.
+
+This connects directly to Invariant 0: the user should be able to speak with authority about what was built. The word "authority" is doing double duty — it means both "knowledge sufficient to explain" and "standing sufficient to decide."
+
+### What Work Is Worth Doing
+
+If all development work is pragmatic (meet requirements, pass tests), then AI performs it and the human contribution trends toward zero. The developer becomes a requirements translator. The epistemic work — deciding what to build, understanding why, reasoning about trade-offs, making judgment calls — is irreducibly human. Not because AI cannot generate answers, but because the authority to make those decisions requires the understanding to stand behind them.
+
+**Implications:**
+
+This is the foundational motivation for RDD's pedagogical dimension. The practical arguments (prevents maintenance cliff, improves quality, bridges context window ceiling) are strong but contingent. The authority argument is not contingent: building software is an act of understanding, not just production. The epistemic gates exist because the alternative — building systems no human understands — may be technically feasible but is professionally and economically hollow. This is the crux of the user's motivation for RDD and should be treated as the essay's anchoring argument.
