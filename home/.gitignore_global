@@ -7,7 +7,7 @@
 .clawmarks.json
 
 # Claude Code
-.claude/settings.local.json
+**/settings.local.json
 
 # Plexus MCP
 .plexus.db
