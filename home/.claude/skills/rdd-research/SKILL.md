@@ -108,7 +108,23 @@ Write the essay to `./docs/essays/NNN-descriptive-name.md`, where NNN is a zero-
 
 Create the `./docs/essays/` directory if it doesn't exist.
 
-Present the essay to the user for approval. If invariant tensions were found, highlight them explicitly — these require a decision before proceeding.
+Present the essay to the user. If invariant tensions were found, highlight them explicitly — these require a decision before proceeding.
+
+### EPISTEMIC GATE
+
+After presenting the essay, run the epistemic gate protocol before proceeding to the next phase.
+
+Present 2-3 of the following prompts, filling in the bracketed references with specific findings, concepts, and claims from the essay just produced:
+
+- **Self-explanation:** "What stands out to you as the most important finding here? How would you explain [key finding] to a colleague?"
+- **Reflection-on-action:** "How has your thinking about [domain topic] shifted from where you started?"
+- **Articulation:** "Which finding most challenged your initial assumptions, and why?"
+
+Wait for the user to respond to at least one prompt. If the user responds with only non-generative approval ("looks good", "approved"), acknowledge it but gently re-present the prompts — the gate asks for the user's perspective on the research, not just confirmation that the essay exists.
+
+After the user responds, note any obvious factual discrepancies between their response and the essay content without framing it as an error ("The essay describes X as Y — your take was Z. Worth revisiting?"). Do not assess the quality of the user's understanding.
+
+Then ask whether to proceed to the next phase, revise the essay, or loop back to research.
 
 ---
 
