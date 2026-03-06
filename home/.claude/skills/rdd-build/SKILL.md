@@ -85,7 +85,21 @@ After each scenario:
 - Run the full test suite
 - Show the user which scenario is now satisfied
 - Show what code was written or changed
-- Ask whether to proceed to the next scenario
+
+#### EPISTEMIC GATE (per scenario group)
+
+At each scenario group boundary (completing a logical group of scenarios that forms a coherent feature or crosses a component boundary), run the epistemic gate protocol before proceeding:
+
+Present 1-2 of the following prompts, filling in the bracketed references with specific scenarios, test outcomes, and code changes from the work just completed:
+
+- **Reflection-in-action:** "What's your gut sense of what's going to happen when we run this?"
+- **Self-explanation:** "What do you think is going on here?" (when a test fails or behavior is unexpected)
+
+Wait for the user to respond. If the user responds with only non-generative approval ("looks good", "next"), acknowledge it but gently re-present the prompts — the gate asks for the user's perspective on what was built, not just confirmation.
+
+After the user responds, note any obvious factual discrepancies between their response and the actual code/test outcomes without framing it as an error. Do not assess the quality of the user's understanding.
+
+Then ask whether to proceed to the next scenario group.
 
 ### Step 5: Integration Verification
 
