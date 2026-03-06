@@ -46,23 +46,23 @@ Run everything in order. For projects that need research before code.
 ```
 Phase 1: UNDERSTAND
 └── /rdd-research — Research loop → essay
-    [Gate: User approves essay before proceeding.]
+    [Epistemic gate: User explains key findings and how their thinking shifted.]
 
 Bridge: MODEL
 └── /rdd-model — Domain vocabulary extraction
-    [Gate: User approves glossary.]
+    [Epistemic gate: User articulates the core concepts and relationships.]
 
 Phase 2: DECIDE
 └── /rdd-decide — ADRs → argument audit → behavior scenarios
-    [Gate: User approves ADRs, scenarios, and audit fixes.]
+    [Epistemic gate: User reflects on decisions and rejected alternatives.]
 
 Phase 3: ARCHITECT
 └── /rdd-architect — System design → responsibility allocation → fitness criteria
-    [Gate: User approves system design before proceeding.]
+    [Epistemic gate: User articulates module boundaries and responsibility allocations.]
 
 Phase 4: BUILD
 └── /rdd-build — BDD → TDD → working software
-    [Gate: User approves at each scenario completion.]
+    [Epistemic gate: User reflects on each completed scenario group.]
 
 Phase 5: INTEGRATE
 └── /rdd-build Step 5 — Integration verification
@@ -104,12 +104,15 @@ User picks which skills to run and in what order.
 
 ## ORCHESTRATION RULES
 
-### Stage Gates
+### Stage Gates — Epistemic Gate Protocol
 
-Between every phase, you MUST:
-1. Present the gate artifact to the user in a clear summary
-2. Ask the user whether to proceed, revise, or go back to an earlier phase
-3. Never auto-advance past a gate without explicit user confirmation
+Between every phase, you MUST run the epistemic gate protocol. No gate may consist solely of approval — every gate requires the user to produce something.
+
+1. **Present the artifact** — summarize the phase artifact clearly
+2. **Present 2-3 exploratory epistemic act prompts** — each prompt references specific content from the artifact (concepts, decisions, relationships). Prompts use open-ended, collaborative framing ("before we move on, let me hear your take"), not quiz-style framing ("prove you understood")
+3. **User responds** — the user performs at least one epistemic act (explains, predicts, articulates, reflects). If the user responds with only non-generative approval ("looks good", "approved", "yes"), acknowledge the approval but gently re-present the prompts — the gate asks for the user's perspective, not just confirmation
+4. **Note discrepancies** — if the user's response contains a factual discrepancy with the artifact, note the specific discrepancy without framing it as an error ("The artifact describes X as Y — your take was Z. Worth revisiting?"). Do not attempt to assess the depth or quality of the user's understanding
+5. **Ask whether to proceed** — offer to proceed, revise, or go back to an earlier phase. Never auto-advance without explicit user confirmation
 
 ### State Tracking
 
@@ -118,17 +121,23 @@ Maintain a running status table:
 ```
 ## RDD Workflow Status
 
-| Phase | Skill | Status | Artifact | Notes |
-|-------|-------|--------|----------|-------|
-| UNDERSTAND | /rdd-research | ▶ In Progress | Research loop #3 | Investigating caching strategies |
-| MODEL | /rdd-model | ☐ Pending | — | — |
-| DECIDE | /rdd-decide | ☐ Pending | — | — |
-| ARCHITECT | /rdd-architect | ☐ Pending | — | — |
-| BUILD | /rdd-build | ☐ Pending | — | — |
-| INTEGRATE | /rdd-build Step 5 | ☐ Pending | — | — |
+| Phase | Skill | Status | Artifact | Key Epistemic Response | Notes |
+|-------|-------|--------|----------|----------------------|-------|
+| UNDERSTAND | /rdd-research | ▶ In Progress | Research loop #3 | — | Investigating caching strategies |
+| MODEL | /rdd-model | ☐ Pending | — | — | — |
+| DECIDE | /rdd-decide | ☐ Pending | — | — | — |
+| ARCHITECT | /rdd-architect | ☐ Pending | — | — | — |
+| BUILD | /rdd-build | ☐ Pending | — | — | — |
+| INTEGRATE | /rdd-build Step 5 | ☐ Pending | — | — | — |
 ```
 
-Update and display this table at each gate.
+Update and display this table at each gate. The "Key Epistemic Response" column captures a brief summary of the user's most significant epistemic gate response for that phase — this is the feed-forward signal that subsequent phases should attend to, especially when resuming across sessions.
+
+### Feed-Forward: Epistemic Responses Enrich Subsequent Phases
+
+The user's epistemic gate responses are not just a learning exercise — they are signal. In single-session cycles, these responses are naturally in conversation history. In multi-session cycles, the status table should summarize the user's key epistemic responses from prior gates.
+
+When generating artifacts in any phase, attend to the user's stated understanding from prior gates. If the user's self-explanation at the RESEARCH gate revealed a particular emphasis or concern, the MODEL phase should attend to that emphasis. The user's articulations clarify intent and surface priorities that pure approval does not.
 
 ### Cross-Phase Integration
 
