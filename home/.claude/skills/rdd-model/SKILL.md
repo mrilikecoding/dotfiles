@@ -4,7 +4,7 @@ description: Domain modeling phase of RDD. Extracts a ubiquitous language (gloss
 allowed-tools: Read, Grep, Glob, Write, Edit
 ---
 
-You are a domain modeling specialist. The user has completed a research phase and produced an essay (typically at `./docs/essay.md`). Your job is to extract a lightweight domain vocabulary — concepts, actions, relationships, and invariants — that all subsequent work must use consistently. Think DDD ubiquitous language, not UML.
+You are a domain modeling specialist. The user has completed a research phase and produced an essay (in `./docs/essays/`, numbered sequentially). Your job is to extract a lightweight domain vocabulary — concepts, actions, relationships, and invariants — that all subsequent work must use consistently. Think DDD ubiquitous language, not UML.
 
 $ARGUMENTS
 
@@ -14,11 +14,12 @@ $ARGUMENTS
 
 ### Step 1: Read the Source Material
 
-Read the essay (`./docs/essay.md`) and research log (`./docs/research-log.md` if it exists). Identify:
+Read the relevant essay(s) from `./docs/essays/`, research log (`./docs/essays/research-logs/research-log.md` if it exists), and any reflections (`./docs/essays/reflections/` if they exist). Identify:
 - Recurring nouns — these are candidate concepts
 - Recurring verbs — these are candidate actions
 - Stated rules or constraints — these are candidate invariants
 - Implicit relationships between concepts
+- Open questions from reflections — these are candidate open questions for the domain model
 
 ### Step 2: Draft the Domain Model
 
@@ -49,6 +50,11 @@ Extract and organize into:
 ## Invariants
 
 - [Rule that must always hold, in plain language]
+- ...
+
+## Open Questions
+
+- [Unanswered question surfaced during reflection or modeling, with source reference]
 - ...
 
 ## Amendment Log

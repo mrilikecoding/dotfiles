@@ -53,7 +53,7 @@ Before running a spike, present the question and plan to the user. After the spi
 
 ### Step 3: Synthesize into Research Log
 
-**Archive previous logs.** If `./docs/research-log.md` already exists from a prior research cycle, move it to `./docs/logs/<matching-essay-name>.md` before starting the new log. For example, if the previous cycle produced essay `docs/essays/event-sourcing-tradeoffs.md`, archive the log to `docs/logs/event-sourcing-tradeoffs.md`. Create the `./docs/logs/` directory if it doesn't exist. The essay is the durable artifact; the log preserves the process for posterity.
+**Archive previous logs.** If `./docs/essays/research-logs/research-log.md` already exists from a prior research cycle, move it to `./docs/essays/research-logs/<matching-essay-name>.md` before starting the new log. For example, if the previous cycle produced essay `docs/essays/event-sourcing-tradeoffs.md`, archive the log to `docs/essays/research-logs/event-sourcing-tradeoffs.md`. Create the `./docs/essays/research-logs/` directory if it doesn't exist. The essay is the durable artifact; the log preserves the process for posterity.
 
 After each research iteration, update the running log:
 
@@ -69,7 +69,7 @@ After each research iteration, update the running log:
 ...
 ```
 
-Write the log to `./docs/research-log.md` and update it after each loop iteration.
+Write the log to `./docs/essays/research-logs/research-log.md` and update it after each loop iteration.
 
 Present a summary to the user and ask: **loop again with a new question, or proceed to the essay?**
 
@@ -123,6 +123,16 @@ Present 2-3 of the following prompts, filling in the bracketed references with s
 Wait for the user to respond to at least one prompt. If the user responds with only non-generative approval ("looks good", "approved"), acknowledge it but gently re-present the prompts — the gate asks for the user's perspective on the research, not just confirmation that the essay exists.
 
 After the user responds, note any obvious factual discrepancies between their response and the essay content without framing it as an error ("The essay describes X as Y — your take was Z. Worth revisiting?"). Do not assess the quality of the user's understanding.
+
+### Step 5: Record Reflections
+
+After the epistemic gate conversation, capture any substantive observations — the user's or yours — that surface during the gate exchange. These are not summaries of the essay; they are meta-observations about shifts in thinking, unexpected connections, or tensions that emerged during reflection.
+
+Write reflections to `./docs/essays/reflections/NNN-descriptive-name.md`, using the same numbering as the corresponding essay (e.g., reflection `002-color-palettes.md` corresponds to essay `002-color-palettes-as-creative-environment.md`). Create the `./docs/essays/reflections/` directory if it doesn't exist.
+
+**Feed-back from reflections.** If a reflection surfaces a new insight or unanswered question:
+- **New research question** — offer to loop back into the research cycle (Step 1–3) before proceeding. The reflection becomes the next question.
+- **Open question without a clear research path** — note it for the domain model. When `/rdd-model` runs, these open questions should appear in a dedicated **Open Questions** section of the domain model, so they are visible to downstream phases rather than lost between sessions.
 
 Then ask whether to proceed to the next phase, revise the essay, or loop back to research.
 

@@ -15,8 +15,8 @@ $ARGUMENTS
 ### Step 1: Read Prior Artifacts
 
 Read the domain model invariants FIRST (`./docs/domain-model.md`, § Invariants). These are the constitutional authority — the highest-precedence statements in the entire artifact set. Then read:
-- Essay (`./docs/essay.md`) — the research context
-- Research log (`./docs/research-log.md`) — for additional context if needed
+- Essays (`./docs/essays/`) — the research context
+- Research log (`./docs/essays/research-logs/research-log.md`) — for additional context if needed
 - Prior ADRs (`./docs/decisions/`) — existing decisions
 
 If any prior ADR or essay contradicts a current invariant, flag it immediately — do not treat the contradicting document as authoritative. The invariant wins.

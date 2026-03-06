@@ -162,8 +162,9 @@ Findings from earlier phases inform later ones:
 
 | Phase | Artifact | Location |
 |-------|----------|----------|
-| UNDERSTAND | Research log | `./docs/research-log.md` |
-| UNDERSTAND | Essay | `./docs/essay.md` |
+| UNDERSTAND | Research log | `./docs/essays/research-logs/research-log.md` |
+| UNDERSTAND | Essay | `./docs/essays/NNN-descriptive-name.md` |
+| UNDERSTAND | Reflections | `./docs/essays/reflections/NNN-descriptive-name.md` |
 | MODEL | Domain model/glossary | `./docs/domain-model.md` |
 | DECIDE | ADRs | `./docs/decisions/adr-NNN-*.md` |
 | DECIDE | Behavior scenarios | `./docs/scenarios.md` |
