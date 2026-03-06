@@ -45,6 +45,11 @@
 | Product Vocabulary | Terms in user-facing language that describe the domain as stakeholders experience it. Distinct from system vocabulary (domain model terms). Product vocabulary is captured in the product discovery artifact and traced into the domain model via a provenance column. | Product Discovery, User Mental Model, Domain Model |
 | Product Conformance | A higher-level conformance audit that checks the system's product assumptions against actual user needs — complementing technical conformance (which checks code against ADRs). Without product conformance, technical conformance ensures the system is consistently wrong. | Product Discovery, Product Debt, Conformance Audit |
 | Artifact Legibility | The degree to which an artifact is comprehensible to non-technical stakeholders. Technical artifacts (invariant tables, ADR templates) have low legibility. The product discovery artifact has high legibility because it is written in user language. The legibility gap is a structural problem the product discovery phase addresses. | Artifact, Product Discovery, Product Vocabulary |
+| Scoping | A team lead's partial pipeline run (RESEARCH → ARCHITECT, no BUILD) used as a leadership thinking tool to build deep understanding and produce handoff artifacts. The team lead can "speak to" the artifacts — explain and defend decisions — because they went through the gates. BUILD is handed off so the team gains their own understanding through implementation. | Pipeline, Handoff, Authority |
+| Pair-RDD | A collaborative mode where two humans run an RDD cycle together, both responding at epistemic gates. Recovers the pair-programming dynamic lost in agentic coding. The gates become a facilitation structure for human-human dialog, not just human-AI dialog. Not yet formalized in the pipeline. | Epistemic Gate, Epistemic Act |
+| Research-Engineer | A stakeholder who uses RDD primarily for the research and understanding phases, where the goal is deep comprehension of a problem space rather than (or before) building software. The pipeline's RESEARCH, PRODUCT DISCOVERY, and MODEL phases serve as a structured methodology for investigation — closer to research engineering than traditional software development. | Phase, Pipeline, Scoping |
+| Handoff | The act of passing artifacts to a team or specialists. In the scoping use case, the team lead hands off system design and product discovery artifacts after running through ARCHITECT. Before team handoff, the team lead may share artifacts with architecture and product specialists for external review. Real workflow, not yet formalized in the pipeline. | Scoping, External Review, Artifact |
+| External Review | Specialist feedback (from architecture or product experts) that flows back into the pipeline before team handoff. The team lead shares artifacts for validation, and feedback re-enters at the relevant phase (product feedback at PRODUCT DISCOVERY, technical feedback at ARCHITECT). Confirmed as real workflow but not yet formalized as a pipeline operation. | Handoff, Product Discovery, Pipeline |
 
 **Synonym aliases to avoid in ADRs and skill text:**
 
@@ -61,6 +66,10 @@
 | Inversion Principle | Assumption Questioning, Critical Design Step |
 | Stakeholder Map | Persona Map, User Map |
 | Product Conformance | Product Audit, UX Audit |
+| Scoping | Partial Run, Abbreviated Pipeline |
+| Pair-RDD | Collaborative RDD, Pair Research |
+| External Review | External Feedback, Specialist Review |
+| Handoff | Transfer, Delivery |
 
 ## Actions (Verbs)
 
@@ -117,6 +126,12 @@
 - Inversion Principle **cross-cuts** RESEARCH, PRODUCT DISCOVERY, DECIDE, ARCHITECT
 - Product Conformance **complements** Technical Conformance (together they close the loop: code matches decisions, decisions match user needs)
 - Artifact Legibility **is highest for** Product Discovery artifact (written in user language, walkable as narrative)
+- Assumption Inversion **functions as** Epistemic Act (dual purpose: questioning assumptions + building understanding)
+- Scoping **is a partial** Pipeline run (RESEARCH → ARCHITECT, handoff instead of BUILD)
+- Scoping **produces** Handoff artifacts (product discovery doc + system design)
+- External Review **triggers** pipeline re-entry (product feedback → PRODUCT DISCOVERY, technical feedback → ARCHITECT)
+- Handoff **transfers** Artifacts to team or specialists
+- Pair-RDD **extends** Epistemic Gate (two humans at the gate instead of one)
 
 ## Invariants
 
@@ -144,7 +159,10 @@
 - How aligned should Product Vocabulary and Domain Model vocabulary be? Conway's law suggests system structure mirrors org structure — should system structure also mirror user mental models and access patterns? Deliberate divergence is fine; accidental divergence is product debt. The provenance column makes divergence visible, but should there be a formal alignment step between PRODUCT DISCOVERY and MODEL? (Epistemic gate conversation, 002)
 - Inverse Conway problem: systems outlive the org structures that shaped them. When org structure changes but architecture doesn't follow, module boundaries become fossils of past assumptions. Should /rdd-product backward mode also audit for org-architecture drift (not just user-architecture misalignment)? What level of abstraction is resistant to higher-level change, and is that resilience a feature or a liability? (Epistemic gate conversation, 002)
 - Backward mode scoping for legacy systems: when the existing system has conflicting encoded assumptions or poor documentation, the full five-section audit may surface an intractable product surface area. Should backward mode include an explicit triage step — identify the product surface that matters most, audit that first, flag the rest as known unknowns? Without scoping, backward mode risks producing a debt table too large to act on. (Epistemic gate conversation, DECIDE phase)
-- External review loop: both primary documents (`product-discovery.md` for product stakeholders, `system-design.md` for technical stakeholders) are designed to be reviewed. When reviewers provide feedback, it must flow back through the pipeline — product feedback re-enters at PRODUCT DISCOVERY, technical feedback re-enters at ARCHITECT. The existing "go back to the relevant phase" pattern handles re-entry, but the trigger is external and potentially asynchronous. Should the orchestrator formalize external review as a pipeline operation? How does asynchronous input interact with the sequential phase model? How is re-propagation scope assessed — a minor correction vs. a fundamental challenge to the stakeholder map? (Epistemic gate conversation, ARCHITECT phase)
+- External review loop: both primary documents (`product-discovery.md` for product stakeholders, `system-design.md` for technical stakeholders) are designed to be reviewed. When reviewers provide feedback, it must flow back through the pipeline — product feedback re-enters at PRODUCT DISCOVERY, technical feedback re-enters at ARCHITECT. The existing "go back to the relevant phase" pattern handles re-entry, but the trigger is external and potentially asynchronous. Should the orchestrator formalize external review as a pipeline operation? How does asynchronous input interact with the sequential phase model? How is re-propagation scope assessed — a minor correction vs. a fundamental challenge to the stakeholder map? **Confirmed as real workflow** — the team lead scoping use case includes sharing artifacts with architecture and product specialists before team handoff. (Epistemic gate conversation, ARCHITECT phase; product discovery dog-food, 2026-03-06)
+- Should "scoping mode" (RESEARCH → ARCHITECT, no BUILD, with handoff to team) be elevated to a named workflow mode in the orchestrator, alongside Modes A-D? The team lead use case treats partial pipeline runs as first-class, not as "abbreviated Mode A." (Product discovery dog-food, 2026-03-06)
+- How would Pair-RDD work mechanically at epistemic gates? The current pipeline has no affordance for multiple humans at a gate. Two collaborators responding together could recover the pair-programming dynamic lost in agentic coding and double the epistemic benefit. Worth its own research cycle. (Product discovery dog-food, 2026-03-06)
+- Assumption inversions function as epistemic acts — they serve a dual purpose as both a critical design exercise (questioning product assumptions) and an instrument of knowledge advancement (building the user's understanding through the act of inversion). Should this dual relationship be formalized in the epistemic gate protocol, or is it sufficient that it emerges naturally during product discovery? User confirmation: "They all got me thinking, which is the point." (Product discovery dog-food, 2026-03-06)
 
 ## Amendment Log
 
@@ -155,3 +173,4 @@
 | 3 | 2026-03-06 | Invariant 0 | STRENGTHENED: "what was built" → "what was built, who it was built for, and why." Added product dimension to the authority requirement | Essay 002 §11 proposed this amendment. Prior ADRs (001-005) predate this amendment but are not contradicted — they focus on epistemic gates, which serve the original scope. New ADRs should reference the strengthened invariant. Essay 001 abstract references Invariant 0 as "speak with authority about what was built" — needs supersession note or update |
 | 4 | 2026-03-06 | Concepts | ADDED: Product Debt, Product Maintenance Cliff, Product Discovery, Stakeholder Map, User Mental Model, Value Tension, Assumption Inversion, Inversion Principle, Product Vocabulary, Product Conformance, Artifact Legibility. UPDATED: Phase (added PRODUCT DISCOVERY to list), Artifact (added product discovery document), Authority (added "who it was built for and why") | Informed by essay 002. New concepts establish product discovery vocabulary for downstream ADRs and skill design |
 | 5 | 2026-03-06 | Relationships | ADDED: 14 new relationships covering Product Discovery feed-forward (into MODEL, DECIDE, ARCHITECT), Product Debt dynamics, Inversion Principle cross-cutting scope, Product Conformance complementing Technical Conformance | Informed by essay 002 §§7-8 |
+| 6 | 2026-03-06 | Concepts, Relationships, Open Questions | ADDED concepts: Scoping, Pair-RDD, Research-Engineer, Handoff, External Review. ADDED 7 relationships for new concepts. ADDED 3 open questions (scoping mode, pair-RDD mechanics, assumption inversions as epistemic acts). UPDATED external review open question to note confirmed as real workflow. | Informed by product discovery dog-food (backward mode on RDD itself) |
