@@ -11,9 +11,9 @@
 | Gate | A transition point between RDD phases where the user engages with the phase's artifact before proceeding. | Approval Gate, Epistemic Gate, Phase |
 | Approval Gate | A gate where the user reviews and accepts an artifact without producing anything. The current RDD pattern. Does not activate learning mechanisms. Avoid: this is the pattern being replaced. | Gate |
 | Epistemic Gate | A gate that requires the user to perform one or more Epistemic Acts — producing a targeted reconstruction, prediction, or explanation — before proceeding. The proposed replacement for Approval Gates. | Gate, Epistemic Act, Grounding Move |
-| Artifact | A document produced by an RDD phase (essay, domain model, ADR, system design, code). | Epistemic Artifact, Phase |
+| Artifact | A document produced by an RDD phase (essay, product discovery document, domain model, ADR, system design, code). | Epistemic Artifact, Phase |
 | Epistemic Artifact | An artifact that serves simultaneously as a project deliverable and as an instrument of knowledge advancement. Term from Scardamalia & Bereiter. All RDD artifacts should be treated as epistemic artifacts. | Artifact |
-| Phase | A discrete stage in the RDD pipeline (RESEARCH, MODEL, DECIDE, ARCHITECT, BUILD). Each phase produces an artifact and ends at a gate. | Gate, Artifact, Pipeline |
+| Phase | A discrete stage in the RDD pipeline (RESEARCH, PRODUCT DISCOVERY, MODEL, DECIDE, ARCHITECT, BUILD). Each phase produces an artifact and ends at a gate. | Gate, Artifact, Pipeline |
 | Pipeline | The ordered sequence of RDD phases from RESEARCH through BUILD. Epistemic acts at each gate compound across the pipeline. | Phase |
 | Self-Explanation | Epistemic act: the user explains artifact elements in their own words. Constructive, integrative, and error-correcting. From Chi (1994). Strongest general-purpose epistemic act. | Epistemic Act |
 | Elaborative Interrogation | Epistemic act: the user answers "why does this make sense?" Lightest-weight intervention. Forces connection of new material to prior knowledge. From Pressley (1987). | Epistemic Act |
@@ -33,7 +33,18 @@
 | Dreyfus Stage | The user's current stage of skill acquisition (Novice → Expert). Determines how much scaffolding is appropriate and when fading should occur. | Fading, Scaffolding |
 | Maintenance Cliff | The point where initial velocity advantages of AI-assisted development invert due to accumulated opacity. Debugging and extending uncomprehended code takes longer than manual development would have. The concrete, measurable consequence of the Opacity Problem. | Opacity Problem, Approval Gate |
 | Context Window Ceiling | The hard constraint where system complexity exceeds what AI can reason about holistically. At this point, the human's structural understanding becomes the irreplaceable bridge — the long-term architectural memory that the AI's context cannot be. | Opacity Problem, Maintenance Cliff |
-| Authority | The standing to explain, decide about, and take responsibility for a system. Requires understanding — ownership without comprehension is commissioning, not authorship. The word does double duty: knowledge sufficient to explain, and standing sufficient to decide. Authority is what Invariant 0 measures. | Common Ground, Epistemic Gate |
+| Authority | The standing to explain, decide about, and take responsibility for a system — including who it was built for and why. Requires understanding — ownership without comprehension is commissioning, not authorship. The word does double duty: knowledge sufficient to explain, and standing sufficient to decide. Authority is what Invariant 0 measures. | Common Ground, Epistemic Gate, Product Discovery |
+| Product Debt | The accumulated gap between what a system does and what users actually need. Analogous to technical debt but invisible in the codebase — it hides in the mismatch between system affordances and user mental models. Product debt compounds as users build workarounds and expectations calcify. | Product Maintenance Cliff, Product Conformance, User Mental Model |
+| Product Maintenance Cliff | The point where accumulated product debt makes iteration harder than starting over. Product assumptions encoded in architecture become exponentially more expensive to correct (Boehm's 10-100x cost curve applied to product decisions). Parallel to the technical Maintenance Cliff. | Product Debt, Maintenance Cliff, Inversion Principle |
+| Product Discovery | An RDD phase positioned between RESEARCH and MODEL that surfaces user needs, stakeholder maps, value tensions, and assumption inversions. Operates in two modes: forward (greenfield) and backward (existing system audit). Its artifact is written in user language and serves as the Rosetta Stone between product vocabulary and system vocabulary. | Phase, Product Vocabulary, Stakeholder Map, Value Tension, Assumption Inversion |
+| Stakeholder Map | A section of the product discovery artifact that identifies everyone affected by the system — both direct stakeholders (who interact with it) and indirect stakeholders (who are affected without interacting). Broader than personas, which represent ideal users. From Friedman's Value Sensitive Design. | Product Discovery, Value Tension |
+| User Mental Model | A user's internal representation of how the domain works, expressed in their own language. Mapped during product discovery before the domain model maps how the system thinks the domain works. Divergence between the two is a design signal to be surfaced, not a bug to resolve. From Norman. | Product Discovery, Product Vocabulary, Domain Model |
+| Value Tension | A conflict between stakeholder needs, or between user needs and business goals, surfaced during product discovery and passed forward as an open question for DECIDE. Value tensions are held, not resolved prematurely. From Haraway's "staying with the trouble." | Product Discovery, Stakeholder Map |
+| Assumption Inversion | The output of applying the Inversion Principle: for each major product assumption, the inverted form and its implications. Produced as a section of the product discovery artifact and used to enrich behavior scenarios in DECIDE. | Inversion Principle, Product Discovery |
+| Inversion Principle | A cross-cutting methodological principle: systematically question product assumptions before encoding them in architecture. Operates at two levels — as a procedural step within /rdd-product and as a habit of mind across RESEARCH, DECIDE, and ARCHITECT. The mechanism serving the product dimension of Invariant 0. | Assumption Inversion, Product Discovery, Authority |
+| Product Vocabulary | Terms in user-facing language that describe the domain as stakeholders experience it. Distinct from system vocabulary (domain model terms). Product vocabulary is captured in the product discovery artifact and traced into the domain model via a provenance column. | Product Discovery, User Mental Model, Domain Model |
+| Product Conformance | A higher-level conformance audit that checks the system's product assumptions against actual user needs — complementing technical conformance (which checks code against ADRs). Without product conformance, technical conformance ensures the system is consistently wrong. | Product Discovery, Product Debt, Conformance Audit |
+| Artifact Legibility | The degree to which an artifact is comprehensible to non-technical stakeholders. Technical artifacts (invariant tables, ADR templates) have low legibility. The product discovery artifact has high legibility because it is written in user language. The legibility gap is a structural problem the product discovery phase addresses. | Artifact, Product Discovery, Product Vocabulary |
 
 **Synonym aliases to avoid in ADRs and skill text:**
 
@@ -45,12 +56,17 @@
 | Approval Gate | Passive Gate, Review Gate |
 | Metacognitive Prompt | Reflection Question, Learning Prompt |
 | Grounding Move | Verification Step, Understanding Check |
+| Product Debt | UX Debt, Design Debt, Experience Debt |
+| Value Tension | Value Conflict, Requirements Conflict |
+| Inversion Principle | Assumption Questioning, Critical Design Step |
+| Stakeholder Map | Persona Map, User Map |
+| Product Conformance | Product Audit, UX Audit |
 
 ## Actions (Verbs)
 
 | Action | Actor | Subject | Description |
 |--------|-------|---------|-------------|
-| Generate | AI | Artifact | AI produces a phase artifact (essay, domain model, ADR, system design, code) at full speed and depth |
+| Generate | AI | Artifact | AI produces a phase artifact (essay, product discovery document, domain model, ADR, system design, code) at full speed and depth |
 | Approve | User | Artifact | User reviews and accepts an artifact without producing anything. The pattern being replaced. |
 | Self-Explain | User | Artifact | User explains key elements of an artifact in their own words, activating constructive, integrative, and error-correcting mechanisms |
 | Interrogate | User | Artifact | User asks "why does this make sense?" about a decision, boundary, or design choice, connecting it to prior knowledge |
@@ -60,6 +76,9 @@
 | Ground | User + AI | Common Ground | User and AI collaboratively verify shared understanding through epistemic acts, enriching context for subsequent phases |
 | Surface | User | Tacit Knowledge | User makes implicit assumptions explicit through epistemic acts, preventing hidden defects |
 | Fade | Methodology | Scaffolding | The methodology reduces AI-generated assistance as user expertise grows across RDD cycles |
+| Invert | User + AI | Product Assumption | Systematically question a product assumption by stating its opposite and evaluating implications. Produces Assumption Inversions in the product discovery artifact |
+| Map Stakeholders | User + AI | System boundary | Identify all direct and indirect stakeholders affected by the system, beyond just the users who interact with it |
+| Audit Product Conformance | User + AI | Existing system | In backward mode, extract implicit product assumptions from existing architecture and validate them against actual user needs, producing a Product Debt table |
 
 ## Relationships
 
@@ -84,10 +103,24 @@
 - Context Window Ceiling **necessitates** human structural understanding (AI cannot substitute beyond this point)
 - Epistemic Gate **builds** Authority (through accumulated understanding across the pipeline)
 - Authority **requires** understanding (ownership without comprehension is commissioning, not authorship)
+- Product Discovery **produces** Stakeholder Map, User Mental Models, Value Tensions, Assumption Inversions, Product Vocabulary
+- Product Discovery **feeds forward into** MODEL (product vocabulary provenance, mental model validation, open questions)
+- Product Discovery **feeds forward into** DECIDE (stakeholder needs in ADR context, assumption inversions as scenarios)
+- Product Discovery **feeds forward into** ARCHITECT (extended provenance chains from module to user need)
+- Product Vocabulary **traces into** Domain Model (via provenance column linking system terms to user-facing origins)
+- User Mental Model **validates against** Domain Model (divergence is a design signal, not a bug)
+- Value Tension **propagates as** Open Question into MODEL and DECIDE
+- Product Debt **accumulates invisibly** when Product Discovery is absent
+- Product Debt **manifests as** Product Maintenance Cliff (at project scale)
+- Product Discovery **prevents** Product Maintenance Cliff (by surfacing assumptions before they harden into architecture)
+- Inversion Principle **serves** Invariant 0 (the mechanism for the product dimension of authority)
+- Inversion Principle **cross-cuts** RESEARCH, PRODUCT DISCOVERY, DECIDE, ARCHITECT
+- Product Conformance **complements** Technical Conformance (together they close the loop: code matches decisions, decisions match user needs)
+- Artifact Legibility **is highest for** Product Discovery artifact (written in user language, walkable as narrative)
 
 ## Invariants
 
-0. **The user should be able to speak with authority about what was built.** After completing an RDD cycle, the user should be able to explain the system's design rationale, key decisions, and domain vocabulary without AI assistance. This is the outcome all other invariants serve. If the methodology satisfies invariants 1-7 but the user cannot do this, the methodology has failed.
+0. **The user should be able to speak with authority about what was built, who it was built for, and why.** After completing an RDD cycle, the user should be able to explain the system's design rationale, key decisions, domain vocabulary, and the user needs those decisions serve — without AI assistance. This is the outcome all other invariants serve. If the methodology satisfies invariants 1-7 but the user cannot do this, the methodology has failed.
 
 1. **Understanding requires generation, not review.** Passive review of AI output does not produce durable understanding. Every gate must require the user to produce something — an explanation, prediction, reconstruction, or articulation — not merely assess something.
 
@@ -103,9 +136,20 @@
 
 7. **Epistemic acts are bidirectional.** Each act simultaneously builds user understanding and enriches AI context for subsequent phases. This is not a side effect — it is a core mechanism. The compounding quality effect depends on both directions operating.
 
+## Open Questions
+
+- Should the product discovery artifact include a second example from a non-healthcare domain to demonstrate generality? (Reflection: 002, "The Healthcare Example")
+- The "Mr. Market" product vs. "the research says" product framing is more precise than the essay's current formulation — should it be incorporated into the essay or the domain model as a named concept? (Reflection: 002, "'Mr. Market' Framing")
+- How does the product discovery epistemic gate differ in practice from other gates, given that the user likely knows more about their users than the AI does? Does this invert the typical gate dynamic? (Essay 002, §10)
+- How aligned should Product Vocabulary and Domain Model vocabulary be? Conway's law suggests system structure mirrors org structure — should system structure also mirror user mental models and access patterns? Deliberate divergence is fine; accidental divergence is product debt. The provenance column makes divergence visible, but should there be a formal alignment step between PRODUCT DISCOVERY and MODEL? (Epistemic gate conversation, 002)
+- Inverse Conway problem: systems outlive the org structures that shaped them. When org structure changes but architecture doesn't follow, module boundaries become fossils of past assumptions. Should /rdd-product backward mode also audit for org-architecture drift (not just user-architecture misalignment)? What level of abstraction is resistant to higher-level change, and is that resilience a feature or a liability? (Epistemic gate conversation, 002)
+
 ## Amendment Log
 
 | # | Date | Invariant | Change | Propagation |
 |---|------|-----------|--------|-------------|
-| 1 | 2026-03-05 | Invariant 0 | ADDED: outcome-level invariant establishing that the user must be able to explain what was built without AI assistance | Essay §9 should reference this as the success criterion; all ADRs should trace back to it |
-| 2 | 2026-03-05 | Concepts | ADDED: Maintenance Cliff, Context Window Ceiling. ADDED relationships: Opacity Problem manifests as Maintenance Cliff; Epistemic Gate prevents Maintenance Cliff; Context Window Ceiling necessitates human structural understanding | Informed by essay §8 (requirements-only counterargument) |
+| 1 | 2026-03-05 | Invariant 0 | ADDED: outcome-level invariant establishing that the user must be able to explain what was built without AI assistance | Essay 001 §9 should reference this as the success criterion; all ADRs should trace back to it |
+| 2 | 2026-03-05 | Concepts | ADDED: Maintenance Cliff, Context Window Ceiling. ADDED relationships: Opacity Problem manifests as Maintenance Cliff; Epistemic Gate prevents Maintenance Cliff; Context Window Ceiling necessitates human structural understanding | Informed by essay 001 §8 (requirements-only counterargument) |
+| 3 | 2026-03-06 | Invariant 0 | STRENGTHENED: "what was built" → "what was built, who it was built for, and why." Added product dimension to the authority requirement | Essay 002 §11 proposed this amendment. Prior ADRs (001-005) predate this amendment but are not contradicted — they focus on epistemic gates, which serve the original scope. New ADRs should reference the strengthened invariant. Essay 001 abstract references Invariant 0 as "speak with authority about what was built" — needs supersession note or update |
+| 4 | 2026-03-06 | Concepts | ADDED: Product Debt, Product Maintenance Cliff, Product Discovery, Stakeholder Map, User Mental Model, Value Tension, Assumption Inversion, Inversion Principle, Product Vocabulary, Product Conformance, Artifact Legibility. UPDATED: Phase (added PRODUCT DISCOVERY to list), Artifact (added product discovery document), Authority (added "who it was built for and why") | Informed by essay 002. New concepts establish product discovery vocabulary for downstream ADRs and skill design |
+| 5 | 2026-03-06 | Relationships | ADDED: 14 new relationships covering Product Discovery feed-forward (into MODEL, DECIDE, ARCHITECT), Product Debt dynamics, Inversion Principle cross-cutting scope, Product Conformance complementing Technical Conformance | Informed by essay 002 §§7-8 |
