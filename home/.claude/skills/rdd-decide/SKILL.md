@@ -160,6 +160,21 @@ Present the complete set — ADRs + scenarios + audit findings and fixes — to 
 - Any points where you stopped due to uncertainty
 - Audit findings that changed the ADRs or prior documents
 
+### EPISTEMIC GATE
+
+After presenting the complete set, run the epistemic gate protocol before proceeding to the next phase.
+
+Present 2 of the following prompts, filling in the bracketed references with specific decisions, rejected alternatives, and scenario details from the ADRs just produced:
+
+- **Elaborative interrogation:** "Any of these rejected alternatives you're not fully comfortable letting go of?"
+- **Reflection:** "Which decision feels least certain? What about it makes you uneasy?"
+
+Wait for the user to respond to at least one prompt. If the user responds with only non-generative approval ("looks good", "approved"), acknowledge it but gently re-present the prompts — the gate asks for the user's perspective on the decisions, not just confirmation.
+
+After the user responds, note any obvious factual discrepancies between their response and the ADRs without framing it as an error ("ADR-NNN describes the tradeoff as X — your take was Y. Worth revisiting?"). Do not assess the quality of the user's understanding.
+
+Then ask whether to proceed to the next phase, revise the ADRs, or revisit research.
+
 ---
 
 ## IMPORTANT PRINCIPLES
