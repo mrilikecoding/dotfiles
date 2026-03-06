@@ -85,6 +85,21 @@ Present it to the user. Highlight:
 - Concepts you found ambiguous in the essay
 - Relationships you inferred but weren't explicitly stated
 
+### EPISTEMIC GATE
+
+After presenting the domain model, run the epistemic gate protocol before proceeding to the next phase.
+
+Present 2 of the following prompts, filling in the bracketed references with specific concepts, relationships, and invariants from the domain model just produced:
+
+- **Retrieval practice:** "What feels like the heart of this model to you? What would you explain first to a colleague?"
+- **Self-explanation:** "Does the relationship between [concept X] and [concept Y] match your intuition, or does something feel off?"
+
+Wait for the user to respond to at least one prompt. If the user responds with only non-generative approval ("looks good", "approved"), acknowledge it but gently re-present the prompts — the gate asks for the user's perspective on the model, not just confirmation.
+
+After the user responds, note any obvious factual discrepancies between their response and the domain model without framing it as an error ("The model defines X as Y — your take was Z. Worth revisiting?"). Do not assess the quality of the user's understanding.
+
+Then ask whether to proceed to the next phase or revise the model.
+
 ---
 
 ## IMPORTANT PRINCIPLES
