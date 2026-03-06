@@ -144,7 +144,23 @@ Present the complete design to the user. Highlight:
 - Fitness criteria that will be enforced during build
 - Any points where you stopped due to uncertainty
 
-**The user must approve the system design before `/rdd-build` proceeds.** This is the gate between architectural design and implementation. Do not advance past this step without explicit user confirmation.
+**The user must engage with the system design before `/rdd-build` proceeds.** This is the gate between architectural design and implementation. Do not advance past this step without completing the epistemic gate below.
+
+### EPISTEMIC GATE
+
+After presenting the system design, run the epistemic gate protocol before proceeding to the build phase.
+
+Present 2-3 of the following prompts, filling in the bracketed references with specific modules, boundaries, concepts, and responsibility allocations from the system design just produced:
+
+- **Retrieval practice:** "Where in this architecture would you expect to find [concept X]? Does the design match your instinct?"
+- **Articulation:** "Which module boundary was hardest to draw? What about the domain made it difficult?"
+- **Reflection:** "Compare your intuitive sense of the architecture to the formal design. Where do they diverge?"
+
+Wait for the user to respond to at least one prompt. If the user responds with only non-generative approval ("looks good", "approved"), acknowledge it but gently re-present the prompts — the gate asks for the user's perspective on the architecture, not just confirmation.
+
+After the user responds, note any obvious factual discrepancies between their response and the system design without framing it as an error ("The design places X in Module Y — your instinct was Z. Worth revisiting?"). Do not assess the quality of the user's understanding.
+
+Then ask whether to proceed to build, revise the design, or revisit decisions.
 
 ---
 
