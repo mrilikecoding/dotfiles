@@ -14,7 +14,7 @@ $ARGUMENTS
 
 ### Step 1: Read the Source Material
 
-Read the relevant essay(s) from `./docs/essays/`, research log (`./docs/essays/research-logs/research-log.md` if it exists), and any reflections (`./docs/essays/reflections/` if they exist). Identify:
+Read the relevant essay(s) from `./docs/essays/`, research log (`./docs/essays/research-logs/research-log.md` if it exists), any reflections (`./docs/essays/reflections/` if they exist), and the product discovery artifact (`./docs/product-discovery.md` if it exists). The product discovery artifact provides user-facing vocabulary and value tensions that inform the domain model. Identify:
 - Recurring nouns — these are candidate concepts
 - Recurring verbs — these are candidate actions
 - Stated rules or constraints — these are candidate invariants
@@ -30,9 +30,9 @@ Extract and organize into:
 
 ## Concepts (Nouns)
 
-| Term | Definition | Related Terms |
-|------|-----------|---------------|
-| ... | ... | ... |
+| Term | Definition | Product Origin | Related Terms |
+|------|-----------|----------------|---------------|
+| ... | ... | [User term from product discovery, or "—" for infrastructure-only concepts] | ... |
 
 ## Actions (Verbs)
 
@@ -70,6 +70,7 @@ Review the model for:
 - **Missing concepts** — does the essay discuss something not captured?
 - **Vague definitions** — could two people interpret a term differently? Sharpen it
 - **Untethered terms** — any concept with no relationships? It's either missing connections or doesn't belong
+- **Value tension propagation** — if a product discovery artifact exists, carry unresolved value tensions into the Open Questions section. These are design signals that downstream phases (DECIDE, ARCHITECT) need to see
 
 ### Step 3.5: Constitutional Authority
 

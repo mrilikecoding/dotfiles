@@ -16,6 +16,7 @@ $ARGUMENTS
 
 Read the domain model invariants FIRST (`./docs/domain-model.md`, § Invariants). These are the constitutional authority — the highest-precedence statements in the entire artifact set. Then read:
 - Essays (`./docs/essays/`) — the research context
+- Product discovery artifact (`./docs/product-discovery.md`) — stakeholder needs, value tensions, assumption inversions
 - Research log (`./docs/essays/research-logs/research-log.md`) — for additional context if needed
 - Prior ADRs (`./docs/decisions/`) — existing decisions
 
@@ -66,6 +67,7 @@ Write ADRs to `./docs/decisions/adr-NNN-<slug>.md`.
 - **Context comes from the essay** — don't introduce new framing; reference what was already learned
 - **Thin, not exhaustive** — capture the decision and key consequences, not every possible consideration
 - **Use domain vocabulary** — every noun and verb should come from the glossary
+- **Check for unexamined product assumptions** — if an ADR's context references a product assumption (how users work, what they need, which workflows matter), check whether that assumption has been validated through product discovery. If not, flag it as a potential inversion principle violation
 
 Present ADRs to the user for approval before proceeding.
 
@@ -121,6 +123,8 @@ If no invariants changed in this decision cycle, skip this step.
 ### Step 4: Behavior Scenarios
 
 After audit fixes are applied and conformance debt is documented, produce refutable behavior scenarios in plain language. These describe what the software should do, using domain vocabulary. Writing scenarios after the audit ensures they are built on a consistent, audited foundation.
+
+If a product discovery artifact exists, consider its assumption inversions as candidate scenarios — inverted assumptions often reveal important edge cases or failure modes that need explicit behavior specification.
 
 ```markdown
 # Behavior Scenarios

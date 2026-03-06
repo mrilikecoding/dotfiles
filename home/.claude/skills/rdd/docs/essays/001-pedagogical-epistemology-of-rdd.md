@@ -282,7 +282,7 @@ When no human understands the implementation, the distinction between "our syste
 
 ### Understanding as Authority
 
-Invariant 0 states: "The user should be able to speak with authority about what was built." This is not a learning objective in the educational sense. It is a claim about what it means to be the author of a system.
+Invariant 0 states: "The user should be able to speak with authority about what was built, who it was built for, and why." This is not a learning objective in the educational sense. It is a claim about what it means to be the author of a system.
 
 Authority requires understanding. A developer who cannot explain why the system is structured the way it is, what trade-offs were accepted, and what would break if a given decision were reversed does not have authority over the system — regardless of whether they specified its requirements and approved its outputs. They have *ownership* in the legal sense but not *authorship* in the intellectual sense. The AI generated the work; the human merely commissioned it.
 

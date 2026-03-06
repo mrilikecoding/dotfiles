@@ -1,8 +1,8 @@
-# System Design: Pedagogical RDD — Epistemic Gates
+# System Design: Pedagogical RDD
 
-**Version:** 1.0
+**Version:** 2.0
 **Status:** Current
-**Last amended:** 2026-03-05
+**Last amended:** 2026-03-06
 
 ## Architectural Drivers
 
@@ -16,52 +16,67 @@
 | Prompts use exploratory framing, not quiz framing | Quality Attribute | ADR-003 |
 | Structural generation requirement never fades | Constraint | Invariant 2; ADR-005 |
 | System is prompt text in markdown files | Platform Constraint | Context |
+| Product discovery feeds forward into MODEL, DECIDE, ARCHITECT via artifact files | Quality Attribute | ADR-006; Essay 002 §7 |
+| Forward mode (greenfield) and backward mode (existing system audit) | Functional Requirement | ADR-008 |
+| Inversion principle operates as cross-cutting principle + procedural step | Quality Attribute | ADR-010 |
+| Product vocabulary traces into domain model via provenance column | Quality Attribute | ADR-009 |
+| Product discovery artifact written in user language (Artifact Legibility) | Quality Attribute | ADR-007; Invariant 0 |
+| Two primary readable documents: product-discovery.md (product stakeholders) and system-design.md (technical stakeholders). All other artifacts are supporting material for provenance, not primary reading | Design Principle | Epistemic gate conversation, ARCHITECT phase |
 
 ## Module Decomposition
 
 ### Module: Orchestrator (`rdd/SKILL.md`)
-**Purpose:** Defines the epistemic gate protocol and ensures no phase transition consists solely of approval.
-**Provenance:** ADR-001 (gate pattern); ADR-002 (orchestrator defines protocol); ADR-004 (feed-forward instruction); Invariant 2
-**Owns:** Gate protocol definition, pipeline sequence, state tracking, feed-forward instruction
+**Purpose:** Defines the pipeline sequence, epistemic gate protocol, cross-cutting principles (including inversion principle), and ensures no phase transition consists solely of approval.
+**Provenance:** ADR-001 (gate pattern); ADR-002 (orchestrator defines protocol); ADR-004 (feed-forward instruction); ADR-006 (pipeline includes PRODUCT DISCOVERY); ADR-010 (inversion principle cross-cutting); Invariant 0, 2
+**Owns:** Gate protocol definition, pipeline sequence (including PRODUCT DISCOVERY phase), state tracking, feed-forward instruction, cross-cutting principles, Available Skills table, Artifacts Summary
 **Depends on:** None (top-level coordinator)
 **Depended on by:** All phase skills (they follow its protocol)
 
 ### Module: Research Skill (`rdd-research/SKILL.md`)
-**Purpose:** Adds an epistemic gate section with exploratory prompts tailored to essay artifacts.
-**Provenance:** ADR-002 (skill owns gate); ADR-003 (research gate assignments); Essay §6
-**Owns:** Research-phase epistemic gate prompts, essay presentation step
+**Purpose:** Runs an iterative research loop and produces a publishable essay, with an epistemic gate tailored to essay artifacts.
+**Provenance:** ADR-002 (skill owns gate); ADR-003 (research gate assignments); Essay 001 §6
+**Owns:** Research-phase process, epistemic gate prompts, essay presentation step
 **Depends on:** Orchestrator (protocol)
-**Depended on by:** None directly (produces essay artifact consumed by Model Skill via file)
+**Depended on by:** None directly (produces essay artifact consumed by Product Discovery Skill and Model Skill via file)
+
+### Module: Product Discovery Skill (`rdd-product/SKILL.md`) — NEW
+**Purpose:** Surfaces user needs, stakeholder maps, value tensions, and assumption inversions, producing a product discovery artifact in user language that feeds forward into MODEL, DECIDE, and ARCHITECT.
+**Provenance:** ADR-006 (phase placement); ADR-007 (artifact structure); ADR-008 (forward/backward modes); ADR-010 (inversion principle procedural home); ADR-011 (epistemic gate); Invariant 0 (product dimension of authority)
+**Owns:** Product discovery process (forward and backward modes), five-section artifact template, assumption inversion procedural step, product debt table (backward mode), epistemic gate prompts
+**Depends on:** Orchestrator (protocol)
+**Depended on by:** None directly (produces product discovery artifact consumed by Model Skill, Decide Skill, and Architect Skill via file)
 
 ### Module: Model Skill (`rdd-model/SKILL.md`)
-**Purpose:** Adds an epistemic gate section with exploratory prompts tailored to domain model artifacts.
-**Provenance:** ADR-002; ADR-003 (model gate assignments); Essay §6
-**Owns:** Model-phase epistemic gate prompts, domain model presentation step
+**Purpose:** Extracts domain vocabulary from essay and product discovery artifact, with Product Origin provenance column and an epistemic gate tailored to domain model artifacts.
+**Provenance:** ADR-002; ADR-003 (model gate assignments); ADR-009 (product vocabulary provenance); Essay 001 §6
+**Owns:** Model-phase process, Product Origin column, epistemic gate prompts, domain model presentation step
 **Depends on:** Orchestrator (protocol)
 **Depended on by:** None directly (produces domain model artifact consumed by Decide Skill via file)
 
 ### Module: Decide Skill (`rdd-decide/SKILL.md`)
-**Purpose:** Adds an epistemic gate section with exploratory prompts tailored to ADR and scenario artifacts.
-**Provenance:** ADR-002; ADR-003 (decide gate assignments); Essay §6
-**Owns:** Decide-phase epistemic gate prompts, ADR/scenario presentation step
+**Purpose:** Produces ADRs and behavior scenarios with product context alongside technical context, including inversion principle check on ADR assumptions, with an epistemic gate tailored to ADR artifacts.
+**Provenance:** ADR-002; ADR-003 (decide gate assignments); ADR-010 (inversion principle at DECIDE); Essay 001 §6; Essay 002 §7.2
+**Owns:** Decide-phase process, inversion principle check (at DECIDE), epistemic gate prompts, ADR/scenario presentation step
 **Depends on:** Orchestrator (protocol)
 **Depended on by:** None directly (produces ADR + scenario artifacts consumed by Architect Skill via file)
 
 ### Module: Architect Skill (`rdd-architect/SKILL.md`)
-**Purpose:** Adds an epistemic gate section with exploratory prompts tailored to system design artifacts.
-**Provenance:** ADR-002; ADR-003 (architect gate assignments); Essay §6
-**Owns:** Architect-phase epistemic gate prompts, system design presentation step
+**Purpose:** Decomposes the system into modules with provenance chains extending to user needs, including inversion principle check on module boundaries, with an epistemic gate tailored to system design artifacts.
+**Provenance:** ADR-002; ADR-003 (architect gate assignments); ADR-010 (inversion principle at ARCHITECT); Essay 001 §6; Essay 002 §7.3
+**Owns:** Architect-phase process, inversion principle check (at ARCHITECT), extended provenance chains, epistemic gate prompts, system design presentation step
 **Depends on:** Orchestrator (protocol)
 **Depended on by:** None directly (produces system design artifact consumed by Build Skill via file)
 
 ### Module: Build Skill (`rdd-build/SKILL.md`)
-**Purpose:** Adds epistemic prompts to the scenario completion step for reflection-in-action and self-explanation.
-**Provenance:** ADR-002; ADR-003 (build gate assignments); Essay §6
-**Owns:** Build-phase epistemic gate prompts, scenario completion presentation step
+**Purpose:** Turns scenarios into working software through BDD/TDD, with epistemic prompts at scenario group boundaries.
+**Provenance:** ADR-002; ADR-003 (build gate assignments); Essay 001 §6
+**Owns:** Build-phase process, epistemic gate prompts, scenario completion presentation step
 **Depends on:** Orchestrator (protocol)
 **Depended on by:** None
 
 ## Responsibility Matrix
+
+### Epistemic Gate Concepts (from Essay 001 / ADRs 001-005)
 
 | Domain Concept/Action | Owning Module | Provenance |
 |----------------------|---------------|------------|
@@ -69,45 +84,79 @@
 | Epistemic Gate (protocol) | Orchestrator | ADR-001, Invariant 2 |
 | Approval Gate (removal) | Orchestrator + all skills | ADR-001 |
 | Epistemic Act (framework) | ADR-003 (reference); each skill (implementation) | ADR-002, ADR-003 |
-| Self-Explanation (prompts) | Research Skill, Model Skill, Build Skill | ADR-003 |
-| Elaborative Interrogation (prompts) | Decide Skill | ADR-003 |
-| Retrieval Practice (prompts) | Model Skill, Architect Skill | ADR-003 |
-| Articulation (prompts) | Research Skill, Decide Skill, Architect Skill | ADR-003 |
+| Self-Explanation (prompts) | Research Skill, Model Skill, Product Discovery Skill, Build Skill | ADR-003, ADR-011 |
+| Elaborative Interrogation (prompts) | Decide Skill, Product Discovery Skill | ADR-003, ADR-011 |
+| Retrieval Practice (prompts) | Model Skill, Architect Skill, Product Discovery Skill | ADR-003, ADR-011 |
+| Articulation (prompts) | Research Skill, Decide Skill, Architect Skill, Product Discovery Skill | ADR-003, ADR-011 |
 | Reflection (prompts) | Research Skill, Decide Skill, Architect Skill, Build Skill | ADR-003 |
 | Metacognitive Prompt | Each skill (in its gate section) | ADR-003, Invariant 2 |
 | Grounding Move | Each skill (epistemic acts function as) | Invariant 5, ADR-001 |
 | Common Ground (enrichment) | Orchestrator (feed-forward instruction) | ADR-004, Invariant 7 |
-| Tacit Knowledge (surfacing) | Each skill (side effect of epistemic acts) | Essay §7 |
+| Tacit Knowledge (surfacing) | Each skill (side effect of epistemic acts); Product Discovery Skill (primary for product knowledge) | Essay 001 §7; ADR-011 |
 | Fading (deferred) | None — tracked as design debt | ADR-005 |
 | Scaffolding | Each skill (fixed-level prompts) | ADR-005 |
 | Authority (building) | Pipeline-wide (cumulative effect) | Invariant 0 |
-| Pipeline (sequence) | Orchestrator | Existing design |
-| Phase (definition) | Each skill | Existing design |
+| Pipeline (sequence) | Orchestrator | Existing design; ADR-006 |
+| Phase (definition) | Each skill + Orchestrator (PRODUCT DISCOVERY phase) | Existing design; ADR-006 |
 | Artifact (production) | Each skill | Existing design |
-| Epistemic Artifact (dual role) | Each skill (gate transforms artifact into learning instrument) | Essay §6 |
-| Generate (action) | Each skill (unchanged — AI still generates) | ADR-001 |
-| Approve (action — being replaced) | Orchestrator + all skills | ADR-001 |
-| Self-Explain (action) | Research, Model, Build skills | ADR-003 |
-| Interrogate (action) | Decide Skill | ADR-003 |
-| Retrieve (action) | Model, Architect skills | ADR-003 |
-| Articulate (action) | Research, Decide, Architect skills | ADR-003 |
-| Reflect (action) | Research, Decide, Architect, Build skills | ADR-003 |
-| Ground (action) | Orchestrator (protocol); each skill (execution) | ADR-001, ADR-004 |
-| Surface (action) | Each skill (side effect of epistemic acts) | Essay §7 |
-| Fade (action — deferred) | None | ADR-005 |
-| Opacity Problem | Essay (motivating context — not implemented in code) | Essay §1 |
-| Metacognitive Illusion | Essay (motivating context) | Essay §1 |
-| Maintenance Cliff | Essay (motivating context) | Essay §8 |
-| Context Window Ceiling | Essay (motivating context) | Essay §8 |
-| Desirable Difficulty | Essay (theoretical basis) | Essay §2 |
-| Cognitive Level | Essay (theoretical basis) | Essay §2 |
-| Dreyfus Stage | Essay (theoretical basis — informs future fading) | Essay §2 |
+| Epistemic Artifact (dual role) | Each skill (gate transforms artifact into learning instrument) | Essay 001 §6 |
+
+### Product Discovery Concepts (from Essay 002 / ADRs 006-011)
+
+| Domain Concept/Action | Owning Module | Provenance |
+|----------------------|---------------|------------|
+| Product Discovery (phase + process) | Product Discovery Skill (process); Orchestrator (phase in pipeline) | ADR-006 |
+| Stakeholder Map (artifact section) | Product Discovery Skill | ADR-007 |
+| User Mental Model (artifact section) | Product Discovery Skill | ADR-007; Essay 002 §5.1 |
+| Value Tension (artifact section) | Product Discovery Skill | ADR-007; Essay 002 §5.2 |
+| Assumption Inversion (artifact section) | Product Discovery Skill | ADR-007; ADR-010 |
+| Product Vocabulary (artifact section) | Product Discovery Skill | ADR-007; ADR-009 |
+| Product Conformance (backward mode audit) | Product Discovery Skill | ADR-008; Essay 002 §8 |
+| Artifact Legibility (design principle) | Product Discovery Skill (artifact written in user language) | ADR-007; Essay 002 §11 |
+| Inversion Principle (cross-cutting) | Orchestrator (cross-cutting principle); Product Discovery Skill (procedural step) | ADR-010 |
+| Invert (action — procedural step) | Product Discovery Skill (primary); Orchestrator (cross-cutting instruction) | ADR-010 |
+| Map Stakeholders (action) | Product Discovery Skill | ADR-007; Essay 002 §6.1 |
+| Audit Product Conformance (action) | Product Discovery Skill (backward mode) | ADR-008; Essay 002 §8 |
+| Product Vocabulary provenance (Product Origin column) | Model Skill | ADR-009 |
+
+### Actions
+
+| Action | Owning Module | Provenance |
+|--------|---------------|------------|
+| Generate | Each skill (unchanged — AI still generates) | ADR-001 |
+| Approve (being replaced) | Orchestrator + all skills | ADR-001 |
+| Self-Explain | Research, Model, Product Discovery, Build skills | ADR-003, ADR-011 |
+| Interrogate | Decide, Product Discovery skills | ADR-003, ADR-011 |
+| Retrieve | Model, Architect, Product Discovery skills | ADR-003, ADR-011 |
+| Articulate | Research, Decide, Architect, Product Discovery skills | ADR-003, ADR-011 |
+| Reflect | Research, Decide, Architect, Build skills | ADR-003 |
+| Ground | Orchestrator (protocol); each skill (execution) | ADR-001, ADR-004 |
+| Surface | Each skill (side effect of epistemic acts) | Essay 001 §7 |
+| Fade (deferred) | None | ADR-005 |
+| Invert | Product Discovery Skill (primary); Orchestrator (cross-cutting) | ADR-010 |
+| Map Stakeholders | Product Discovery Skill | ADR-007 |
+| Audit Product Conformance | Product Discovery Skill | ADR-008 |
+
+### Motivating Context (not implemented in skill text — referenced for provenance only)
+
+| Domain Concept | Source | Provenance |
+|---------------|--------|------------|
+| Opacity Problem | Essay 001 §1 | Motivating context for epistemic gates |
+| Metacognitive Illusion | Essay 001 §1 | Motivating context |
+| Maintenance Cliff | Essay 001 §8 | Motivating context |
+| Context Window Ceiling | Essay 001 §8 | Motivating context |
+| Desirable Difficulty | Essay 001 §2 | Theoretical basis |
+| Cognitive Level | Essay 001 §2 | Theoretical basis |
+| Dreyfus Stage | Essay 001 §2 | Theoretical basis (informs future fading) |
+| Product Debt | Essay 002 §1, §9 | Motivating context for product discovery |
+| Product Maintenance Cliff | Essay 002 §9 | Motivating context |
 
 ## Dependency Graph
 
 ```
 Orchestrator
 ├── Research Skill
+├── Product Discovery Skill  ← NEW
 ├── Model Skill
 ├── Decide Skill
 ├── Architect Skill
@@ -116,12 +165,19 @@ Orchestrator
 
 **Edges (all directed from Orchestrator to skills):**
 - Orchestrator → Research Skill (invokes, defines protocol)
+- Orchestrator → Product Discovery Skill (invokes, defines protocol)
 - Orchestrator → Model Skill (invokes, defines protocol)
 - Orchestrator → Decide Skill (invokes, defines protocol)
 - Orchestrator → Architect Skill (invokes, defines protocol)
 - Orchestrator → Build Skill (invokes, defines protocol)
 
-**Inter-skill communication:** Skills do not depend on each other directly. They communicate through artifact files (essay → domain model → ADRs → system design → code). This is an existing pattern that does not change.
+**Inter-skill communication:** Skills do not depend on each other directly. They communicate through artifact files:
+
+```
+essay → product-discovery.md → domain-model.md → ADRs → system-design.md → code
+```
+
+The product discovery artifact (`./docs/product-discovery.md`) is a new node in this chain, read by Model Skill, Decide Skill, and Architect Skill.
 
 **Layering rules:**
 - Orchestrator is the outer layer (coordination)
@@ -144,9 +200,42 @@ Orchestrator
 
 ### Phase Skill → Next Phase Skill (via artifacts)
 **Protocol:** File-based. Each skill writes its artifact to the docs directory. The next skill reads it.
-**Shared types:** Markdown files at known paths (essay, domain model, ADRs, system design, scenarios).
+**Shared types:** Markdown files at known paths:
+- Essay: `./docs/essays/NNN-descriptive-name.md`
+- Product discovery: `./docs/product-discovery.md`
+- Domain model: `./docs/domain-model.md`
+- ADRs: `./docs/decisions/adr-NNN-*.md`
+- Scenarios: `./docs/scenarios.md`
+- System design: `./docs/system-design.md`
 **Error handling:** If an artifact is missing, the next skill prompts the user (existing behavior).
 **Owned by:** Each skill owns its output artifact format.
+
+### Product Discovery Skill → Model Skill (via product-discovery.md) — NEW
+**Protocol:** File-based. Product Discovery Skill writes `./docs/product-discovery.md`. Model Skill reads it alongside the essay.
+**Shared types:** The Product Vocabulary Table (ADR-007, section 5) is the primary input for the Model Skill's Product Origin column (ADR-009). Value Tensions propagate as Open Questions.
+**Error handling:** If the product discovery artifact is missing (e.g., user skipped the phase), Model Skill proceeds without Product Origin column and notes the gap.
+**Owned by:** Product Discovery Skill owns the artifact format; Model Skill owns the interpretation.
+
+### Product Discovery Skill → Decide Skill (via product-discovery.md) — NEW
+**Protocol:** File-based. Decide Skill reads `./docs/product-discovery.md` for stakeholder context and assumption inversions.
+**Shared types:** Stakeholder Map and Jobs/Mental Models inform ADR context sections. Assumption Inversions are candidates for behavior scenarios.
+**Error handling:** If product discovery artifact is missing, Decide Skill proceeds with essay context only.
+**Owned by:** Product Discovery Skill owns the artifact; Decide Skill owns interpretation.
+
+### Product Discovery Skill → Architect Skill (via product-discovery.md) — NEW
+**Protocol:** File-based. Architect Skill reads `./docs/product-discovery.md` for extended provenance chains.
+**Shared types:** Stakeholder/job references used in responsibility matrix provenance column (Module → Domain Concept → ADR → Product Discovery origin).
+**Error handling:** If product discovery artifact is missing, provenance chains terminate at ADRs (existing behavior).
+**Owned by:** Product Discovery Skill owns the artifact; Architect Skill owns provenance interpretation.
+
+### External Review Re-entry (both primary documents) — NEW
+**Protocol:** Stakeholder or technical reviewer reads one of the two primary documents and provides feedback. The feedback triggers re-entry at the owning phase:
+- `product-discovery.md` feedback → re-enter at PRODUCT DISCOVERY, then forward-propagate through MODEL → DECIDE → ARCHITECT
+- `system-design.md` feedback → re-enter at ARCHITECT (Design Amendment), then propagate to BUILD if in progress
+
+**Shared types:** Reviewer feedback in natural language. The skill at the re-entry phase interprets and incorporates.
+**Error handling:** Feedback may arrive asynchronously between sessions. The orchestrator's state table should note pending external feedback when resuming. If downstream phases have already completed, the scope of re-propagation must be assessed — a minor vocabulary correction propagates differently than "your stakeholder map is wrong."
+**Owned by:** Orchestrator (defines re-entry as a valid pipeline operation); the receiving skill (interprets and incorporates feedback).
 
 ### Feed-Forward Contract (ADR-004)
 **Protocol:** Conversational. In single-session cycles, the user's epistemic responses are in conversation history. In multi-session cycles, the orchestrator's status table summarizes key responses.
@@ -158,7 +247,7 @@ Orchestrator
 
 | Criterion | Measure | Threshold | Derived From |
 |-----------|---------|-----------|-------------|
-| Every skill has an epistemic gate | Presence of EPISTEMIC GATE section in SKILL.md | All 5 phase skills + orchestrator protocol | ADR-001, ADR-002 |
+| Every skill has an epistemic gate | Presence of EPISTEMIC GATE section in SKILL.md | All 6 phase skills + orchestrator protocol | ADR-001, ADR-002, ADR-011 |
 | No gate is approval-only | Gate text requires user to produce something | Zero approval-only gates | Invariant 2 |
 | Prompts reference specific content | Gate prompts contain artifact-specific references, not generic questions | All prompts reference specific concepts/decisions from the artifact | ADR-003 |
 | Prompts use exploratory framing | Gate prompts use open-ended, collaborative tone | Zero quiz-style prompts | ADR-003 |
@@ -166,6 +255,12 @@ Orchestrator
 | Non-generative approval is handled | Gate includes redirect for approval-only responses | All gates include redirect language | Scenarios |
 | Factual discrepancy noting exists | Gate includes instruction to note discrepancies without assessing understanding | All gates include discrepancy language | ADR-001 |
 | No module owns more than 10 glossary entries | Count of responsibility matrix rows per module | ≤ 10 | Design balance |
+| Product discovery artifact has all 5 sections | Read product-discovery.md template in SKILL.md | Stakeholder Map, Jobs/Mental Models, Value Tensions, Assumption Inversions, Product Vocabulary Table | ADR-007 |
+| Forward and backward modes are both defined | Product Discovery Skill contains process for both modes | Both modes present | ADR-008 |
+| Inversion principle appears in 4 locations | Orchestrator (cross-cutting), Product Discovery (procedural), Decide (check), Architect (check) | All 4 present | ADR-010 |
+| Pipeline includes PRODUCT DISCOVERY | Orchestrator workflow modes and state table include the phase | Phase present between UNDERSTAND and MODEL | ADR-006 |
+| Product Origin column in domain model template | Model Skill references Product Origin column | Column defined | ADR-009 |
+| Downstream skills read product discovery artifact | Model, Decide, Architect skills include instruction to read `./docs/product-discovery.md` | All 3 include read instruction | ADR-006, ADR-009 |
 
 ## Test Architecture
 
@@ -174,46 +269,61 @@ Orchestrator
 | Dependency Edge | Integration Test | What It Verifies |
 |----------------|-----------------|------------------|
 | Orchestrator → Research Skill | Read Research SKILL.md; verify EPISTEMIC GATE section exists and follows protocol | Gate protocol contract satisfied |
+| Orchestrator → Product Discovery Skill | Read Product Discovery SKILL.md; verify EPISTEMIC GATE section exists, follows protocol, references stakeholders/tensions/inversions | Gate protocol contract satisfied; ADR-011 prompts present |
 | Orchestrator → Model Skill | Read Model SKILL.md; verify EPISTEMIC GATE section exists and follows protocol | Gate protocol contract satisfied |
 | Orchestrator → Decide Skill | Read Decide SKILL.md; verify EPISTEMIC GATE section exists and follows protocol | Gate protocol contract satisfied |
 | Orchestrator → Architect Skill | Read Architect SKILL.md; verify EPISTEMIC GATE section exists and follows protocol | Gate protocol contract satisfied |
 | Orchestrator → Build Skill | Read Build SKILL.md; verify epistemic prompts in scenario completion step | Gate protocol contract satisfied |
-| Orchestrator protocol → Workflow modes | Read Orchestrator SKILL.md; verify workflow mode descriptions use epistemic gate language | Approval-only language removed |
+| Orchestrator protocol → Workflow modes | Read Orchestrator SKILL.md; verify workflow mode descriptions include PRODUCT DISCOVERY phase and use epistemic gate language | Pipeline includes new phase; approval-only language removed |
+| Product Discovery → Model Skill | Read Model SKILL.md; verify Step 1 reads `./docs/product-discovery.md`; verify Product Origin column in Concepts table template | ADR-009 feed-forward contract |
+| Product Discovery → Decide Skill | Read Decide SKILL.md; verify Step 1 reads `./docs/product-discovery.md`; verify inversion principle check present | ADR-010 cross-cutting contract |
+| Product Discovery → Architect Skill | Read Architect SKILL.md; verify it reads `./docs/product-discovery.md`; verify inversion principle check present; verify provenance chain extends to product discovery | ADR-010 + extended provenance contract |
 
 ### Invariant Enforcement Tests
 
 | Invariant | Enforcement Location | Test |
 |-----------|---------------------|------|
-| 0: User can speak with authority | Pipeline-wide (cumulative) | Cannot be tested structurally — this is an outcome. All other tests serve it. |
-| 1: Understanding requires generation | Each skill's gate section | Verify every gate requires user to produce something |
+| 0: User can speak with authority about what was built, who it was built for, and why | Pipeline-wide (cumulative); Product Discovery Skill (product dimension) | Cannot be tested structurally — this is an outcome. Product discovery phase existence + epistemic gate serve the "who" and "why" dimensions |
+| 1: Understanding requires generation | Each skill's gate section | Verify every gate (including Product Discovery) requires user to produce something |
 | 2: Epistemic acts mandatory at every gate | Each skill's gate section + orchestrator protocol | Verify no gate consists solely of approval; verify redirect for non-generative responses |
 | 3: Pragmatic automated, epistemic preserved | Each skill (AI generates, gate requires user engagement) | Verify skills still have AI generation steps AND have epistemic gate sections |
 | 4: Epistemic cost lightweight | Each skill's gate section | Verify 2-3 prompts per gate |
 | 5: Approval is not grounding | Orchestrator protocol | Verify protocol includes epistemic acts, not just approval |
 | 6: Scaffolding must fade | Not enforced in v1 — tracked as debt | ADR-005 revisit trigger |
-| 7: Epistemic acts bidirectional | Orchestrator feed-forward instruction | Verify orchestrator instructs AI to reference prior gate responses |
+| 7: Epistemic acts bidirectional | Orchestrator feed-forward instruction; Product Discovery gate (user → AI direction especially strong) | Verify orchestrator instructs AI to reference prior gate responses; Product Discovery gate surfaces tacit product knowledge |
 
 ### Test Layers
 
-- **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present.
-- **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions are consistent with skill gate sections. Verify feed-forward instruction exists in orchestrator.
-- **Acceptance:** The 17 behavior scenarios in `scenarios.md`. These are verified by reading the modified files and confirming the described behavior is present in the prompt text.
+- **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present. For Product Discovery Skill: verify forward mode process, backward mode process, all 5 artifact sections, assumption inversion step.
+- **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect.
+- **Acceptance:** The behavior scenarios in `scenarios.md` (39 total: 17 original + 22 new). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
 
 ## Build Sequence
 
+### Phase 1: Product Discovery (new skill + integration)
+
 The following order minimizes risk and allows incremental verification:
 
-1. **Orchestrator first** — update the gate protocol and workflow mode descriptions. This establishes the contract all skills must follow.
-2. **Research Skill** — first phase skill. Validates the pattern.
-3. **Model Skill** — second skill. Confirms the pattern works for a different artifact type.
-4. **Decide Skill** — third skill.
-5. **Architect Skill** — fourth skill.
-6. **Build Skill** — last skill. Slightly different pattern (per-scenario gates, not per-phase).
-7. **Verification pass** — read all files, confirm all scenarios are satisfied.
+1. **Product Discovery Skill** (new file) — create `rdd-product/SKILL.md` with forward mode, backward mode, artifact template, and epistemic gate. This is the core deliverable.
+2. **Orchestrator** (retrofit) — add PRODUCT DISCOVERY phase to pipeline, update Available Skills table, Artifacts Summary, state tracking table, cross-phase integration rules, and inversion principle as cross-cutting principle.
+3. **Model Skill** (retrofit) — add instruction to read `./docs/product-discovery.md` in Step 1, add Product Origin column to Concepts table template, add value tension → Open Questions propagation.
+4. **Decide Skill** (retrofit) — add instruction to read `./docs/product-discovery.md` in Step 1, add inversion principle check ("Does this ADR rest on an unexamined product assumption?").
+5. **Architect Skill** (retrofit) — add instruction to read `./docs/product-discovery.md`, add inversion principle check ("Does this boundary serve the user's mental model?"), extend provenance chain template to include product discovery origins.
+6. **Verification pass** — read all modified files, confirm all new scenarios are satisfied, run fitness criteria checks.
 
-Each skill change is a single commit. Structure changes (adding the section) and behavior changes (the prompt content) can be combined per-skill since adding a new section is inherently a behavior change.
+Each change is a single commit. The new skill file is `feat: add /rdd-product skill`. Retrofit changes are `feat: integrate product discovery into [skill-name]`.
+
+### Phase 0: Epistemic Gates (prior build — completed)
+
+1. Orchestrator — gate protocol and workflow modes
+2. Research Skill — epistemic gate section
+3. Model Skill — epistemic gate section
+4. Decide Skill — epistemic gate section
+5. Architect Skill — epistemic gate section
+6. Build Skill — epistemic gate prompts
 
 ## Design Amendment Log
 
 | # | Date | What Changed | Trigger | Provenance | Status |
 |---|------|-------------|---------|------------|--------|
+| 1 | 2026-03-06 | Added Product Discovery Skill module; updated Orchestrator, Model, Decide, Architect module purposes; extended responsibility matrix with product discovery concepts; added new integration contracts; updated fitness criteria and test architecture; added build sequence Phase 1 | ADRs 006-011 (product discovery RDD cycle) | Essay 002; Invariant 0 (strengthened); ADRs 006-011 | Proposed |

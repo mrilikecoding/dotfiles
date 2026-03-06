@@ -1,6 +1,6 @@
 ---
 name: rdd
-description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD). Use when starting a new project or feature that needs research before code.
+description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Product Discovery (stakeholder maps, value tensions, assumption inversions), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD). Use when starting a new project or feature that needs research before code.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit, Task, Bash
 ---
@@ -16,7 +16,8 @@ $ARGUMENTS
 | Skill | Purpose | Invoke with |
 |-------|---------|-------------|
 | `/rdd-research` | Ideation → research/spike loop → essay | Topic or question |
-| `/rdd-model` | Extract domain vocabulary from essay | Essay |
+| `/rdd-product` | Product discovery — stakeholder maps, jobs, value tensions, assumption inversions | Essay |
+| `/rdd-model` | Extract domain vocabulary from essay + product discovery | Essay + product discovery artifact |
 | `/rdd-decide` | ADRs + argument audit + refutable behavior scenarios | Essay + domain model + prior ADRs |
 | `/rdd-architect` | System design with responsibility allocation + provenance | Domain model + ADRs + scenarios |
 | `/rdd-build` | BDD scenarios → TDD loop → working software | Scenarios + domain model |
@@ -48,23 +49,27 @@ Phase 1: UNDERSTAND
 └── /rdd-research — Research loop → essay
     [Epistemic gate: User explains key findings and how their thinking shifted.]
 
+Phase 2: PRODUCT DISCOVERY
+└── /rdd-product — Stakeholder maps, jobs, value tensions, assumption inversions
+    [Epistemic gate: User surfaces tacit product knowledge.]
+
 Bridge: MODEL
 └── /rdd-model — Domain vocabulary extraction
     [Epistemic gate: User articulates the core concepts and relationships.]
 
-Phase 2: DECIDE
+Phase 3: DECIDE
 └── /rdd-decide — ADRs → argument audit → behavior scenarios
     [Epistemic gate: User reflects on decisions and rejected alternatives.]
 
-Phase 3: ARCHITECT
+Phase 4: ARCHITECT
 └── /rdd-architect — System design → responsibility allocation → fitness criteria
     [Epistemic gate: User articulates module boundaries and responsibility allocations.]
 
-Phase 4: BUILD
+Phase 5: BUILD
 └── /rdd-build — BDD → TDD → working software
     [Epistemic gate: User reflects on each completed scenario group.]
 
-Phase 5: INTEGRATE
+Phase 6: INTEGRATE
 └── /rdd-build Step 5 — Integration verification
     [Gate: New components verified against real neighbors, not just stubs.]
 ```
@@ -83,16 +88,19 @@ Phase 1 only. Use when the goal is understanding, not building.
 User already has research/essay. Start at the domain model bridge.
 
 ```
+Phase 2: PRODUCT DISCOVERY
+└── /rdd-product — Stakeholder maps, jobs, value tensions, assumption inversions
+
 Bridge: MODEL
 └── /rdd-model — Extract vocabulary from existing research
 
-Phase 2: DECIDE
+Phase 3: DECIDE
 └── /rdd-decide — ADRs → argument audit → behavior scenarios
 
-Phase 3: ARCHITECT
+Phase 4: ARCHITECT
 └── /rdd-architect — System design → responsibility allocation → fitness criteria
 
-Phase 4: BUILD
+Phase 5: BUILD
 └── /rdd-build — BDD → TDD → working software
 ```
 
@@ -124,6 +132,7 @@ Maintain a running status table:
 | Phase | Skill | Status | Artifact | Key Epistemic Response | Notes |
 |-------|-------|--------|----------|----------------------|-------|
 | UNDERSTAND | /rdd-research | ▶ In Progress | Research loop #3 | — | Investigating caching strategies |
+| PRODUCT DISCOVERY | /rdd-product | ☐ Pending | — | — | — |
 | MODEL | /rdd-model | ☐ Pending | — | — | — |
 | DECIDE | /rdd-decide | ☐ Pending | — | — | — |
 | ARCHITECT | /rdd-architect | ☐ Pending | — | — | — |
@@ -142,12 +151,18 @@ When generating artifacts in any phase, attend to the user's stated understandin
 ### Cross-Phase Integration
 
 Findings from earlier phases inform later ones:
-- `/rdd-research` essay provides context for `/rdd-model` vocabulary extraction
+- `/rdd-research` essay provides context for `/rdd-product` product discovery and `/rdd-model` vocabulary extraction
+- `/rdd-product` stakeholder maps and jobs inform `/rdd-model` vocabulary extraction — the Product Vocabulary Table feeds the Product Origin provenance column in the domain model
+- `/rdd-product` value tensions propagate as open questions into the domain model
+- `/rdd-product` assumption inversions become candidate behavior scenarios in `/rdd-decide`
 - `/rdd-model` vocabulary must be used consistently in `/rdd-decide` ADRs and scenarios
+- `/rdd-decide` checks ADRs against unexamined product assumptions — if an ADR's context references a product assumption, the assumption should be validated through product discovery
 - `/rdd-decide` runs `/argument-audit` on ADRs + essay + prior ADRs to verify logical consistency before writing scenarios
 - `/rdd-decide` conformance audit checks existing code against accepted ADRs — producing a debt list that informs scenario writing
 - `/rdd-decide` ADR decisions constrain what `/rdd-architect` designs and `/rdd-build` implements
 - `/rdd-decide` behavior scenarios drive `/rdd-build` test-first process
+- `/rdd-architect` checks module boundaries against user mental models — does a boundary serve the user's mental model or just the developer's? Documents the answer in the responsibility matrix provenance
+- `/rdd-architect` provenance chains extend to user needs: Module → Domain Concept → ADR → Product Discovery (stakeholder/job/value)
 - `/rdd-architect` composes ADRs, domain model, and scenarios into a system design with provenance chains linking design to research
 - `/rdd-architect` responsibility matrix prevents god-classes by allocating domain concepts/actions to modules before code is written
 - `/rdd-build` reads the system design as its primary context (compiled rollup), not the full artifact set
@@ -165,6 +180,7 @@ Findings from earlier phases inform later ones:
 | UNDERSTAND | Research log | `./docs/essays/research-logs/research-log.md` |
 | UNDERSTAND | Essay | `./docs/essays/NNN-descriptive-name.md` |
 | UNDERSTAND | Reflections | `./docs/essays/reflections/NNN-descriptive-name.md` |
+| PRODUCT DISCOVERY | Product discovery document | `./docs/product-discovery.md` |
 | MODEL | Domain model/glossary | `./docs/domain-model.md` |
 | DECIDE | ADRs | `./docs/decisions/adr-NNN-*.md` |
 | DECIDE | Behavior scenarios | `./docs/scenarios.md` |
@@ -199,3 +215,5 @@ This applies to all prose produced by every phase. It is a cross-cutting rule.
 - **ADRs are source of truth**: Code that contradicts accepted ADRs is structural debt. Resolve it before building on top of it.
 - **Invariants decay with distance**: LLMs lose coherence across many documents. The invariants section is the short, authoritative statement that prevents this. Keep it concise. Read it first. Trust it over longer documents when they conflict.
 - **Track state**: The user should always know where they are in the pipeline and what's left.
+- **Inversion Principle — question assumptions before encoding them**: A cross-cutting epistemological practice. Every phase should ask whether its assumptions have been examined. The procedural home is `/rdd-product` (assumption inversions), but the principle applies everywhere: RESEARCH ("right problem?"), PRODUCT DISCOVERY (procedural step), DECIDE ("unexamined product assumption?"), ARCHITECT ("user's mental model or developer's?").
+- **Two documents that matter**: `product-discovery.md` is readable by non-technical stakeholders; `system-design.md` is readable by technical stakeholders. All other artifacts serve provenance. These two are the Rosetta Stones between user language and system language.

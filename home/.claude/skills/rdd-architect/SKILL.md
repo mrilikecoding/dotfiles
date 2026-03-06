@@ -17,6 +17,7 @@ $ARGUMENTS
 Read the domain model invariants FIRST (`./docs/domain-model.md`, § Invariants). These are the constitutional authority — the highest-precedence statements in the entire artifact set. Then read:
 - ADRs (`./docs/decisions/`) — architectural constraints and technology choices
 - Scenarios (`./docs/scenarios.md`) — what the system needs to do
+- Product discovery artifact (`./docs/product-discovery.md`) — stakeholder needs, user mental models, value tensions
 - Essays (`./docs/essays/`) — research context and quality attribute analysis
 
 If any ADR, scenario, or essay contradicts a current invariant, flag it immediately — do not treat the contradicting document as authoritative. The invariant wins.
@@ -65,6 +66,8 @@ Propose modules/components. For each module:
 - **Boundary** — what is inside this module, what is outside
 
 Start from the domain model's concepts and relationships. Concepts that represent the same domain concern belong together. Concepts with different change rates or different audiences belong in different modules.
+
+**Inversion Principle check:** When drawing a module boundary that encodes a product assumption (e.g., "carriers are interchangeable", "users always work in batches"), ask whether the boundary serves the user's mental model or just the developer's. If a product discovery artifact exists, check the user mental models section. Document the answer in the module's provenance.
 
 ### Step 5: Responsibility Allocation
 
@@ -245,7 +248,7 @@ Then ask whether to proceed to build, revise the design, or revisit decisions.
 
 Every design choice traces back to its origin. Provenance answers: "Why is the design this way, and what happens if I change it?"
 
-Each module entry, responsibility allocation, and fitness criterion includes provenance references linking to invariants, ADRs, and essay sections.
+Each module entry, responsibility allocation, and fitness criterion includes provenance references linking to invariants, ADRs, essay sections, and product discovery (stakeholder/job/value). The full provenance chain is: Module → Domain Concept → ADR → Product Discovery (stakeholder/job/value) → Essay. A product stakeholder should be able to follow this chain to understand why a module exists.
 
 ### "Can I change this?" Decision Tree
 
