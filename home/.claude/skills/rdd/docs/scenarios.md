@@ -265,3 +265,246 @@
 **When** a module is assigned ownership of a domain concept
 **Then** the provenance chain traces: Module → Domain Concept → ADR → Product Discovery (stakeholder/job/value)
 **And** a product stakeholder can follow this chain to understand why the module exists
+
+## Feature: Synthesis Phase in Pipeline (ADR-012)
+
+### Scenario: Orchestrator pipeline includes Synthesis as optional terminal phase
+**Given** the orchestrator (`rdd/SKILL.md`) describes the Full Pipeline workflow mode
+**When** the pipeline sequence is read
+**Then** SYNTHESIS appears as an optional phase after BUILD
+**And** the SYNTHESIS phase invokes `/rdd-synthesis`
+**And** the phase is marked as optional — the pipeline is complete without it
+
+### Scenario: Synthesis available after any terminal phase
+**Given** an RDD cycle has completed its terminal phase (BUILD in full pipeline, ARCHITECT in scoping mode)
+**When** the user invokes `/rdd-synthesis`
+**Then** the skill accepts the invocation and reads the artifact trail from the completed cycle
+**And** does not require BUILD to have been the terminal phase
+
+### Scenario: Synthesis requires substantial artifact trail
+**Given** an RDD cycle produced only a research essay and domain model (no product discovery, ADRs, or system design)
+**When** the user invokes `/rdd-synthesis`
+**Then** the skill notes the artifact trail may be too thin for a productive synthesis conversation
+**And** asks the user whether to proceed or defer
+
+### Scenario: Orchestrator Available Skills table includes /rdd-synthesis
+**Given** the orchestrator skill file exists
+**When** the Available Skills table is read
+**Then** it includes a row for `/rdd-synthesis` with purpose describing optional post-build synthesis and essay outline production
+
+### Scenario: Orchestrator state tracking table includes SYNTHESIS
+**Given** an RDD cycle is in progress and BUILD is complete
+**When** the orchestrator displays the status table
+**Then** the table includes a SYNTHESIS row after BUILD, shown as optional
+
+### Scenario: Orchestrator Artifacts Summary includes synthesis deliverables
+**Given** the orchestrator skill file exists
+**When** the Artifacts Summary table is read
+**Then** it includes entries for the synthesis outline and the synthesis essay
+**And** the synthesis essay entry notes it is written by the user outside the pipeline
+
+## Feature: Synthesis Conversation Structure (ADR-013)
+
+### Scenario: Agent mines artifact trail before conversation
+**Given** the user has invoked `/rdd-synthesis`
+**When** the skill begins
+**Then** the agent reads the full artifact trail (essays, research logs, reflections, domain model, ADRs, product discovery, system design, code)
+**And** applies the five novelty signals to produce a ranked list of candidate discoveries
+**And** the ranking is ordered by interestingness, not logical importance
+
+### Scenario: Journey review walks through artifact trail chronologically
+**Given** the agent has completed artifact trail mining
+**When** Phase 1 (journey review) begins
+**Then** the agent points to specific moments in the trail — research questions that shifted direction, domain concepts that emerged from tension, ADRs that superseded earlier positions, reflections that surfaced unanticipated connections
+**And** at each moment, the agent asks the user to recall and articulate what was happening
+**And** the agent does not provide its own interpretation as a substitute for the user's recall
+
+### Scenario: Novelty surfacing presents candidate discoveries for user reaction
+**Given** Phase 1 (journey review) is complete
+**When** Phase 2 (novelty surfacing) begins
+**Then** the agent presents its ranked candidate discoveries from the five novelty signals
+**And** asks the user to react: which feel genuinely important, which were surprising then but obvious now, which carry unresolved tension
+**And** treats genuine engagement as signal of a live discovery and polite agreement as signal of a dead one
+
+### Scenario: Framing conversation offers narrative lenses without prescribing
+**Given** Phase 2 (novelty surfacing) is complete and live discoveries have been identified
+**When** Phase 3 (framing conversation) begins
+**Then** the agent offers narrative frameworks as lenses to try on (ABT sentence, story spine, braided structure, volta placement)
+**And** the writer may adopt, modify, or discard any framework in favor of their own structural impulse
+**And** the agent does not insist on any particular narrative form
+
+### Scenario: Outline captures whatever the writer needs to start writing
+**Given** Phase 3 (framing conversation) has identified the central question, key turns, and structural form
+**When** the outline is produced
+**Then** the outline is non-formulaic — there is no required template or structure
+**And** the outline identifies the elements the writer needs to begin: central question, key turns, threads, opening, closing implication
+**And** the form serves the writer's impulse, not a methodology prescription
+
+### Scenario: User writes essay outside the pipeline
+**Given** the synthesis conversation has produced an outline
+**When** the pipeline's synthesis phase is complete
+**Then** the deliverable is the outline, stored at `./docs/essays/NNN-descriptive-name-outline.md`
+**And** the user writes the synthesis essay on their own time, in their own voice
+**And** the agent does not write, co-write, or draft the essay
+
+## Feature: Novelty Signal Detection (ADR-013)
+
+### Scenario: Agent detects explicit surprise statements
+**Given** the agent is mining the artifact trail
+**When** an artifact contains language marking violated expectations ("turned out," "I was wrong about," "unexpectedly," "contrary to what I believed")
+**Then** the agent marks the location as a candidate discovery site of type "explicit surprise statement"
+
+### Scenario: Agent detects reframing events
+**Given** the agent is mining the artifact trail
+**When** the trail shows a shift in problem definition — vocabulary changes, the question being asked changes, or an explicit statement that the original problem was not the real problem
+**Then** the agent marks the location as a candidate discovery site of type "reframing event"
+
+### Scenario: Agent detects assumption denials
+**Given** the agent is mining the artifact trail
+**When** a finding denies an assumption the target audience would hold (per Davis's twelve categories)
+**Then** the agent marks the location as a candidate discovery site of type "assumption denial"
+**And** identifies which assumption category is denied
+
+### Scenario: Agent detects superseded decisions
+**Given** the agent is mining the artifact trail
+**When** an ADR has status "Superseded" or the trail contains contradictions between temporally separated entries on the same topic
+**Then** the agent marks the location as a candidate discovery site of type "superseded decision"
+
+### Scenario: Agent detects negative case integrations
+**Given** the agent is mining the artifact trail
+**When** a counter-example forced revision of the working account (acknowledged or unacknowledged)
+**Then** the agent marks the location as a candidate discovery site of type "negative case integration"
+
+## Feature: Worth-the-Calories Quality Gate (ADR-014)
+
+### Scenario: Davis test applied during framing conversation
+**Given** Phase 3 (framing conversation) is underway
+**When** the writer and agent discuss candidate essay topics
+**Then** the agent asks: which widely-held assumption does this essay deny?
+**And** if no assumption is denied, the agent notes that the framing may not be interesting enough
+
+### Scenario: ABT test applied during framing conversation
+**Given** a candidate essay framing has been identified
+**When** the agent facilitates quality testing
+**Then** the agent asks the writer to express the central claim as: "Context AND more context, BUT complication, THEREFORE consequence"
+**And** checks whether the BUT lands — whether the complication is genuinely surprising
+
+### Scenario: Inversion test applied during framing conversation
+**Given** a candidate essay framing has been identified
+**When** the agent facilitates quality testing
+**Then** the agent asks: can the central claim be stated as the negation of something the target audience currently believes?
+**And** if not, notes the essay may be confirming rather than challenging
+
+### Scenario: Quality gate returns negative result honestly
+**Given** the three quality tests (Davis, ABT, inversion) have been applied
+**When** no framing passes all three tests
+**Then** the agent communicates honestly that this cycle may not have produced an essay worth writing
+**And** does not manufacture interest where none exists
+**And** frames this as a valid outcome, not a failure
+
+### Scenario: Writer makes the quality call, not the agent
+**Given** the three quality tests have been applied and results discussed
+**When** the writer evaluates whether the standard is met
+**Then** the agent does not block or approve — the writer decides
+**And** the agent's role is to facilitate the tests, not to enforce a pass/fail judgment
+
+## Feature: Synthesis Essay as Narrative Context Rollup (ADR-015)
+
+### Scenario: Orchestrator reads synthesis essay when bootstrapping new session
+**Given** a project has a synthesis essay at `./docs/essays/NNN-*.md` written by the user
+**When** a new RDD session begins for that project
+**Then** the orchestrator includes the synthesis essay as a primary context source
+**And** the essay provides narrative thread through the artifact corpus alongside structured artifacts
+
+### Scenario: Synthesis essay answers "what was this project about?"
+**Given** a synthesis essay exists for a project
+**When** the essay is read as context
+**Then** it answers "what was discovered, and why does it matter?" — the narrative that domain models, ADRs, and system designs cannot provide
+**And** serves both human readers and AI sessions bootstrapping understanding
+
+## Feature: Synthesis Subsumes Epistemic Gate (ADR-016)
+
+### Scenario: Synthesis conversation requires generation at every step
+**Given** the synthesis conversation is underway (any phase)
+**When** the user responds at any point
+**Then** the user produces something — recalls an experience, reacts to a discovery, articulates what matters, chooses a narrative direction
+**And** no step consists solely of the user approving agent output
+
+### Scenario: No separate epistemic gate after outline production
+**Given** the synthesis conversation has produced an outline
+**When** the outline is complete
+**Then** there is no additional epistemic gate bolted onto the end
+**And** the conversation itself has served the gate function throughout
+
+### Scenario: Non-generative responses re-engaged during synthesis
+**Given** the agent presents a candidate discovery during novelty surfacing
+**When** the user responds with polite but non-generative agreement ("yeah that's interesting")
+**Then** the agent probes further: "What about it feels important? Does it connect to something you experienced during the cycle?"
+**And** seeks genuine engagement rather than accepting surface-level agreement
+
+## Feature: Inversion Principle in Narrative Framing (ADR-017)
+
+### Scenario: Agent offers narrative inversions during framing conversation
+**Given** Phase 3 (framing conversation) is underway
+**When** the agent offers narrative frameworks
+**Then** the agent includes three narrative inversions as lenses to try on:
+- "What if the obvious takeaway is wrong?"
+- "What if the process is more interesting than the product?"
+- "What if the reader's assumed context is the story?"
+**And** the writer may use all, some, or none
+
+### Scenario: Orchestrator documents inversion principle with SYNTHESIS level
+**Given** the orchestrator describes the inversion principle as a cross-cutting principle
+**When** the phase-specific applications are listed
+**Then** SYNTHESIS is included: "narrative framing — inverting obvious takeaways, process-vs-product assumptions, reader's assumed context"
+
+## Feature: Conformance — Synthesis Phase in Orchestrator
+
+### Scenario: rdd-synthesis SKILL.md exists
+**Given** the synthesis phase has been built
+**When** the skill file is read
+**Then** it contains the three-phase conversation structure (journey review, novelty surfacing, framing)
+**And** includes artifact trail mining as pre-conversation step
+**And** includes the worth-the-calories quality gate during framing
+**And** does not contain a separate EPISTEMIC GATE section (the conversation subsumes it)
+
+### Scenario: Orchestrator cross-cutting principles include SYNTHESIS for inversion
+**Given** the orchestrator lists the inversion principle's phase-specific applications
+**When** the list is read
+**Then** it includes SYNTHESIS alongside RESEARCH, PRODUCT DISCOVERY, DECIDE, and ARCHITECT
+
+## Feature: Outline as Springboard with Pre-Populated References (ADR-013)
+
+### Scenario: Outline includes pre-populated references with full quotes
+**Given** the framing conversation has identified the essay's central question and key discoveries
+**When** the outline is produced
+**Then** the agent extracts relevant citations from the research log, essays, and reflections
+**And** includes full quotes with proper attribution and source context
+**And** the writer does not need to hunt for supporting material — it is already in the outline
+
+### Scenario: Citation audit runs before outline finalization
+**Given** the outline includes pre-populated references
+**When** the outline is being finalized
+**Then** the agent runs a citation audit (via `/citation-audit`) on all pre-populated references
+**And** verifies that cited works exist, are properly attributed, and that quoted material is accurate
+**And** no hallucinated sources reach the writer's outline
+
+### Scenario: Outline is ready to write from immediately
+**Given** the synthesis conversation is complete and the outline is finalized
+**When** the writer opens the outline
+**Then** it contains: narrative structure (central question, turns, threads), pre-populated references with full quotes, and any structural notes from the framing conversation
+**And** the writer can begin writing without additional research or material-gathering
+
+## Feature: Cross-Project Prompting During Synthesis (ADR-018)
+
+### Scenario: Agent asks about resonance with writer's other work
+**Given** Phase 3 (framing conversation) is underway and a volta or key discovery has been identified
+**When** the agent facilitates framing
+**Then** the agent asks whether the volta or discovery resonates with the writer's other work or interests
+**And** creates conversational space for the writer to draw cross-project connections the local artifact trail cannot see
+
+### Scenario: Cross-project connections emerge from conversation, not file access
+**Given** the agent is facilitating cross-project prompting
+**When** the writer describes a connection to another project
+**Then** the agent explores the connection through conversation — asking what the shared structure is, how the concepts relate, whether it changes the essay's framing
+**And** does not attempt to access artifact trails from other projects

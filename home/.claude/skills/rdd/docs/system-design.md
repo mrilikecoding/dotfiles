@@ -1,8 +1,8 @@
 # System Design: Pedagogical RDD
 
-**Version:** 2.0
+**Version:** 3.0
 **Status:** Current
-**Last amended:** 2026-03-06
+**Last amended:** 2026-03-09
 
 ## Architectural Drivers
 
@@ -22,6 +22,11 @@
 | Product vocabulary traces into domain model via provenance column | Quality Attribute | ADR-009 |
 | Product discovery artifact written in user language (Artifact Legibility) | Quality Attribute | ADR-007; Invariant 0 |
 | Two primary readable documents: product-discovery.md (product stakeholders) and system-design.md (technical stakeholders). All other artifacts are supporting material for provenance, not primary reading | Design Principle | Epistemic gate conversation, ARCHITECT phase |
+| Synthesis phase is optional and terminal, with different cost structure from gates | Constraint | ADR-012; Invariant 4 (resolved — synthesis is not a gate) |
+| Synthesis conversation subsumes its epistemic gate (no separate gate section) | Quality Attribute | ADR-016; Invariant 2 |
+| Outline must be an exciting springboard: non-formulaic, pre-populated references, citation-audited | Quality Attribute | ADR-013; Essay 003 §6 |
+| Inversion principle operates at three levels (product, cross-cutting, narrative framing) | Quality Attribute | ADR-010; ADR-017 |
+| Synthesis essay serves as narrative context rollup for future sessions | Quality Attribute | ADR-015; Reflection 003 §1 |
 
 ## Module Decomposition
 
@@ -73,6 +78,13 @@
 **Owns:** Build-phase process, epistemic gate prompts, scenario completion presentation step
 **Depends on:** Orchestrator (protocol)
 **Depended on by:** None
+
+### Module: Synthesis Skill (`rdd-synthesis/SKILL.md`) — NEW
+**Purpose:** Mines the artifact trail for novelty signals and conducts a structured conversation (journey review, novelty surfacing, framing) to help the writer find their story, producing a citation-audited outline as springboard for the synthesis essay.
+**Provenance:** ADR-012 (phase placement); ADR-013 (conversation structure + outline); ADR-014 (quality gate); ADR-015 (narrative context rollup); ADR-016 (subsumes gate); ADR-017 (narrative inversions); ADR-018 (cross-project Level 1); Essay 003; Invariant 0 (public authority dimension)
+**Owns:** Synthesis-phase process, artifact trail mining, novelty signal detection (five signals), three-phase conversation, worth-the-calories quality tests (Davis/ABT/inversion), outline production with pre-populated references, citation audit invocation, cross-project conversational prompting (Level 1), narrative inversion lenses
+**Depends on:** Orchestrator (protocol); Citation Audit skill (invoked during outline finalization)
+**Depended on by:** None (terminal phase; outline artifact consumed by the user outside the pipeline)
 
 ## Responsibility Matrix
 
@@ -137,6 +149,28 @@
 | Map Stakeholders | Product Discovery Skill | ADR-007 |
 | Audit Product Conformance | Product Discovery Skill | ADR-008 |
 
+### Synthesis Concepts (from Essay 003 / ADRs 012-018)
+
+| Domain Concept/Action | Owning Module | Provenance |
+|----------------------|---------------|------------|
+| Synthesis (phase + process) | Synthesis Skill (process); Orchestrator (phase in pipeline) | ADR-012 |
+| Synthesis Essay (outline) | Synthesis Skill (produces outline); User (writes essay outside pipeline) | ADR-012; ADR-013 |
+| Artifact Trail (mining) | Synthesis Skill | ADR-013; Essay 003 §3 |
+| Dead Discovery (detection) | Synthesis Skill (via novelty signals) | ADR-013; Essay 003 §1 |
+| Novelty Signal (detection procedure) | Synthesis Skill | ADR-013; Essay 003 §3 |
+| Volta (surfacing candidates) | Synthesis Skill (surfaces); User (selects and owns) | ADR-013; Essay 003 §6 |
+| Narrative Context Rollup (dual purpose) | Orchestrator (context loading); Synthesis Skill (produces outline that becomes essay) | ADR-015; Reflection 003 §1 |
+| Public Authority (testing) | Synthesis Skill (tests via conversation); Synthesis Essay (demonstrates) | ADR-012; Invariant 0 |
+| Cross-Project Synthesis Level 1 (conversational) | Synthesis Skill (prompting during framing) | ADR-018 |
+| Writing as Inquiry (grounding principle) | Synthesis Skill (grounds phase architecture) | ADR-013; Essay 003 §2 |
+| Worth-the-Calories quality tests (Davis/ABT/inversion) | Synthesis Skill | ADR-014; Essay 003 §5 |
+| Mine Artifact Trail (action) | Synthesis Skill | ADR-013 |
+| Review Journey (action) | Synthesis Skill | ADR-013 |
+| Surface Novelty (action) | Synthesis Skill | ADR-013 |
+| Frame Narrative (action) | Synthesis Skill | ADR-013; ADR-017 |
+| Write Synthesis Essay (action) | User (outside pipeline) | ADR-012; ADR-013 |
+| Inversion Principle (narrative framing level) | Synthesis Skill; Orchestrator (cross-cutting) | ADR-017 |
+
 ### Motivating Context (not implemented in skill text — referenced for provenance only)
 
 | Domain Concept | Source | Provenance |
@@ -156,11 +190,13 @@
 ```
 Orchestrator
 ├── Research Skill
-├── Product Discovery Skill  ← NEW
+├── Product Discovery Skill
 ├── Model Skill
 ├── Decide Skill
 ├── Architect Skill
-└── Build Skill
+├── Build Skill
+└── Synthesis Skill  ← NEW (optional terminal)
+        └── Citation Audit Skill (external, invoked during outline finalization)
 ```
 
 **Edges (all directed from Orchestrator to skills):**
@@ -170,14 +206,21 @@ Orchestrator
 - Orchestrator → Decide Skill (invokes, defines protocol)
 - Orchestrator → Architect Skill (invokes, defines protocol)
 - Orchestrator → Build Skill (invokes, defines protocol)
+- Orchestrator → Synthesis Skill (invokes, defines protocol — optional)
+
+**Synthesis Skill → Citation Audit Skill (external dependency):**
+- Synthesis Skill invokes `/citation-audit` during outline finalization
+- Citation Audit is an external skill (not in the RDD tree), same pattern as Research Skill invoking `/lit-review`
 
 **Inter-skill communication:** Skills do not depend on each other directly. They communicate through artifact files:
 
 ```
 essay → product-discovery.md → domain-model.md → ADRs → system-design.md → code
+                                                                              ↓
+                                        [full artifact trail] → synthesis outline → synthesis essay (user)
 ```
 
-The product discovery artifact (`./docs/product-discovery.md`) is a new node in this chain, read by Model Skill, Decide Skill, and Architect Skill.
+The synthesis skill reads the full artifact trail (all prior artifacts), not just the immediately preceding one. The synthesis essay, when it exists, feeds back into the orchestrator as a context source for future sessions.
 
 **Layering rules:**
 - Orchestrator is the outer layer (coordination)
@@ -237,6 +280,32 @@ The product discovery artifact (`./docs/product-discovery.md`) is a new node in 
 **Error handling:** Feedback may arrive asynchronously between sessions. The orchestrator's state table should note pending external feedback when resuming. If downstream phases have already completed, the scope of re-propagation must be assessed — a minor vocabulary correction propagates differently than "your stakeholder map is wrong."
 **Owned by:** Orchestrator (defines re-entry as a valid pipeline operation); the receiving skill (interprets and incorporates feedback).
 
+### Orchestrator → Synthesis Skill — NEW
+**Protocol:** The orchestrator invokes `/rdd-synthesis` as an optional terminal phase. Unlike other phase skills, the synthesis skill does NOT follow the standard 5-step epistemic gate protocol — the three-phase conversation (journey review, novelty surfacing, framing) subsumes the gate function (ADR-016).
+**Shared types:** The synthesis skill reads the FULL artifact trail:
+- Essays: `./docs/essays/NNN-*.md`
+- Research logs: `./docs/essays/research-logs/*.md`
+- Reflections: `./docs/essays/reflections/*.md`
+- Product discovery: `./docs/product-discovery.md`
+- Domain model: `./docs/domain-model.md`
+- ADRs: `./docs/decisions/adr-NNN-*.md`
+- Scenarios: `./docs/scenarios.md`
+- System design: `./docs/system-design.md`
+**Error handling:** If the artifact trail is too thin (e.g., only essay + domain model), the skill notes this and asks whether to proceed or defer.
+**Owned by:** Orchestrator defines SYNTHESIS as optional phase; Synthesis Skill owns the conversation structure.
+
+### Synthesis Skill → Citation Audit Skill (external) — NEW
+**Protocol:** Synthesis Skill invokes `/citation-audit` on the outline's pre-populated references before finalization. Same invocation pattern as Research Skill invoking `/lit-review`.
+**Shared types:** The outline's references section (full quotes, attribution, source context) is the input. Citation Audit returns verification results.
+**Error handling:** If citation audit finds hallucinated or misattributed sources, the synthesis skill removes or corrects them before presenting the outline.
+**Owned by:** Synthesis Skill initiates; Citation Audit Skill owns the audit methodology.
+
+### Synthesis Skill → Orchestrator (context loading feedback) — NEW
+**Protocol:** When a synthesis essay exists for a project (written by the user outside the pipeline), the orchestrator treats it as a primary context source when bootstrapping new sessions.
+**Shared types:** The synthesis essay at its essay path (`./docs/essays/NNN-*.md`), distinguished from research essays by the outline that preceded it.
+**Error handling:** If the synthesis essay does not exist (user hasn't written it yet), the orchestrator proceeds without it (existing behavior).
+**Owned by:** Orchestrator owns context loading logic; the synthesis essay's existence is the trigger.
+
 ### Feed-Forward Contract (ADR-004)
 **Protocol:** Conversational. In single-session cycles, the user's epistemic responses are in conversation history. In multi-session cycles, the orchestrator's status table summarizes key responses.
 **Shared types:** Natural language in conversation context.
@@ -261,6 +330,17 @@ The product discovery artifact (`./docs/product-discovery.md`) is a new node in 
 | Pipeline includes PRODUCT DISCOVERY | Orchestrator workflow modes and state table include the phase | Phase present between UNDERSTAND and MODEL | ADR-006 |
 | Product Origin column in domain model template | Model Skill references Product Origin column | Column defined | ADR-009 |
 | Downstream skills read product discovery artifact | Model, Decide, Architect skills include instruction to read `./docs/product-discovery.md` | All 3 include read instruction | ADR-006, ADR-009 |
+| Synthesis skill has three-phase conversation structure | Skill contains journey review, novelty surfacing, and framing conversation steps | All 3 phases present | ADR-013 |
+| Synthesis skill includes novelty signal detection | Skill describes five novelty signals and artifact trail mining procedure | All 5 signals documented | ADR-013; Essay 003 §3 |
+| Synthesis skill includes worth-the-calories quality tests | Skill contains Davis, ABT, and inversion tests during framing | All 3 tests present | ADR-014 |
+| Synthesis skill does NOT have separate EPISTEMIC GATE section | Conversation subsumes gate; no bolted-on gate after outline | No EPISTEMIC GATE header | ADR-016 |
+| Synthesis skill includes citation audit invocation | Skill invokes `/citation-audit` before outline finalization | Invocation present | ADR-013 |
+| Synthesis skill includes cross-project conversational prompting | Skill asks about resonance with other work during framing | Prompting present in Phase 3 | ADR-018 |
+| Synthesis skill includes narrative inversion lenses | Skill offers three narrative inversions during framing | All 3 inversions present | ADR-017 |
+| Outline includes pre-populated references | Outline production step extracts citations with full quotes | Reference extraction step present | ADR-013 |
+| Pipeline includes SYNTHESIS as optional terminal | Orchestrator lists SYNTHESIS after BUILD, marked optional | Phase present and marked optional | ADR-012 |
+| Orchestrator includes synthesis essay in context loading | When bootstrapping, orchestrator reads synthesis essay if it exists | Context loading instruction present | ADR-015 |
+| Inversion principle appears in 5 locations | Orchestrator (cross-cutting), Product Discovery (procedural), Decide (check), Architect (check), Synthesis (narrative) | All 5 present | ADR-010; ADR-017 |
 
 ## Test Architecture
 
@@ -278,6 +358,10 @@ The product discovery artifact (`./docs/product-discovery.md`) is a new node in 
 | Product Discovery → Model Skill | Read Model SKILL.md; verify Step 1 reads `./docs/product-discovery.md`; verify Product Origin column in Concepts table template | ADR-009 feed-forward contract |
 | Product Discovery → Decide Skill | Read Decide SKILL.md; verify Step 1 reads `./docs/product-discovery.md`; verify inversion principle check present | ADR-010 cross-cutting contract |
 | Product Discovery → Architect Skill | Read Architect SKILL.md; verify it reads `./docs/product-discovery.md`; verify inversion principle check present; verify provenance chain extends to product discovery | ADR-010 + extended provenance contract |
+| Orchestrator → Synthesis Skill | Read Synthesis SKILL.md; verify three-phase conversation structure; verify NO separate EPISTEMIC GATE section; verify novelty signal detection; verify quality tests; verify citation audit invocation | ADR-012, ADR-013, ADR-014, ADR-016 contract |
+| Synthesis Skill → Citation Audit | Read Synthesis SKILL.md; verify `/citation-audit` invocation during outline finalization | ADR-013 citation audit contract |
+| Synthesis Skill → Artifact Trail | Read Synthesis SKILL.md; verify Step 1 reads full artifact trail (essays, logs, reflections, product discovery, domain model, ADRs, scenarios, system design) | ADR-013 artifact trail contract |
+| Orchestrator context loading → Synthesis Essay | Read Orchestrator SKILL.md; verify synthesis essay listed as context source when bootstrapping | ADR-015 narrative context rollup contract |
 
 ### Invariant Enforcement Tests
 
@@ -296,7 +380,7 @@ The product discovery artifact (`./docs/product-discovery.md`) is a new node in 
 
 - **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present. For Product Discovery Skill: verify forward mode process, backward mode process, all 5 artifact sections, assumption inversion step.
 - **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect.
-- **Acceptance:** The behavior scenarios in `scenarios.md` (39 total: 17 original + 22 new). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
+- **Acceptance:** The behavior scenarios in `scenarios.md` (75 total: 39 prior + 36 new for synthesis). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
 
 ## Build Sequence
 
@@ -313,6 +397,16 @@ The following order minimizes risk and allows incremental verification:
 
 Each change is a single commit. The new skill file is `feat: add /rdd-product skill`. Retrofit changes are `feat: integrate product discovery into [skill-name]`.
 
+### Phase 2: Synthesis (new skill + integration)
+
+The following order minimizes risk and allows incremental verification:
+
+1. **Synthesis Skill** (new file) — create `rdd-synthesis/SKILL.md` with: artifact trail mining (five novelty signals), three-phase conversation (journey review, novelty surfacing, framing), worth-the-calories quality tests (Davis/ABT/inversion), outline production with pre-populated references, `/citation-audit` invocation, cross-project conversational prompting (Level 1), narrative inversion lenses. No separate EPISTEMIC GATE section — conversation subsumes it.
+2. **Orchestrator** (retrofit) — add SYNTHESIS as optional terminal phase to pipeline, update Available Skills table, Artifacts Summary, state tracking table. Add SYNTHESIS to inversion principle cross-cutting list. Add synthesis essay to context loading for session bootstrapping.
+3. **Verification pass** — read all modified files, confirm all new scenarios are satisfied, run fitness criteria checks.
+
+Each change is a single commit. The new skill file is `feat: add /rdd-synthesis skill`. Orchestrator retrofit is `feat: integrate synthesis phase into orchestrator`.
+
 ### Phase 0: Epistemic Gates (prior build — completed)
 
 1. Orchestrator — gate protocol and workflow modes
@@ -327,3 +421,4 @@ Each change is a single commit. The new skill file is `feat: add /rdd-product sk
 | # | Date | What Changed | Trigger | Provenance | Status |
 |---|------|-------------|---------|------------|--------|
 | 1 | 2026-03-06 | Added Product Discovery Skill module; updated Orchestrator, Model, Decide, Architect module purposes; extended responsibility matrix with product discovery concepts; added new integration contracts; updated fitness criteria and test architecture; added build sequence Phase 1 | ADRs 006-011 (product discovery RDD cycle) | Essay 002; Invariant 0 (strengthened); ADRs 006-011 | Proposed |
+| 2 | 2026-03-09 | Added Synthesis Skill module (optional terminal phase); extended responsibility matrix with 17 synthesis concepts/actions; added 3 new integration contracts (Orchestrator→Synthesis, Synthesis→Citation Audit, Synthesis→Orchestrator context loading); updated dependency graph; added 12 fitness criteria; added 4 boundary integration tests; updated test layers; added build sequence Phase 2. Unique architectural property: synthesis conversation subsumes epistemic gate (no separate EPISTEMIC GATE section). External dependency on Citation Audit skill. | ADRs 012-018 (synthesis RDD cycle) | Essay 003; Reflection 003; ADRs 012-018 | Proposed |
