@@ -1,6 +1,6 @@
 ---
 name: rdd
-description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Product Discovery (stakeholder maps, value tensions, assumption inversions), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD). Use when starting a new project or feature that needs research before code.
+description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Product Discovery (stakeholder maps, value tensions, assumption inversions), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD), and optionally Synthesis (artifact trail mining → essay outline). Use when starting a new project or feature that needs research before code.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit, Task, Bash
 ---
@@ -21,6 +21,7 @@ $ARGUMENTS
 | `/rdd-decide` | ADRs + argument audit + refutable behavior scenarios | Essay + domain model + prior ADRs |
 | `/rdd-architect` | System design with responsibility allocation + provenance | Domain model + ADRs + scenarios |
 | `/rdd-build` | BDD scenarios → TDD loop → working software | Scenarios + domain model |
+| `/rdd-synthesis` | Artifact trail mining → synthesis conversation → citation-audited essay outline | Full artifact trail (optional, post-build) |
 | `/lit-review` | Systematic literature search and synthesis | Topic (used within `/rdd-research`) |
 
 ---
@@ -72,6 +73,10 @@ Phase 5: BUILD
 Phase 6: INTEGRATE
 └── /rdd-build Step 5 — Integration verification
     [Gate: New components verified against real neighbors, not just stubs.]
+
+Phase 7: SYNTHESIS (optional)
+└── /rdd-synthesis — Artifact trail mining → synthesis conversation → essay outline
+    [No separate gate: the three-phase conversation (journey review, novelty surfacing, framing) IS the epistemic gate. Writer generates at every step.]
 ```
 
 ### Mode B: Research Only
@@ -138,6 +143,7 @@ Maintain a running status table:
 | ARCHITECT | /rdd-architect | ☐ Pending | — | — | — |
 | BUILD | /rdd-build | ☐ Pending | — | — | — |
 | INTEGRATE | /rdd-build Step 5 | ☐ Pending | — | — | — |
+| SYNTHESIS | /rdd-synthesis | ☐ Optional | — | — | — |
 ```
 
 Update and display this table at each gate. The "Key Epistemic Response" column captures a brief summary of the user's most significant epistemic gate response for that phase — this is the feed-forward signal that subsequent phases should attend to, especially when resuming across sessions.
@@ -172,6 +178,9 @@ Findings from earlier phases inform later ones:
 - If `/rdd-build` stewardship review reveals a design flaw, a Design Amendment updates the system design (not the ADRs)
 - If `/rdd-build` reveals a flaw in a decision, go back and update the ADR
 - When any phase changes a domain model invariant, **backward propagation triggers**: all prior documents are swept for contradictions, supersession notes are added, and the amendment is logged in the domain model. This is a cross-cutting event that interrupts normal phase sequence.
+- `/rdd-synthesis` reads the **full artifact trail** — all essays, research logs, reflections, product discovery, domain model, ADRs, scenarios, and system design. It does not read just the preceding phase's output.
+- `/rdd-synthesis` invokes `/citation-audit` on the outline's pre-populated references before finalization — same external invocation pattern as `/rdd-research` invoking `/lit-review`
+- The synthesis essay, when written by the user, serves as a **narrative context rollup** — the orchestrator should treat it as a primary context source when bootstrapping new sessions for the project. It answers "what was discovered, and why does it matter?" where structured artifacts answer "what was decided?"
 
 ### Artifacts Summary
 
@@ -186,6 +195,8 @@ Findings from earlier phases inform later ones:
 | DECIDE | Behavior scenarios | `./docs/scenarios.md` |
 | ARCHITECT | System design | `./docs/system-design.md` |
 | BUILD | Tests + code | Project source |
+| SYNTHESIS | Synthesis outline (agent + user co-produced) | `./docs/essays/NNN-descriptive-name-outline.md` |
+| SYNTHESIS | Synthesis essay (user-written, outside pipeline) | `./docs/essays/NNN-descriptive-name.md` |
 
 ### Invariant Amendments
 
@@ -215,5 +226,5 @@ This applies to all prose produced by every phase. It is a cross-cutting rule.
 - **ADRs are source of truth**: Code that contradicts accepted ADRs is structural debt. Resolve it before building on top of it.
 - **Invariants decay with distance**: LLMs lose coherence across many documents. The invariants section is the short, authoritative statement that prevents this. Keep it concise. Read it first. Trust it over longer documents when they conflict.
 - **Track state**: The user should always know where they are in the pipeline and what's left.
-- **Inversion Principle — question assumptions before encoding them**: A cross-cutting epistemological practice. Every phase should ask whether its assumptions have been examined. The procedural home is `/rdd-product` (assumption inversions), but the principle applies everywhere: RESEARCH ("right problem?"), PRODUCT DISCOVERY (procedural step), DECIDE ("unexamined product assumption?"), ARCHITECT ("user's mental model or developer's?").
+- **Inversion Principle — question assumptions before encoding them**: A cross-cutting epistemological practice. Every phase should ask whether its assumptions have been examined. The procedural home is `/rdd-product` (assumption inversions), but the principle applies everywhere: RESEARCH ("right problem?"), PRODUCT DISCOVERY (procedural step), DECIDE ("unexamined product assumption?"), ARCHITECT ("user's mental model or developer's?"), SYNTHESIS (narrative framing — inverting obvious takeaways, process-vs-product assumptions, reader's assumed context).
 - **Two documents that matter**: `product-discovery.md` is readable by non-technical stakeholders; `system-design.md` is readable by technical stakeholders. All other artifacts serve provenance. These two are the Rosetta Stones between user language and system language.
