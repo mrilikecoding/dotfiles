@@ -9,10 +9,33 @@ RDD is a methodology for building software through structured understanding. It 
 ## Who It Serves
 
 - **Solo Developer-Researcher** — runs the full pipeline to understand before building. The primary user.
+  - Start: [SKILL.md](../SKILL.md) (orchestrator — workflow modes, phase sequence)
+  - Then: [product-discovery.md](product-discovery.md) (who are you building for?)
+  - Then: [system-design.md](system-design.md) (how is it structured?)
+  - Background: [Essay 001](essays/001-pedagogical-epistemology-in-ai-assisted-development.md) (why epistemic gates exist)
+
 - **Research-Engineer-Writer** — uses the research, product discovery, and modeling phases as a structured investigation methodology, whether or not software gets built.
+  - Start: [rdd-research SKILL.md](../rdd-research/SKILL.md) (research loop mechanics)
+  - Then: [rdd-product SKILL.md](../rdd-product/SKILL.md) (product discovery process)
+  - Then: [domain-model.md](domain-model.md) (vocabulary authority)
+  - Background: [Essay 003](essays/003-synthesis-as-epistemic-practice.md) (synthesis methodology)
+
 - **Team Lead (scoping)** — runs RESEARCH through ARCHITECT, then hands off artifacts to a team for building. Uses RDD as a leadership thinking tool.
+  - Start: [product-discovery.md](product-discovery.md) (stakeholder needs, value tensions)
+  - Then: [system-design.md](system-design.md) (module decomposition, responsibility matrix)
+  - Then: [decisions/](decisions/) (ADRs — the "why" behind each choice)
+  - Handoff artifact: [scenarios.md](scenarios.md) (what the team builds against)
+
 - **AI Agent** — executes the skill files. The pipeline's instructions are literally written for this stakeholder.
+  - Start: [SKILL.md](../SKILL.md) (orchestrator — phase sequence, gate protocol, cross-phase rules)
+  - Reference: [domain-model.md](domain-model.md) § Invariants (constitutional authority)
+  - Reference: [system-design.md](system-design.md) (module ownership, fitness criteria)
+
 - **Teammates / Collaborators** — receive artifacts without having gone through the gates. Need this document to orient.
+  - Start: this document
+  - Product perspective: [product-discovery.md](product-discovery.md)
+  - Technical perspective: [system-design.md](system-design.md)
+  - Vocabulary: [domain-model.md](domain-model.md) (if terms are unfamiliar)
 
 ## Key Constraints
 

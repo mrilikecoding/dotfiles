@@ -221,7 +221,7 @@ ORIENTATION.md is an agent-maintained, user-validated document that sits at the 
 **Structure — exactly five sections, in this order:**
 
 1. **What this system is** — one paragraph. Essential purpose, not features or architecture. Accessible to both product and technical readers.
-2. **Who it serves** — stakeholder names and one-line descriptions, compressed from product discovery. Not the full Stakeholder Map.
+2. **Who it serves** — stakeholder names and one-line descriptions, compressed from product discovery. Not the full Stakeholder Map. Each stakeholder includes a **reading path**: a short linked list of the most relevant artifacts, document sections, code locations, or external resources for understanding the system from that stakeholder's perspective. The reading path answers "what do I need to know to understand this system from where I sit?"
 3. **Key constraints** — top 3-5 quality attributes or invariants from the domain model that shape every decision. The constraints that make this system *this system*.
 4. **How the artifacts fit together** — the artifact hierarchy with one-line descriptions and when to read each artifact.
 5. **Current state** — which phases are complete, what decisions are settled, what open questions remain. Pipeline state is inferred from the artifact trail (which artifacts exist and their content), not from session state.
