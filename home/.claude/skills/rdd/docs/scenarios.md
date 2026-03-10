@@ -508,3 +508,134 @@
 **When** the writer describes a connection to another project
 **Then** the agent explores the connection through conversation — asking what the shared structure is, how the concepts relate, whether it changes the essay's framing
 **And** does not attempt to access artifact trails from other projects
+
+## Feature: Orientation Document as Artifact Hierarchy Entry Point (ADR-019)
+
+### Scenario: Orientation document sits at top of three-tier artifact hierarchy
+**Given** an RDD cycle has produced artifacts across multiple phases
+**When** the artifact hierarchy is consulted
+**Then** ORIENTATION.md is Tier 1 (entry point, routes readers)
+**And** product-discovery.md and system-design.md are Tier 2 (primary readables)
+**And** domain-model.md, essays, ADRs, and scenarios are Tier 3 (supporting material)
+
+### Scenario: Orientation document routes readers to appropriate depth
+**Given** a reader (human or AI agent) encounters the artifact corpus for the first time
+**When** they read ORIENTATION.md
+**Then** they can determine: what the system is, who it serves, what constraints shape it, what artifacts exist, and what the current state is
+**And** they know which Tier 2 document to read next based on their role (product stakeholder → product-discovery.md, technical reader → system-design.md)
+
+### Scenario: Orientation document does not duplicate Tier 2 content
+**Given** ORIENTATION.md has been generated
+**When** its content is compared to product-discovery.md and system-design.md
+**Then** it contains only what the reader needs to decide where to go next — not the depth itself
+**And** no section reproduces the detail of the Tier 2 documents it routes to
+
+## Feature: Orientation Document Five-Section Structure (ADR-020)
+
+### Scenario: Orientation document contains exactly five sections
+**Given** the agent generates ORIENTATION.md
+**When** the document is produced
+**Then** it contains exactly five sections in this order: What this system is, Who it serves, Key constraints, How the artifacts fit together, Current state
+**And** no additional sections are added
+
+### Scenario: "What this system is" section is one paragraph
+**Given** the agent is generating section 1 of ORIENTATION.md
+**When** the section is complete
+**Then** it states the essential purpose in one paragraph
+**And** it does not list features or describe architecture
+**And** its language is accessible to both product and technical readers
+
+### Scenario: "Who it serves" section compresses stakeholder map
+**Given** the agent is generating section 2 of ORIENTATION.md
+**When** the section is complete
+**Then** it contains stakeholder names and one-line descriptions
+**And** it does not reproduce the full Stakeholder Map from product-discovery.md
+
+### Scenario: "Key constraints" section captures 3-5 shaping invariants
+**Given** the agent is generating section 3 of ORIENTATION.md
+**When** the section is complete
+**Then** it lists 3-5 quality attributes or invariants from the domain model
+**And** these are the constraints that make this system *this system*
+**And** it does not exhaustively list all invariants
+
+### Scenario: "How the artifacts fit together" section is the artifact map
+**Given** the agent is generating section 4 of ORIENTATION.md
+**When** the section is complete
+**Then** it lists each artifact in the corpus with a one-line description and when to read it
+**And** the three-tier hierarchy is visible in the organization
+
+### Scenario: "Current state" section reflects pipeline progress
+**Given** the agent is generating section 5 of ORIENTATION.md
+**When** the section is complete
+**Then** it states which phases are complete, what decisions are settled, and what open questions remain
+**And** pipeline state is inferred from the artifact trail (which artifacts exist and their content), not from session state
+
+### Scenario: Entire document is readable in under five minutes
+**Given** ORIENTATION.md has been generated
+**When** the document's length is assessed
+**Then** no section exceeds a few short paragraphs
+**And** the entire document is readable in under five minutes
+
+## Feature: Agent-Maintained Orientation Document (ADR-021)
+
+### Scenario: Agent generates orientation document from artifact trail
+**Given** an RDD cycle has produced artifacts (at minimum, a research essay)
+**When** the agent generates ORIENTATION.md
+**Then** the agent reads the current artifact trail and distills it into the five-section structure
+**And** this is a pragmatic action (Invariant 3) — no epistemic gate is required for the generation itself
+
+### Scenario: User validates generated orientation document
+**Given** the agent has generated ORIENTATION.md
+**When** the document is presented to the user
+**Then** the user reviews the document for accuracy
+**And** the agent and user iterate to refine it
+**And** this validation is review-based, not generation-based — no epistemic gate
+
+### Scenario: Partial orientation document after RESEARCH phase
+**Given** an RDD cycle has completed only the RESEARCH phase
+**When** the agent generates ORIENTATION.md
+**Then** only section 1 (what the system is) and section 5 (current state) can be populated
+**And** the partial orientation is still useful for the user's context
+**And** sections 2-4 are either omitted or marked as pending
+
+### Scenario: Orientation document regenerated at natural milestones
+**Given** an RDD cycle has completed a phase (e.g., ARCHITECT)
+**When** the agent is asked to regenerate ORIENTATION.md or determines it is a natural milestone
+**Then** the document is regenerated from the current artifact trail
+**And** the document fills out as more artifacts become available
+
+### Scenario: Scoping use case generates orientation document after ARCHITECT
+**Given** a team lead has run RDD through RESEARCH → ARCHITECT (scoping mode)
+**When** the ARCHITECT phase completes
+**Then** the orientation document is generated as a handoff cover letter
+**And** it orients the team to the full artifact set for building
+
+### Scenario: Source artifacts are authoritative over orientation document
+**Given** ORIENTATION.md contains a claim that contradicts a source artifact (essay, domain model, ADR, product discovery, or system design)
+**When** the contradiction is discovered
+**Then** the orientation document is regenerated from the source artifacts
+**And** the source artifact is NOT corrected to match the orientation document
+
+### Scenario: Orientation document clarity serves as stewardship signal
+**Given** ORIENTATION.md has been generated and the user is reviewing it
+**When** the document has grown increasingly abstract or internally contradictory compared to prior versions
+**Then** this signals the system may be accumulating the wrong kind of complexity
+**And** the signal prompts investigation of the architecture, not just revision of the document
+
+## Feature: Conformance — Orientation Document in Pipeline
+
+### Scenario: Orchestrator "two documents that matter" principle amended to three tiers
+**Given** the orchestrator skill file (`rdd/SKILL.md`) exists
+**When** the file is read
+**Then** the design principle references three tiers: orientation (ORIENTATION.md) → primary readables (product-discovery.md, system-design.md) → supporting material
+**And** the prior "two documents that matter" language has been amended
+
+### Scenario: Orchestrator Artifacts Summary includes ORIENTATION.md
+**Given** the orchestrator skill file exists
+**When** the Artifacts Summary table is read
+**Then** it includes a row for ORIENTATION.md noting it is cross-phase and regenerated at milestones
+
+### Scenario: System design architectural drivers table reflects three-tier hierarchy
+**Given** system-design.md exists
+**When** the Architectural Drivers table is read
+**Then** the readability design principle acknowledges the three-tier hierarchy with ORIENTATION.md at Tier 1

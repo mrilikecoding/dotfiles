@@ -1,6 +1,6 @@
 # Product Discovery: Research-Driven Development (RDD)
 
-*2026-03-06*
+*2026-03-09*
 
 ## Stakeholder Map
 
@@ -16,7 +16,7 @@
 
 ### Indirect Stakeholders
 
-- **Teammates / Collaborators** — People who inherit, review, or extend projects built with RDD. They encounter the artifacts — especially the product discovery document and system design — without having gone through the gates that produced them. In the team lead scenario, they receive these artifacts as the starting point for their own planning and building.
+- **Teammates / Collaborators** — People who inherit, review, or extend projects built with RDD. They encounter the artifacts — especially the product discovery document and system design — without having gone through the gates that produced them. In the team lead scenario, they receive these artifacts as the starting point for their own planning and building. Need an entry point to the artifact corpus — a single document that orients them to what the system is, who it's for, and where to go for depth.
 
 - **Architecture and Product Specialists** — People the team lead shares artifacts with for feedback before team handoff. They validate the thinking and surface questions the team lead may have missed. Their feedback flows back through the pipeline (external review re-entry).
 
@@ -56,6 +56,7 @@
 - "I need the research and decisions captured well enough that the team can build from them without having been in the room when the thinking happened"
 - "I want to be able to speak to the artifacts — explain and defend the decisions, respond to real questions, thread the needle between system design and product needs"
 - "I want the teams that are building to understand the system themselves, so I hand off building rather than doing it solo"
+- "I need a single document I can hand over that orients the team to the full artifact set — what the system is, who it's for, what's decided, what's open"
 
 **Mental Model:**
 "I run RDD through ARCHITECT to do my homework — build my own understanding and produce handoff artifacts. The essay tells the team why, the product discovery tells them who it's for, the system design tells them what to build. Before handing off to the team, I get feedback from architecture and product folks to validate my thinking. The team does the build how they want, using the artifacts as a guide. They don't need to use RDD — but they need to understand the system, so they should do the building themselves."
@@ -66,6 +67,7 @@
 - "Execute the skill instructions faithfully and produce artifacts that meet the quality bar"
 - "Maintain consistency across phases — vocabulary, invariants, provenance"
 - "Facilitate the gates without being patronizing or perfunctory"
+- "Maintain a current-state orientation document that lets new readers (human or agent) bootstrap into the system without reading everything"
 
 **Mental Model:**
 "Each skill file is my instruction set for one phase. I read prior artifacts, produce the phase artifact, present it with prompts, and wait for the user to engage before moving on. The orchestrator tells me the sequence and the rules."
@@ -82,6 +84,12 @@
 
 - **Artifact feedback loop:** Before handoff, the team lead gets feedback from specialists. This intermediate validation step is real workflow but is not formalized in the pipeline. The external review re-entry pattern (specialist feedback flowing back through the pipeline) is confirmed as actual practice but exists only as an open question in the domain model.
 
+- **Orientation brevity vs. completeness:** The orientation document must be readable in under 5 minutes, but the system it describes may be complex. The one-pager forcing function says "ruthlessly prioritize," but where's the line between orientation and oversimplification?
+
+- **Agent-generated artifact vs. trustworthy artifact:** The orientation document is maintained by the agent (currency) but validated by the user (accuracy). If the user doesn't review it carefully, it can drift from reality — especially for product-facing claims. Currency and accuracy pull in different directions.
+
+- **Orientation as coherence test:** If the agent can't produce a clear, concise orientation document, the problem may not be the document — it may be the system's architecture. The document's clarity becomes a proxy for architectural coherence. This is productive but also risky: it could lead to premature simplification of legitimately complex systems.
+
 ## Assumption Inversions
 
 *Note: The inversions below serve a dual purpose. As a critical design exercise, they surface hidden assumptions. But they also function as epistemic acts in their own right — working through "what if this were wrong?" builds the user's understanding of the system. The inversions at the product discovery gate do double duty: questioning assumptions and producing comprehension. This was surfaced during the epistemic gate conversation and confirmed by the user: "They all got me thinking, which is the point."*
@@ -94,6 +102,9 @@
 | The user works alone with the AI | What if RDD is most valuable as a collaborative exercise? | Pair-RDD could double the epistemic benefit at gates and surface more tacit knowledge. The current pipeline has no affordance for multiple humans at a gate. |
 | The terminology barrier limits adoption | What if precise terminology attracts the right users? | People who find "epistemic gate" off-putting might also find the discipline too demanding. Self-selection through terminology may filter for users who will actually follow through. |
 | RDD is for starting new projects | What if auditing existing systems (backward mode) is the highest-impact application? | Most software already exists. If RDD's biggest impact is helping teams understand inherited systems, the pipeline's greenfield bias may be misplaced. There are more existing systems than new ones by definition. |
+| The orientation document should be generated by the agent | What if the user should write it? | It becomes an epistemic act — but the synthesis essay already fills the user-authored explanation role. The orientation document's value is that the agent maintains it, freeing the user to validate rather than author. |
+| One orientation document serves all audiences (human newcomer, AI agent, specialist reviewer) | What if different audiences need different entry points? | Multiple entry points recreate the problem. The single-document constraint forces language that works across audiences — itself a test of system coherence. If the document can't be written clearly for all audiences, perhaps the system isn't as coherent as the artifacts claim. |
+| The orientation document sits above the two primary readables in the hierarchy | What if it sits alongside them as a third peer? | Loses the routing function. The orientation document points readers *to* the right primary document. If it's a peer, readers still need an entry point above all three. The hierarchy needs a top. |
 
 ## Product Vocabulary
 
@@ -112,6 +123,11 @@
 | "Pair-RDD" | (Potential) | Two collaborators running a cycle together | Emerged during this discovery — not yet in the system |
 | "Running a cycle on a feature" | Solo Developer | Using RDD for a new feature within an existing project, not just greenfield | Broadens scope beyond "new project" |
 | "Research engineering" | Research-Engineer | Using RDD's research and modeling phases as a structured investigation methodology | The pipeline serves research, not just development |
+| "Entry point" | Teammates, AI Agent | "Where do I start with these artifacts?" | The orientation document's primary function — routes readers into the corpus |
+| "The big picture" | Teammates, Team Lead | "I need to understand what this system is" | What the orientation document provides — system identity, not detail |
+| "The one doc worth reading" | Team Lead (circulating) | Sharing artifacts with stakeholders | If you can only send one thing, send this |
+| "Stewardship signal" | Solo Developer | Reviewing orientation document over time | If the document grows abstract or contradictory, it signals accumulating complexity — a canary, not a diagnosis |
+| "Cover letter" | Team Lead (handoff) | "What am I giving the team?" | Mental model: the orientation document accompanies artifacts across a team boundary |
 
 ## Product Debt
 
@@ -122,3 +138,5 @@
 | External review is not in the pipeline | Open question in domain model | Team leads already get feedback from architecture and product specialists before team handoff | Missing workflow | Formalize external review re-entry as a pipeline operation |
 | Single user at gates | All EPISTEMIC GATE sections address one user | Pair-RDD — two collaborators at gates — could recover pair-programming benefits | Over-abstraction (single-user assumption) | Research cycle needed to explore pair-RDD |
 | Backward mode is secondary to forward mode | Forward mode is Step 2a, backward mode is Step 2b; pipeline defaults to greenfield | Auditing existing systems may be the highest-impact application | Mental model mismatch | Consider whether backward mode deserves equal or greater emphasis in onboarding and documentation |
+| No artifact entry point exists | Artifact corpus has no top-level orientation document | New readers, handoff recipients, and bootstrapping agents need a single document that orients them to the system and routes them to depth | Missing artifact | Add an agent-maintained orientation document as the entry point to the artifact hierarchy, sitting above product-discovery.md and system-design.md |
+| Two-tier document hierarchy (primary readables + supporting material) | System design's "two primary readable documents" principle | Three tiers needed: orientation (entry point) → primary readables (product-discovery, system-design) → supporting material (domain model, ADRs, scenarios) | Missing tier | Amend the design principle to acknowledge three tiers |

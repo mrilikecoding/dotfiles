@@ -21,7 +21,10 @@
 | Inversion principle operates as cross-cutting principle + procedural step | Quality Attribute | ADR-010 |
 | Product vocabulary traces into domain model via provenance column | Quality Attribute | ADR-009 |
 | Product discovery artifact written in user language (Artifact Legibility) | Quality Attribute | ADR-007; Invariant 0 |
-| Two primary readable documents: product-discovery.md (product stakeholders) and system-design.md (technical stakeholders). All other artifacts are supporting material for provenance, not primary reading | Design Principle | Epistemic gate conversation, ARCHITECT phase |
+| Three-tier artifact hierarchy: ORIENTATION.md (Tier 1 — entry point, routes readers) → product-discovery.md and system-design.md (Tier 2 — primary readables for product and technical stakeholders respectively) → domain-model.md, essays, ADRs, scenarios (Tier 3 — supporting material for provenance and depth). Amends the prior two-tier principle. | Design Principle | ADR-019; Epistemic gate conversation, ARCHITECT phase |
+| Orientation document is agent-generated, user-validated (pragmatic action, not epistemic) | Quality Attribute | ADR-021; Invariant 3 |
+| Orientation document contains exactly five sections, readable in under five minutes | Constraint | ADR-020; Essay 004 §3 |
+| Orientation document regenerated at natural milestones: after RESEARCH (partial — sections 1, 5), after DECIDE (sections 1-3, 5), after ARCHITECT (full — scoping handoff), after BUILD (full). Partial orientation valid at any point. | Constraint | ADR-021 §3; Epistemic gate conversation |
 | Synthesis phase is optional and terminal, with different cost structure from gates | Constraint | ADR-012; Invariant 4 (resolved — synthesis is not a gate) |
 | Synthesis conversation subsumes its epistemic gate (no separate gate section) | Quality Attribute | ADR-016; Invariant 2 |
 | Outline must be an exciting springboard: non-formulaic, pre-populated references, citation-audited | Quality Attribute | ADR-013; Essay 003 §6 |
@@ -31,9 +34,9 @@
 ## Module Decomposition
 
 ### Module: Orchestrator (`rdd/SKILL.md`)
-**Purpose:** Defines the pipeline sequence, epistemic gate protocol, cross-cutting principles (including inversion principle), and ensures no phase transition consists solely of approval.
-**Provenance:** ADR-001 (gate pattern); ADR-002 (orchestrator defines protocol); ADR-004 (feed-forward instruction); ADR-006 (pipeline includes PRODUCT DISCOVERY); ADR-010 (inversion principle cross-cutting); Invariant 0, 2
-**Owns:** Gate protocol definition, pipeline sequence (including PRODUCT DISCOVERY phase), state tracking, feed-forward instruction, cross-cutting principles, Available Skills table, Artifacts Summary
+**Purpose:** Defines the pipeline sequence, epistemic gate protocol, three-tier artifact hierarchy, cross-cutting principles (including inversion principle), and ensures no phase transition consists solely of approval.
+**Provenance:** ADR-001 (gate pattern); ADR-002 (orchestrator defines protocol); ADR-004 (feed-forward instruction); ADR-006 (pipeline includes PRODUCT DISCOVERY); ADR-010 (inversion principle cross-cutting); ADR-019 (three-tier artifact hierarchy); Invariant 0, 2
+**Owns:** Gate protocol definition, pipeline sequence (including PRODUCT DISCOVERY phase), state tracking, feed-forward instruction, cross-cutting principles, Available Skills table, Artifacts Summary, three-tier artifact hierarchy principle, orientation document regeneration instruction
 **Depends on:** None (top-level coordinator)
 **Depended on by:** All phase skills (they follow its protocol)
 
@@ -148,6 +151,8 @@
 | Invert | Product Discovery Skill (primary); Orchestrator (cross-cutting) | ADR-010 |
 | Map Stakeholders | Product Discovery Skill | ADR-007 |
 | Audit Product Conformance | Product Discovery Skill | ADR-008 |
+| Orient | Orchestrator (instruction to generate at milestones) | ADR-021 |
+| Validate Orientation | Orchestrator (instruction to present for validation) | ADR-021 |
 
 ### Synthesis Concepts (from Essay 003 / ADRs 012-018)
 
@@ -170,6 +175,16 @@
 | Frame Narrative (action) | Synthesis Skill | ADR-013; ADR-017 |
 | Write Synthesis Essay (action) | User (outside pipeline) | ADR-012; ADR-013 |
 | Inversion Principle (narrative framing level) | Synthesis Skill; Orchestrator (cross-cutting) | ADR-017 |
+
+### Orientation Document Concepts (from Essay 004 / ADRs 019-021)
+
+| Domain Concept/Action | Owning Module | Provenance |
+|----------------------|---------------|------------|
+| Orientation Document (artifact) | Orchestrator (defines artifact hierarchy and regeneration instruction); all skills (read as context when bootstrapping) | ADR-019; ADR-020; ADR-021 |
+| Artifact Hierarchy (three-tier principle) | Orchestrator (defines and owns the principle) | ADR-019 |
+| Orient (action — generate/refresh) | Orchestrator (instruction to generate at milestones) | ADR-021 |
+| Validate Orientation (action — user review) | Orchestrator (instruction to present for validation) | ADR-021 |
+| Artifact Legibility (orientation as maximal legibility) | Orchestrator (design principle) | ADR-019; Essay 004 §4 |
 
 ### Motivating Context (not implemented in skill text — referenced for provenance only)
 
@@ -218,6 +233,8 @@ Orchestrator
 essay → product-discovery.md → domain-model.md → ADRs → system-design.md → code
                                                                               ↓
                                         [full artifact trail] → synthesis outline → synthesis essay (user)
+                                                   ↓
+                                        ORIENTATION.md (derived from full artifact trail at milestones)
 ```
 
 The synthesis skill reads the full artifact trail (all prior artifacts), not just the immediately preceding one. The synthesis essay, when it exists, feeds back into the orchestrator as a context source for future sessions.
@@ -300,6 +317,12 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 **Error handling:** If citation audit finds hallucinated or misattributed sources, the synthesis skill removes or corrects them before presenting the outline.
 **Owned by:** Synthesis Skill initiates; Citation Audit Skill owns the audit methodology.
 
+### Orchestrator → ORIENTATION.md (cross-phase artifact) — NEW
+**Protocol:** The orchestrator instructs the agent to generate or refresh ORIENTATION.md at natural milestones (after RESEARCH for partial orientation, after DECIDE for mid-cycle orientation, after ARCHITECT for scoping handoff, after BUILD for full orientation) and whenever the user requests. The generation reads the full artifact trail and distills it into the five-section structure (ADR-020). The user validates the result. No epistemic gate — this is a pragmatic action, but the validation step should encourage genuine review: the agent presents the document and asks whether it accurately describes the system as the user understands it, surfacing any claims that feel wrong or oversimplified.
+**Shared types:** ORIENTATION.md at `./docs/ORIENTATION.md`. The document reads from all other artifacts (product-discovery.md, system-design.md, domain-model.md, ADRs, scenarios) but is derived, not authoritative. If the orientation document contradicts a source artifact, the orientation document is regenerated.
+**Error handling:** If artifacts are insufficient for full orientation (e.g., only RESEARCH complete), a partial document is generated with sections 1 and 5 only. Missing sections are either omitted or marked as pending.
+**Owned by:** Orchestrator (defines regeneration timing); the generated artifact is validated by the user.
+
 ### Synthesis Skill → Orchestrator (context loading feedback) — NEW
 **Protocol:** When a synthesis essay exists for a project (written by the user outside the pipeline), the orchestrator treats it as a primary context source when bootstrapping new sessions.
 **Shared types:** The synthesis essay at its essay path (`./docs/essays/NNN-*.md`), distinguished from research essays by the outline that preceded it.
@@ -341,6 +364,12 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 | Pipeline includes SYNTHESIS as optional terminal | Orchestrator lists SYNTHESIS after BUILD, marked optional | Phase present and marked optional | ADR-012 |
 | Orchestrator includes synthesis essay in context loading | When bootstrapping, orchestrator reads synthesis essay if it exists | Context loading instruction present | ADR-015 |
 | Inversion principle appears in 5 locations | Orchestrator (cross-cutting), Product Discovery (procedural), Decide (check), Architect (check), Synthesis (narrative) | All 5 present | ADR-010; ADR-017 |
+| Orchestrator references three-tier artifact hierarchy | "Two documents that matter" principle amended to three tiers | Three-tier language present; two-tier language removed | ADR-019 |
+| Orchestrator Artifacts Summary includes ORIENTATION.md | Artifacts Summary table has cross-phase row for ORIENTATION.md | Row present | ADR-019 |
+| Orientation document has five-section structure | Orchestrator or generation instruction specifies: what, who, constraints, artifact map, current state | All 5 sections specified | ADR-020 |
+| Orientation document is agent-generated, user-validated | Generation instruction specifies agent produces, user reviews | Both roles present; no epistemic gate section for orientation | ADR-021; Invariant 3 |
+| Orientation document regeneration at milestones | Orchestrator specifies regeneration after RESEARCH (partial), ARCHITECT (scoping), BUILD (full) | Milestone-based regeneration specified | ADR-021 §3 |
+| Source artifacts authoritative over orientation | Orchestrator or generation instruction states source artifacts win contradictions | Authority hierarchy stated | ADR-021 |
 
 ## Test Architecture
 
@@ -362,6 +391,9 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 | Synthesis Skill → Citation Audit | Read Synthesis SKILL.md; verify `/citation-audit` invocation during outline finalization | ADR-013 citation audit contract |
 | Synthesis Skill → Artifact Trail | Read Synthesis SKILL.md; verify Step 1 reads full artifact trail (essays, logs, reflections, product discovery, domain model, ADRs, scenarios, system design) | ADR-013 artifact trail contract |
 | Orchestrator context loading → Synthesis Essay | Read Orchestrator SKILL.md; verify synthesis essay listed as context source when bootstrapping | ADR-015 narrative context rollup contract |
+| Orchestrator → ORIENTATION.md | Read Orchestrator SKILL.md; verify three-tier artifact hierarchy principle present; verify "two documents that matter" amended; verify Artifacts Summary includes ORIENTATION.md row; verify regeneration instruction at milestones | ADR-019, ADR-020, ADR-021 contract |
+| Orchestrator → ORIENTATION.md structure | Read Orchestrator SKILL.md; verify five-section structure specified (what, who, constraints, artifact map, current state); verify under-five-minutes constraint | ADR-020 structure contract |
+| Orchestrator → ORIENTATION.md authority | Read Orchestrator SKILL.md; verify source artifacts authoritative over orientation document | ADR-021 truth hierarchy contract |
 
 ### Invariant Enforcement Tests
 
@@ -379,8 +411,8 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 ### Test Layers
 
 - **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present. For Product Discovery Skill: verify forward mode process, backward mode process, all 5 artifact sections, assumption inversion step.
-- **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect.
-- **Acceptance:** The behavior scenarios in `scenarios.md` (75 total: 39 prior + 36 new for synthesis). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
+- **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect. Verify three-tier artifact hierarchy principle present in orchestrator; verify "two documents that matter" amended.
+- **Acceptance:** The behavior scenarios in `scenarios.md` (95 total: 39 prior + 36 synthesis + 20 orientation). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
 
 ## Build Sequence
 
@@ -407,6 +439,15 @@ The following order minimizes risk and allows incremental verification:
 
 Each change is a single commit. The new skill file is `feat: add /rdd-synthesis skill`. Orchestrator retrofit is `feat: integrate synthesis phase into orchestrator`.
 
+### Phase 3: Orientation Document (orchestrator retrofit)
+
+The orientation document does not introduce a new skill file. All changes are retrofits to the orchestrator.
+
+1. **Orchestrator** (retrofit) — amend "two documents that matter" principle to three-tier artifact hierarchy. Add ORIENTATION.md to Artifacts Summary table as cross-phase artifact. Add orientation document regeneration instruction (at milestones: after RESEARCH partial, after DECIDE mid-cycle, after ARCHITECT for scoping, after BUILD for full; on user request). Specify five-section structure, under-five-minutes constraint, agent-generates/user-validates model (with genuine review encouragement), and source-artifact authority rule.
+2. **Verification pass** — read orchestrator SKILL.md, confirm all orientation document fitness criteria and scenarios are satisfied.
+
+Single commit: `feat: add orientation document to orchestrator`.
+
 ### Phase 0: Epistemic Gates (prior build — completed)
 
 1. Orchestrator — gate protocol and workflow modes
@@ -422,3 +463,4 @@ Each change is a single commit. The new skill file is `feat: add /rdd-synthesis 
 |---|------|-------------|---------|------------|--------|
 | 1 | 2026-03-06 | Added Product Discovery Skill module; updated Orchestrator, Model, Decide, Architect module purposes; extended responsibility matrix with product discovery concepts; added new integration contracts; updated fitness criteria and test architecture; added build sequence Phase 1 | ADRs 006-011 (product discovery RDD cycle) | Essay 002; Invariant 0 (strengthened); ADRs 006-011 | Proposed |
 | 2 | 2026-03-09 | Added Synthesis Skill module (optional terminal phase); extended responsibility matrix with 17 synthesis concepts/actions; added 3 new integration contracts (Orchestrator→Synthesis, Synthesis→Citation Audit, Synthesis→Orchestrator context loading); updated dependency graph; added 12 fitness criteria; added 4 boundary integration tests; updated test layers; added build sequence Phase 2. Unique architectural property: synthesis conversation subsumes epistemic gate (no separate EPISTEMIC GATE section). External dependency on Citation Audit skill. | ADRs 012-018 (synthesis RDD cycle) | Essay 003; Reflection 003; ADRs 012-018 | Proposed |
+| 3 | 2026-03-09 | Amended "two primary readable documents" design principle to three-tier artifact hierarchy (ORIENTATION.md at Tier 1). Extended responsibility matrix with 5 orientation document concepts/actions (Orient, Validate Orientation, Orientation Document, Artifact Hierarchy, Artifact Legibility maximal). Added 1 new integration contract (Orchestrator→ORIENTATION.md). Added 7 fitness criteria. Added 3 boundary integration tests. Updated test layers and acceptance scenario count (95). Added build sequence Phase 3. Updated Orchestrator module purpose and ownership. Added ORIENTATION.md to artifact flow diagram. No new module — all orientation document responsibility owned by Orchestrator. Key architectural property: orientation document is a pragmatic artifact (Invariant 3), not an epistemic one — no gate, agent-generates, user-validates. | ADRs 019-021 (orientation document RDD cycle) | Essay 004; Product discovery update; ADRs 019-021 | Proposed |

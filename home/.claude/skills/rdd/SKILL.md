@@ -197,6 +197,7 @@ Findings from earlier phases inform later ones:
 | BUILD | Tests + code | Project source |
 | SYNTHESIS | Synthesis outline (agent + user co-produced) | `./docs/essays/NNN-descriptive-name-outline.md` |
 | SYNTHESIS | Synthesis essay (user-written, outside pipeline) | `./docs/essays/NNN-descriptive-name.md` |
+| Cross-phase | Orientation document (agent-maintained, user-validated) | `./docs/ORIENTATION.md` |
 
 ### Invariant Amendments
 
@@ -205,6 +206,41 @@ Invariant changes are the highest-impact events in the RDD cycle. They can inval
 - **When detected:** pause the current phase, run backward propagation (sweep all prior ADRs and essays for contradictions, add supersession notes, update the domain model's Amendment Log), then resume after propagation is complete.
 - **Cost calculus:** the cost of propagation now is far less than the cost of stale assumptions propagating into code later. A 10-minute sweep prevents hours of debugging dead ideas in future sessions.
 - **Who triggers it:** `/rdd-model` Step 3.5 detects amendments; `/rdd-decide` Step 3.7 executes backward propagation. But any phase that discovers an invariant contradiction should flag it for propagation.
+
+### Orientation Document
+
+ORIENTATION.md is an agent-maintained, user-validated document that sits at the top of the three-tier artifact hierarchy. It answers "what is this system, who is it for, why does it exist, and where do I go next?" in the fewest words possible.
+
+**Structure — exactly five sections, in this order:**
+
+1. **What this system is** — one paragraph. Essential purpose, not features or architecture. Accessible to both product and technical readers.
+2. **Who it serves** — stakeholder names and one-line descriptions, compressed from product discovery. Not the full Stakeholder Map.
+3. **Key constraints** — top 3-5 quality attributes or invariants from the domain model that shape every decision. The constraints that make this system *this system*.
+4. **How the artifacts fit together** — the artifact hierarchy with one-line descriptions and when to read each artifact.
+5. **Current state** — which phases are complete, what decisions are settled, what open questions remain. Pipeline state is inferred from the artifact trail (which artifacts exist and their content), not from session state.
+
+No section should exceed a few short paragraphs. The entire document must be readable in under five minutes.
+
+**Regeneration milestones:**
+
+| After Phase | Sections Populatable | Notes |
+|-------------|---------------------|-------|
+| RESEARCH | 1 (what), 5 (current state) | Partial orientation — still useful for user context |
+| DECIDE | 1 (what), 2 (who), 3 (constraints), 5 (state) | Mid-cycle orientation — constraints from domain model and ADRs now available |
+| ARCHITECT | All 5 | Full orientation — scoping handoff use case. Section 4 (artifact map) now complete |
+| BUILD | All 5 | Full orientation — reflects completed implementation |
+
+The agent may also regenerate on user request at any time.
+
+**Authorship model — agent generates, user validates:**
+
+This is a pragmatic action (Invariant 3): the agent generates ORIENTATION.md by reading the current artifact trail. No epistemic gate is required — the user's understanding was built at the gates that produced the source artifacts.
+
+When presenting the generated document, encourage genuine review rather than rubber-stamping: *"Does this accurately describe the system as you understand it? Anything that feels wrong or oversimplified?"* The document's brevity (under 5 minutes to read) makes careful review lightweight.
+
+The agent and user iterate to refine the document. This iteration is itself valuable — it tests whether the system can be explained clearly and concisely. A document that grows increasingly abstract or internally contradictory over time serves as a stewardship signal: the system may be accumulating the wrong kind of complexity.
+
+**Source artifact authority:** If the orientation document contradicts a source artifact (essay, domain model, ADR, product discovery, or system design), the orientation document should be regenerated from the source artifacts. The source is not corrected to match the derived document.
 
 ---
 
@@ -227,4 +263,4 @@ This applies to all prose produced by every phase. It is a cross-cutting rule.
 - **Invariants decay with distance**: LLMs lose coherence across many documents. The invariants section is the short, authoritative statement that prevents this. Keep it concise. Read it first. Trust it over longer documents when they conflict.
 - **Track state**: The user should always know where they are in the pipeline and what's left.
 - **Inversion Principle — question assumptions before encoding them**: A cross-cutting epistemological practice. Every phase should ask whether its assumptions have been examined. The procedural home is `/rdd-product` (assumption inversions), but the principle applies everywhere: RESEARCH ("right problem?"), PRODUCT DISCOVERY (procedural step), DECIDE ("unexamined product assumption?"), ARCHITECT ("user's mental model or developer's?"), SYNTHESIS (narrative framing — inverting obvious takeaways, process-vs-product assumptions, reader's assumed context).
-- **Two documents that matter**: `product-discovery.md` is readable by non-technical stakeholders; `system-design.md` is readable by technical stakeholders. All other artifacts serve provenance. These two are the Rosetta Stones between user language and system language.
+- **Three-tier artifact hierarchy**: `ORIENTATION.md` sits at Tier 1 as the entry point — it routes readers to depth without containing depth. `product-discovery.md` and `system-design.md` are Tier 2 primary readables for product and technical stakeholders respectively. All other artifacts (domain model, essays, ADRs, scenarios) are Tier 3 supporting material for provenance. New readers — human or agent — start at ORIENTATION.md and navigate from there.
