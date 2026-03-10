@@ -12,11 +12,19 @@ $ARGUMENTS
 
 ## PROCESS
 
-### Step 1: Read Prior Artifacts
+### Step 1: Read Prior Artifacts and Detect Mode
 
 Read the essay from `./docs/essays/` (the most recent numbered essay). If a domain model exists (`./docs/domain-model.md`), read its invariants — these are constitutional authority.
 
-If prior RDD artifacts exist beyond the essay (domain model, ADRs, system design, code), this is an existing system — proceed to Step 2b (backward mode). Otherwise, proceed to Step 2a (forward mode).
+**Mode detection** depends on two questions: does `product-discovery.md` already exist, and does the system have prior RDD artifacts or code beyond the essay?
+
+| `product-discovery.md` exists? | Prior artifacts/code? | Mode |
+|---|---|---|
+| No | No | **Forward (greenfield)** — Step 2a |
+| No | Yes | **Backward (first-time audit)** — Step 2b |
+| Yes | Either | **Update** — Step 2c |
+
+The critical distinction: backward mode is for systems that have *never had product discovery done* — it audits implicit product assumptions baked into existing architecture and code. If `product-discovery.md` already exists, the task is to *update* it against new research, with the same rigor applied to checking whether the existing artifact is still accurate.
 
 ### Step 2a: Forward Mode (Greenfield)
 
@@ -105,6 +113,36 @@ For each gap between assumption and reality:
 | ... | Which artifact/code | What users actually need | Mental model mismatch / Over-abstraction / Missing workflow / etc. | What to do |
 
 Product debt items trigger backward propagation through existing RDD amendment infrastructure — invariant amendments, ADR supersessions, and design amendments with product provenance.
+
+### Step 2c: Update Mode (Existing Product Discovery)
+
+Run when `product-discovery.md` already exists. The task is to refine the artifact against new research, not to build it from scratch or audit a codebase for the first time. This is the most common mode in ongoing projects.
+
+#### Read the Existing Artifact
+
+Read `./docs/product-discovery.md` in full. Read the new essay (the most recent numbered essay from this cycle). If new ADRs, domain model changes, or code changes exist since the last product discovery update, read those too.
+
+#### Section-by-Section Review
+
+Walk through each section of the existing artifact against the new research:
+
+1. **Stakeholder Map** — has the new research surfaced stakeholders not yet represented? Have any existing stakeholders become less relevant? Present changes to the user.
+2. **Jobs and Mental Models** — has the new research shifted how users think about the domain? Have jobs changed in priority or framing? Have mental models been validated or invalidated?
+3. **Value Tensions** — are existing tensions still active? Has new research resolved any? Has it surfaced new ones?
+4. **Assumption Inversions** — have prior inversions been tested and resolved? Does the new research introduce new assumptions worth inverting?
+5. **Product Vocabulary** — has user language shifted? Are new terms emerging from the research?
+
+For each section, present the existing content alongside proposed changes. The user confirms, revises, or expands. Do not silently overwrite prior product knowledge — the user may have context that the new research doesn't capture.
+
+#### Check Downstream Consistency
+
+After updating the artifact, check whether the changes affect downstream documents:
+
+- **Domain model** — do updated stakeholder terms or jobs require vocabulary changes?
+- **ADRs** — do shifted value tensions or invalidated assumptions affect existing decisions?
+- **System design** — do updated mental models affect module boundaries or provenance chains?
+
+Flag downstream impacts for the user. These propagate through the normal RDD amendment infrastructure — they don't need to be resolved in this phase, but they need to be visible.
 
 ### Step 3: Assemble and Write the Artifact
 
