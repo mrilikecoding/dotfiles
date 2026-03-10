@@ -152,6 +152,17 @@ Before finalizing the outline, run `/citation-audit` on all pre-populated refere
 
 If the audit finds issues, correct or remove the problematic references before presenting the outline.
 
+#### Argument Audit
+
+After citation audit passes, run `/argument-audit` on the outline itself — treating the narrative structure (central question, turns, threads) as the argument and the pre-populated references as the evidence base. This verifies:
+
+- The outline's narrative arc is logically sound — turns follow from evidence, not from narrative convenience
+- Claims in thread descriptions are supported by the cited material
+- The framing does not overreach the evidence (e.g., a discovery framed as a paradigm shift when the evidence supports a refinement)
+- No hidden assumptions smuggled in through narrative structure that weren't surfaced during the RDD cycle
+
+This is the same `/argument-audit` that `/rdd-decide` invokes on ADRs. The synthesis outline is a different genre — narrative, not architectural — but the logical integrity standard is the same. If the audit finds issues, revise the outline's framing before presenting it to the writer.
+
 #### Outline Location
 
 Ask the writer where the outline should be stored. Default: `./docs/essays/NNN-descriptive-name-outline.md` (using the next sequential number in the essays directory). The writer may prefer a different location.
@@ -251,5 +262,5 @@ Seek authentic engagement. Polite agreement is not signal — it is noise. The c
 - **Conversation subsumes the gate.** There is no separate epistemic gate bolted onto the end of the synthesis conversation. The three-phase conversation — journey review, novelty surfacing, framing — IS the gate. The writer generates at every step.
 - **Honest about absence.** If the cycle did not produce a discovery worth writing about, say so. Manufacturing interest where none exists produces exactly the kind of assumption-confirming prose this phase exists to prevent.
 - **Cross-project insight lives in the writer's mind.** The agent creates conversational space for cross-project connections but does not access other project trails. The writer draws the connections.
-- **The outline must be ready to write from.** Pre-populated references with full quotes, proper attribution, citation-audited. The writer opens the outline and starts writing — no material-gathering required.
+- **The outline must be ready to write from.** Pre-populated references with full quotes, proper attribution, citation-audited and argument-audited. The writer opens the outline and starts writing — no material-gathering required.
 - **Writing is inquiry, not reporting.** The synthesis essay is written *toward* a conclusion the writer cannot yet state, not *up* from conclusions already reached. The draft that surprises the writer is the draft that will be interesting to readers.

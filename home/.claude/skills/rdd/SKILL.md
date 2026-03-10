@@ -180,6 +180,7 @@ Findings from earlier phases inform later ones:
 - When any phase changes a domain model invariant, **backward propagation triggers**: all prior documents are swept for contradictions, supersession notes are added, and the amendment is logged in the domain model. This is a cross-cutting event that interrupts normal phase sequence.
 - `/rdd-synthesis` reads the **full artifact trail** — all essays, research logs, reflections, product discovery, domain model, ADRs, scenarios, and system design. It does not read just the preceding phase's output.
 - `/rdd-synthesis` invokes `/citation-audit` on the outline's pre-populated references before finalization — same external invocation pattern as `/rdd-research` invoking `/lit-review`
+- `/rdd-synthesis` invokes `/argument-audit` on the outline after citation audit passes — verifies narrative arc is logically sound, claims are supported by cited material, and framing does not overreach the evidence. Same `/argument-audit` that `/rdd-decide` invokes on ADRs, applied to the narrative genre
 - The synthesis essay, when written by the user, serves as a **narrative context rollup** — the orchestrator should treat it as a primary context source when bootstrapping new sessions for the project. It answers "what was discovered, and why does it matter?" where structured artifacts answer "what was decided?"
 
 ### Artifacts Summary

@@ -489,6 +489,13 @@
 **And** verifies that cited works exist, are properly attributed, and that quoted material is accurate
 **And** no hallucinated sources reach the writer's outline
 
+### Scenario: Argument audit runs after citation audit before outline finalization
+**Given** the outline has passed citation audit
+**When** the outline is being finalized
+**Then** the agent runs an argument audit (via `/argument-audit`) on the outline, treating the narrative structure as the argument and the pre-populated references as the evidence base
+**And** verifies that the narrative arc is logically sound, claims are supported by cited material, and framing does not overreach the evidence
+**And** no hidden assumptions smuggled through narrative structure reach the writer's outline without having been surfaced during the RDD cycle
+
 ### Scenario: Outline is ready to write from immediately
 **Given** the synthesis conversation is complete and the outline is finalized
 **When** the writer opens the outline
