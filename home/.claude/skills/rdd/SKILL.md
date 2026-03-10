@@ -154,6 +154,12 @@ The user's epistemic gate responses are not just a learning exercise — they ar
 
 When generating artifacts in any phase, attend to the user's stated understanding from prior gates. If the user's self-explanation at the RESEARCH gate revealed a particular emphasis or concern, the MODEL phase should attend to that emphasis. The user's articulations clarify intent and surface priorities that pure approval does not.
 
+### Product Discovery Is Not Optional
+
+**Always run `/rdd-product`** in every pipeline cycle that proceeds past RESEARCH — even when `product-discovery.md` already exists. An existing artifact does not mean product thinking is current. Each new research cycle may shift stakeholder needs, surface new assumptions, or invalidate prior value tensions. `/rdd-product` has a backward mode (Step 2b) specifically for revisiting an existing artifact against new research. Skipping it because the file exists defeats the purpose: product assumptions harden silently, and downstream phases inherit stale context.
+
+The only exception is Mode B (Research Only), which terminates before product discovery.
+
 ### Cross-Phase Integration
 
 Findings from earlier phases inform later ones:
@@ -196,8 +202,8 @@ Findings from earlier phases inform later ones:
 | DECIDE | Behavior scenarios | `./docs/scenarios.md` |
 | ARCHITECT | System design | `./docs/system-design.md` |
 | BUILD | Tests + code | Project source |
-| SYNTHESIS | Synthesis outline (agent + user co-produced) | `./docs/essays/NNN-descriptive-name-outline.md` |
-| SYNTHESIS | Synthesis essay (user-written, outside pipeline) | `./docs/essays/NNN-descriptive-name.md` |
+| SYNTHESIS | Synthesis outline (agent + user co-produced) | `./docs/synthesis/NNN-descriptive-name-outline.md` |
+| SYNTHESIS | Synthesis essay (user-written, outside pipeline) | `./docs/synthesis/NNN-descriptive-name.md` |
 | Cross-phase | Orientation document (agent-maintained, user-validated) | `./docs/ORIENTATION.md` |
 
 ### Invariant Amendments
@@ -242,6 +248,8 @@ When presenting the generated document, encourage genuine review rather than rub
 The agent and user iterate to refine the document. This iteration is itself valuable — it tests whether the system can be explained clearly and concisely. A document that grows increasingly abstract or internally contradictory over time serves as a stewardship signal: the system may be accumulating the wrong kind of complexity.
 
 **Source artifact authority:** If the orientation document contradicts a source artifact (essay, domain model, ADR, product discovery, or system design), the orientation document should be regenerated from the source artifacts. The source is not corrected to match the derived document.
+
+**README integration:** When generating ORIENTATION.md, check whether a README file exists in the same directory (e.g., `./docs/README.md` or the project root `README.md`). If it does, add or update a brief pointer at the top of the README directing readers to ORIENTATION.md for research, design, and product artifacts. Keep the addition minimal — a single sentence or short paragraph, not a restructuring of the README.
 
 ---
 

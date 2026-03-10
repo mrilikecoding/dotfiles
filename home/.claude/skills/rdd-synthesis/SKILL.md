@@ -16,9 +16,9 @@ $ARGUMENTS
 
 ### Step 1: Read the Artifact Trail
 
-Read the full artifact trail from the RDD cycle. The trail includes:
+Read the artifact trail from the RDD cycle. The trail includes:
 
-- Essays: `./docs/essays/NNN-*.md`
+- Essays: `./docs/essays/NNN-*.md` — **read abstracts first.** Essays from the current pipeline onward should have an Abstract section at the top. Read only the abstract for initial trail mining; read the full essay only when a specific passage is needed for a novelty signal, a pre-populated reference, or a citation. This keeps context manageable when the trail spans multiple research cycles.
 - Research logs: `./docs/essays/research-logs/*.md`
 - Reflections: `./docs/essays/reflections/*.md`
 - Product discovery: `./docs/product-discovery.md`
@@ -165,7 +165,7 @@ This is the same `/argument-audit` that `/rdd-decide` invokes on ADRs. The synth
 
 #### Outline Location
 
-Ask the writer where the outline should be stored. Default: `./docs/essays/NNN-descriptive-name-outline.md` (using the next sequential number in the essays directory). The writer may prefer a different location.
+Ask the writer where the outline should be stored. Default: `./docs/synthesis/NNN-descriptive-name-outline.md` (using the next sequential number in the synthesis directory). Create the `./docs/synthesis/` directory if it doesn't exist. Synthesis outlines are distinct from research essays — essays are research artifacts that feed the pipeline, while outlines are for sharing publishable insight outward. The writer may prefer a different location.
 
 The outline is the terminal artifact of the RDD pipeline. The writer takes it and works with it independently — writing the synthesis essay on their own time, in their own voice. The agent does not write, co-write, or draft the essay.
 
