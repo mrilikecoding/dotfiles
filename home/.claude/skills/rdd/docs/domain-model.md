@@ -224,7 +224,7 @@
 - Cross-project synthesis (portfolio mode) is described but not operationalized. How would the agent access artifact trails from multiple projects? What file conventions would support this? Is this a different skill or a mode of the same skill? (Essay 003, §9)
 - ~~What should the orientation document be named?~~ **Resolved:** ORIENTATION.md. The term "orientation" emerged naturally and repeatedly throughout research, product discovery, and modeling conversations. It names the document's function: orienting the reader to the system. Settled during the MODEL phase epistemic gate. (Essay 004, §7; Reflection 004; ADR-019)
 - ~~When should the orientation document be regenerated?~~ **Resolved:** At natural milestones and on user request. Minimum: after RESEARCH (partial — sections 1 and 5 only). The scoping use case requires generation after ARCHITECT. Pipeline state is inferred from the artifact trail, not session state. (ADR-021 §3)
-- The system design's "two primary readable documents" principle needs amendment to three tiers. How does this affect the existing design principle's statement and the system design document itself? (Essay 004, §9; Product discovery update, product debt table)
+- ~~The system design's "two primary readable documents" principle needs amendment to three tiers.~~ **Resolved:** System design Amendment #3 amended the architectural driver to three-tier hierarchy. Orchestrator SKILL.md amended "two documents that matter" to "three-tier artifact hierarchy." Both completed during BUILD phase. (ADR-019; System design Amendment #3)
 
 ## Amendment Log
 
