@@ -1,6 +1,6 @@
 ---
 name: rdd
-description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Product Discovery (stakeholder maps, value tensions, assumption inversions), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD), and optionally Synthesis (artifact trail mining → essay outline). Use when starting a new project or feature that needs research before code.
+description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Product Discovery (stakeholder maps, value tensions, assumption inversions), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD), and optionally Synthesis (artifact trail mining → citation-audited and argument-audited essay outline). Use when starting a new project or feature that needs research before code.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit, Task, Bash
 ---
@@ -21,7 +21,7 @@ $ARGUMENTS
 | `/rdd-decide` | ADRs + argument audit + refutable behavior scenarios | Essay + domain model + prior ADRs |
 | `/rdd-architect` | System design with responsibility allocation + provenance | Domain model + ADRs + scenarios |
 | `/rdd-build` | BDD scenarios → TDD loop → working software | Scenarios + domain model |
-| `/rdd-synthesis` | Artifact trail mining → synthesis conversation → citation-audited essay outline | Full artifact trail (optional, post-build) |
+| `/rdd-synthesis` | Artifact trail mining → synthesis conversation → citation-audited and argument-audited essay outline | Full artifact trail (optional, post-build) |
 | `/lit-review` | Systematic literature search and synthesis | Topic (used within `/rdd-research`) |
 
 ---
@@ -156,7 +156,7 @@ When generating artifacts in any phase, attend to the user's stated understandin
 
 ### Product Discovery Is Not Optional
 
-**Always run `/rdd-product`** in every pipeline cycle that proceeds past RESEARCH — even when `product-discovery.md` already exists. An existing artifact does not mean product thinking is current. Each new research cycle may shift stakeholder needs, surface new assumptions, or invalidate prior value tensions. `/rdd-product` has a backward mode (Step 2b) specifically for revisiting an existing artifact against new research. Skipping it because the file exists defeats the purpose: product assumptions harden silently, and downstream phases inherit stale context.
+**Always run `/rdd-product`** in every pipeline cycle that proceeds past RESEARCH — even when `product-discovery.md` already exists. An existing artifact does not mean product thinking is current. Each new research cycle may shift stakeholder needs, surface new assumptions, or invalidate prior value tensions. When `product-discovery.md` exists, `/rdd-product` runs in update mode (Step 2c) — a section-by-section review against new research with downstream consistency checks. When no product discovery has ever been done on an existing system, backward mode (Step 2b) audits implicit assumptions first. Skipping the phase because the file exists defeats the purpose: product assumptions harden silently, and downstream phases inherit stale context.
 
 The only exception is Mode B (Research Only), which terminates before product discovery.
 

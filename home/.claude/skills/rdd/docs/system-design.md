@@ -424,7 +424,7 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 
 - **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present. For Product Discovery Skill: verify forward mode process, backward mode process, all 5 artifact sections, assumption inversion step.
 - **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect. Verify three-tier artifact hierarchy principle present in orchestrator; verify "two documents that matter" amended.
-- **Acceptance:** The behavior scenarios in `scenarios.md` (96 total: 39 prior + 36 synthesis + 20 orientation + 1 argument audit). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
+- **Acceptance:** The behavior scenarios in `scenarios.md` (100 total: 18 epistemic gates + 25 product discovery + 37 synthesis + 20 orientation). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
 
 ## Build Sequence
 
