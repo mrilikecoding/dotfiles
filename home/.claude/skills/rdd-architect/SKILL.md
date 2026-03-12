@@ -10,6 +10,16 @@ $ARGUMENTS
 
 ---
 
+## RDD CYCLE POSITION
+
+```
+research → product → model → decide → ARCHITECT → build → synthesis
+                                       ^^^^^^^^^
+                                     YOU ARE HERE
+```
+
+---
+
 ## PROCESS
 
 ### Step 1: Read Prior Artifacts
@@ -287,3 +297,9 @@ Each entry records: what changed, what triggered the change (a build discovery, 
 - **Stop designing when modules are clear**: Do not design internal module implementation. That is the build phase's job via TDD. Architecture defines boundaries; implementation fills them.
 - **Domain vocabulary is mandatory**: Every module name, concept, and action must come from the glossary. If you need a new term, the domain model needs updating first via `/rdd-model`.
 - **No cycles, no exceptions**: A dependency cycle means the decomposition is wrong. Fix the decomposition, do not work around the cycle.
+
+---
+
+## NEXT PHASE
+
+When the system design is approved and the user is ready to proceed, advance to **`/rdd-build`**. The build phase reads the system design as its primary context document and implements scenarios through BDD acceptance tests and TDD inner loops.

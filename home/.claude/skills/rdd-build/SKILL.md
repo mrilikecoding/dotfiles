@@ -10,6 +10,16 @@ $ARGUMENTS
 
 ---
 
+## RDD CYCLE POSITION
+
+```
+research → product → model → decide → architect → BUILD → synthesis
+                                                   ^^^^^
+                                                 YOU ARE HERE
+```
+
+---
+
 ## PROCESS
 
 ### Step 1: Read Prior Artifacts
@@ -356,3 +366,9 @@ When a design constraint feels wrong, follow the provenance chain in the system 
 - **Match existing patterns**: Follow the codebase's conventions. Don't introduce new ones.
 - **Minimize coupling**: Changes should stay local. If a change ripples across the codebase, the structure needs tidying.
 - **Stop when it's easy**: Tidy enough to enable the scenario, no more. Resist the urge to clean the whole codebase.
+
+---
+
+## NEXT PHASE
+
+When all scenarios are implemented and the user is ready to proceed, **`/rdd-synthesis`** is available as an optional terminal phase. Use it when the writer wants to extract publishable insight from the RDD cycle. If the user does not want synthesis, the build phase is the terminal phase — the pipeline is complete.

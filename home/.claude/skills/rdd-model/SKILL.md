@@ -10,6 +10,16 @@ $ARGUMENTS
 
 ---
 
+## RDD CYCLE POSITION
+
+```
+research → product → MODEL → decide → architect → build → synthesis
+                     ^^^^^
+                   YOU ARE HERE
+```
+
+---
+
 ## PROCESS
 
 ### Step 1: Read the Source Material
@@ -116,3 +126,9 @@ Then ask whether to proceed to the next phase or revise the model.
 - **Surface ambiguity, don't hide it**: If the essay uses a term inconsistently, flag it. Ambiguity in language signals ambiguity in understanding.
 - **Definitions over diagrams**: A crisp one-sentence definition is worth more than a box-and-arrow diagram. If you can't define it in a sentence, the concept isn't clear yet.
 - **Invariants are constitutional**: They outrank ADRs, essays, and code. When there's a contradiction between an invariant and another document, the invariant wins and the contradicting document needs updating.
+
+---
+
+## NEXT PHASE
+
+When the domain model is approved and the user is ready to proceed, advance to **`/rdd-decide`**. The decision phase uses the glossary as binding vocabulary for ADRs and behavior scenarios.

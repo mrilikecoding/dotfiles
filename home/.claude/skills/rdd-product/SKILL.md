@@ -10,6 +10,16 @@ $ARGUMENTS
 
 ---
 
+## RDD CYCLE POSITION
+
+```
+research → PRODUCT → model → decide → architect → build → synthesis
+           ^^^^^^^
+         YOU ARE HERE
+```
+
+---
+
 ## PROCESS
 
 ### Step 1: Read Prior Artifacts and Detect Mode
@@ -242,3 +252,9 @@ Then ask whether to proceed to the next phase, revise the artifact, or loop back
 - **Inversion is epistemological**: Questioning assumptions is how research works. It's especially critical for product assumptions because they hide, but the principle applies wherever assumptions can silently harden into structure.
 - **This document must be readable**: A non-technical stakeholder should be able to read `product-discovery.md` and understand the system. It's one of the two "docs that matter" — the Rosetta Stone between user language and system language.
 - **Lightweight, not exhaustive**: A two-stakeholder map with three jobs is still a valid artifact. Depth comes from the user's knowledge, not from comprehensiveness for its own sake.
+
+---
+
+## NEXT PHASE
+
+When product discovery is complete and the user is ready to proceed, advance to **`/rdd-model`**. The domain model draws on both the research essay and the product discovery artifact — user-facing vocabulary from the Product Vocabulary table feeds the glossary's Product Origin column, and value tensions propagate as Open Questions.

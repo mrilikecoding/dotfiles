@@ -10,6 +10,16 @@ $ARGUMENTS
 
 ---
 
+## RDD CYCLE POSITION
+
+```
+research → product → model → DECIDE → architect → build → synthesis
+                              ^^^^^^
+                            YOU ARE HERE
+```
+
+---
+
 ## PROCESS
 
 ### Step 1: Read Prior Artifacts
@@ -187,3 +197,9 @@ Then ask whether to proceed to the next phase, revise the ADRs, or revisit resea
 - **Stop at uncertainty**: If a decision or scenario depends on something unknown, surface it. Don't speculate past what the research established.
 - **Scenarios are a contract**: They define what `/rdd-build` will implement. Be precise enough that someone could write a test from each scenario without ambiguity.
 - **Domain vocabulary is mandatory**: Every term in scenarios and ADR context must come from the glossary. If you need a new term, the domain model needs updating first.
+
+---
+
+## NEXT PHASE
+
+When ADRs and scenarios are approved and the user is ready to proceed, advance to **`/rdd-architect`**. The architecture phase decomposes the system into modules using the ADRs as constraints and scenarios as behavioral requirements.

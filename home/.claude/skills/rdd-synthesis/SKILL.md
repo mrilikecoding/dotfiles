@@ -12,6 +12,16 @@ $ARGUMENTS
 
 ---
 
+## RDD CYCLE POSITION
+
+```
+research → product → model → decide → architect → build → SYNTHESIS
+                                                           ^^^^^^^^^
+                                                         YOU ARE HERE
+```
+
+---
+
 ## PROCESS
 
 ### Step 1: Read the Artifact Trail
@@ -264,3 +274,9 @@ Seek authentic engagement. Polite agreement is not signal — it is noise. The c
 - **Cross-project insight lives in the writer's mind.** The agent creates conversational space for cross-project connections but does not access other project trails. The writer draws the connections.
 - **The outline must be ready to write from.** Pre-populated references with full quotes, proper attribution, citation-audited and argument-audited. The writer opens the outline and starts writing — no material-gathering required.
 - **Writing is inquiry, not reporting.** The synthesis essay is written *toward* a conclusion the writer cannot yet state, not *up* from conclusions already reached. The draft that surprises the writer is the draft that will be interesting to readers.
+
+---
+
+## NEXT PHASE
+
+Synthesis is the **terminal phase** of the RDD pipeline. There is no next phase. The outline is the final artifact — the writer takes it and works independently.

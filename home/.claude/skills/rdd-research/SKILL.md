@@ -10,6 +10,16 @@ $ARGUMENTS
 
 ---
 
+## RDD CYCLE POSITION
+
+```
+RESEARCH → product → model → decide → architect → build → synthesis
+^^^^^^^^
+YOU ARE HERE
+```
+
+---
+
 ## PROCESS
 
 ### Loop Mechanics
@@ -145,3 +155,9 @@ Then ask whether to proceed to the next phase, revise the essay, or loop back to
 - **User drives the questions**: You facilitate and research; the user decides what matters and when understanding is sufficient.
 - **Stop at uncertainty**: If a question leads to more questions, surface them. Don't speculate past what the evidence supports.
 - **Verification is mandatory**: For factual claims (library capabilities, API behavior, performance characteristics), verify through search or spike. Don't assert what you haven't confirmed.
+
+---
+
+## NEXT PHASE
+
+When research is complete and the user is ready to proceed, **always advance to `/rdd-product`** — not `/rdd-model`. Product discovery must run in every pipeline cycle that proceeds past RESEARCH, even when `product-discovery.md` already exists. The product phase updates stakeholder needs, value tensions, and assumption inversions against the new research before domain modeling begins.
