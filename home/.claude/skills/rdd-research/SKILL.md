@@ -1,6 +1,6 @@
 ---
 name: rdd-research
-description: Research phase of RDD. Runs an ideation → research/spike → synthesis loop until the problem space is understood, then produces a publishable essay. Use when you need to understand a problem before building.
+description: Research phase of RDD. Runs an ideation → research/spike → synthesis loop until the problem space is understood, then produces a citation-audited and argument-audited essay. Use when you need to understand a problem before building.
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit, Task, Bash
 ---
 
@@ -119,6 +119,34 @@ Write the essay to `./docs/essays/NNN-descriptive-name.md`, where NNN is a zero-
 Create the `./docs/essays/` directory if it doesn't exist.
 
 Present the essay to the user. If invariant tensions were found, highlight them explicitly — these require a decision before proceeding.
+
+### Step 4a: Citation Audit
+
+After the essay is written, run `/citation-audit` on all references and factual claims in the essay. This verifies:
+
+- Cited works exist and are properly attributed
+- Quoted material is accurate
+- Factual claims about libraries, APIs, or technologies match what was found during research
+- No hallucinated sources have crept into the essay
+
+If the audit finds issues, correct or remove the problematic references before proceeding. The essay is the foundation for all downstream phases — bad citations here propagate through the entire pipeline.
+
+### Step 4b: Argument Audit
+
+After citation audit passes, run `/argument-audit` on the essay. Treat the research log as the evidence trail and the essay as the argument layer. The audit checks:
+
+- **Logical soundness** — do the essay's conclusions follow from the research findings?
+- **Hidden assumptions** — are there unstated premises that should be explicit?
+- **Scope accuracy** — are claims stronger than the evidence supports? (e.g., a finding from one library generalized to all libraries)
+- **Internal consistency** — do different sections of the essay contradict each other?
+- **Terminology consistency** — are terms used consistently throughout?
+
+After the audit, apply fixes before presenting to the user at the epistemic gate:
+1. **Priority 1:** Fix logical gaps, soften overreaching claims, resolve contradictions
+2. **Priority 2:** Make hidden assumptions explicit, note where evidence is thin
+3. **Priority 3:** Clarify justifications, tighten language
+
+The essay that enters the epistemic gate should be citation-audited and argument-audited. Downstream phases inherit whatever the essay asserts — catching problems here is far cheaper than discovering them during DECIDE or BUILD.
 
 ### EPISTEMIC GATE
 

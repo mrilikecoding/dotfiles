@@ -41,10 +41,10 @@
 **Depended on by:** All phase skills (they follow its protocol)
 
 ### Module: Research Skill (`rdd-research/SKILL.md`)
-**Purpose:** Runs an iterative research loop and produces a publishable essay, with an epistemic gate tailored to essay artifacts.
+**Purpose:** Runs an iterative research loop and produces a citation-audited and argument-audited essay, with an epistemic gate tailored to essay artifacts.
 **Provenance:** ADR-002 (skill owns gate); ADR-003 (research gate assignments); Essay 001 §6
-**Owns:** Research-phase process, epistemic gate prompts, essay presentation step
-**Depends on:** Orchestrator (protocol)
+**Owns:** Research-phase process, citation audit invocation (essay), argument audit invocation (essay), epistemic gate prompts, essay presentation step
+**Depends on:** Orchestrator (protocol); Citation Audit Skill (external, invoked during essay finalization); Argument Audit Skill (external, invoked during essay finalization)
 **Depended on by:** None directly (produces essay artifact consumed by Product Discovery Skill and Model Skill via file)
 
 ### Module: Product Discovery Skill (`rdd-product/SKILL.md`) — NEW
@@ -205,6 +205,8 @@
 ```
 Orchestrator
 ├── Research Skill
+│       ├── Citation Audit Skill (external, invoked during essay finalization)
+│       └── Argument Audit Skill (external, invoked during essay finalization)
 ├── Product Discovery Skill
 ├── Model Skill
 ├── Decide Skill
@@ -222,6 +224,14 @@ Orchestrator
 - Orchestrator → Architect Skill (invokes, defines protocol)
 - Orchestrator → Build Skill (invokes, defines protocol)
 - Orchestrator → Synthesis Skill (invokes, defines protocol — optional)
+
+**Research Skill → Citation Audit Skill (external dependency):**
+- Research Skill invokes `/citation-audit` on the essay after writing, before the epistemic gate
+- Citation Audit is an external skill (not in the RDD tree), same pattern as Research Skill invoking `/lit-review`
+
+**Research Skill → Argument Audit Skill (external dependency):**
+- Research Skill invokes `/argument-audit` on the essay after citation audit passes, before the epistemic gate
+- Argument Audit is an external skill (not in the RDD tree), same pattern as Decide Skill invoking `/argument-audit` on ADRs
 
 **Synthesis Skill → Citation Audit Skill (external dependency):**
 - Synthesis Skill invokes `/citation-audit` during outline finalization
@@ -315,6 +325,18 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 **Error handling:** If the artifact trail is too thin (e.g., only essay + domain model), the skill notes this and asks whether to proceed or defer.
 **Owned by:** Orchestrator defines SYNTHESIS as optional phase; Synthesis Skill owns the conversation structure.
 
+### Research Skill → Citation Audit Skill (external)
+**Protocol:** After the essay is written, Research Skill invokes `/citation-audit` on all references and factual claims. Verifies cited works exist, quotes are accurate, and no hallucinated sources have crept into the essay.
+**Shared types:** The essay's references and factual claims are the input. Citation Audit returns verification results.
+**Error handling:** If citation audit finds hallucinated or misattributed sources, the research skill corrects or removes them before the epistemic gate.
+**Owned by:** Research Skill initiates; Citation Audit Skill owns the audit methodology.
+
+### Research Skill → Argument Audit Skill (external)
+**Protocol:** After citation audit passes, Research Skill invokes `/argument-audit` on the essay. Treats the research log as the evidence trail and the essay as the argument layer. Checks logical soundness, hidden assumptions, scope accuracy, and internal consistency.
+**Shared types:** The essay (argument layer) and research log (evidence trail) are the input. Argument Audit returns logical integrity results.
+**Error handling:** If argument audit finds overreaching claims, logical gaps, or hidden assumptions, the research skill revises the essay before the epistemic gate.
+**Owned by:** Research Skill initiates; Argument Audit Skill owns the audit methodology.
+
 ### Synthesis Skill → Citation Audit Skill (external) — NEW
 **Protocol:** Synthesis Skill invokes `/citation-audit` on the outline's pre-populated references before finalization. Same invocation pattern as Research Skill invoking `/lit-review`.
 **Shared types:** The outline's references section (full quotes, attribution, source context) is the input. Citation Audit returns verification results.
@@ -389,6 +411,8 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 | Dependency Edge | Integration Test | What It Verifies |
 |----------------|-----------------|------------------|
 | Orchestrator → Research Skill | Read Research SKILL.md; verify EPISTEMIC GATE section exists and follows protocol | Gate protocol contract satisfied |
+| Research Skill → Citation Audit | Read Research SKILL.md; verify `/citation-audit` invocation after essay writing, before epistemic gate | Citation audit contract |
+| Research Skill → Argument Audit | Read Research SKILL.md; verify `/argument-audit` invocation after citation audit, before epistemic gate | Argument audit contract |
 | Orchestrator → Product Discovery Skill | Read Product Discovery SKILL.md; verify EPISTEMIC GATE section exists, follows protocol, references stakeholders/tensions/inversions | Gate protocol contract satisfied; ADR-011 prompts present |
 | Orchestrator → Model Skill | Read Model SKILL.md; verify EPISTEMIC GATE section exists and follows protocol | Gate protocol contract satisfied |
 | Orchestrator → Decide Skill | Read Decide SKILL.md; verify EPISTEMIC GATE section exists and follows protocol | Gate protocol contract satisfied |
@@ -477,3 +501,4 @@ Single commit: `feat: add orientation document to orchestrator`.
 | 2 | 2026-03-09 | Added Synthesis Skill module (optional terminal phase); extended responsibility matrix with 17 synthesis concepts/actions; added 3 new integration contracts (Orchestrator→Synthesis, Synthesis→Citation Audit, Synthesis→Orchestrator context loading); updated dependency graph; added 12 fitness criteria; added 4 boundary integration tests; updated test layers; added build sequence Phase 2. Unique architectural property: synthesis conversation subsumes epistemic gate (no separate EPISTEMIC GATE section). External dependency on Citation Audit skill. | ADRs 012-018 (synthesis RDD cycle) | Essay 003; Reflection 003; ADRs 012-018 | Proposed |
 | 3 | 2026-03-09 | Amended "two primary readable documents" design principle to three-tier artifact hierarchy (ORIENTATION.md at Tier 1). Extended responsibility matrix with 5 orientation document concepts/actions (Orient, Validate Orientation, Orientation Document, Artifact Hierarchy, Artifact Legibility maximal). Added 1 new integration contract (Orchestrator→ORIENTATION.md). Added 7 fitness criteria. Added 3 boundary integration tests. Updated test layers and acceptance scenario count (95). Added build sequence Phase 3. Updated Orchestrator module purpose and ownership. Added ORIENTATION.md to artifact flow diagram. No new module — all orientation document responsibility owned by Orchestrator. Key architectural property: orientation document is a pragmatic artifact (Invariant 3), not an epistemic one — no gate, agent-generates, user-validates. | ADRs 019-021 (orientation document RDD cycle) | Essay 004; Product discovery update; ADRs 019-021 | Proposed |
 | 4 | 2026-03-10 | Added `/argument-audit` invocation to synthesis outline finalization (after citation audit). Extended Synthesis Skill module ownership and dependencies. Added new integration contract (Synthesis Skill→Argument Audit Skill). Added 1 fitness criterion and 1 boundary integration test. Updated architectural driver, build sequence, and orchestrator cross-phase integration rules. Same external invocation pattern as `/rdd-decide` using `/argument-audit` on ADRs, applied to narrative genre. | User request (logical integrity of synthesis outline) | ADR-013 (extended); ADR-014 (quality gate) | Accepted |
+| 5 | 2026-03-12 | Added `/citation-audit` and `/argument-audit` invocations to Research Skill (after essay writing, before epistemic gate). Extended Research Skill module purpose, ownership, and dependencies. Added 2 new integration contracts (Research Skill→Citation Audit, Research Skill→Argument Audit). Added 2 boundary integration tests. Updated dependency graph. The essay that enters downstream phases is now audited — catching citation and argument problems at the source rather than discovering them in DECIDE or BUILD. | User request (audit quality at pipeline source) | ADR-002 (research skill); ADR-003 (gate protocol) | Accepted |

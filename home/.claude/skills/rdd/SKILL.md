@@ -1,6 +1,6 @@
 ---
 name: rdd
-description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → essay), Product Discovery (stakeholder maps, value tensions, assumption inversions), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD), and optionally Synthesis (artifact trail mining → citation-audited and argument-audited essay outline). Use when starting a new project or feature that needs research before code.
+description: Research-Driven Development workflow. Orchestrates a phased process: Understand (research → citation-audited and argument-audited essay), Product Discovery (stakeholder maps, value tensions, assumption inversions), Model (domain vocabulary), Decide (ADRs), Architect (system design), Build (BDD → TDD), and optionally Synthesis (artifact trail mining → citation-audited and argument-audited essay outline). Use when starting a new project or feature that needs research before code.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit, Task, Bash
 ---
@@ -15,7 +15,7 @@ $ARGUMENTS
 
 | Skill | Purpose | Invoke with |
 |-------|---------|-------------|
-| `/rdd-research` | Ideation → research/spike loop → essay | Topic or question |
+| `/rdd-research` | Ideation → research/spike loop → citation-audited and argument-audited essay | Topic or question |
 | `/rdd-product` | Product discovery — stakeholder maps, jobs, value tensions, assumption inversions | Essay |
 | `/rdd-model` | Extract domain vocabulary from essay + product discovery | Essay + product discovery artifact |
 | `/rdd-decide` | ADRs + argument audit + refutable behavior scenarios | Essay + domain model + prior ADRs |
@@ -47,7 +47,7 @@ Run everything in order. For projects that need research before code.
 
 ```
 Phase 1: UNDERSTAND
-└── /rdd-research — Research loop → essay
+└── /rdd-research — Research loop → citation-audited and argument-audited essay
     [Epistemic gate: User explains key findings and how their thinking shifted.]
 
 Phase 2: PRODUCT DISCOVERY
@@ -84,7 +84,7 @@ Phase 7: SYNTHESIS (optional)
 Phase 1 only. Use when the goal is understanding, not building.
 
 ```
-└── /rdd-research — Research loop → essay
+└── /rdd-research — Research loop → citation-audited and argument-audited essay
 [Deliver essay. Done.]
 ```
 
@@ -163,6 +163,7 @@ The only exception is Mode B (Research Only), which terminates before product di
 ### Cross-Phase Integration
 
 Findings from earlier phases inform later ones:
+- `/rdd-research` runs `/citation-audit` and `/argument-audit` on the essay before the epistemic gate — verifies citations exist, quotes are accurate, conclusions follow from findings, and claims don't overreach evidence. The essay that enters downstream phases is audited.
 - `/rdd-research` essay provides context for `/rdd-product` product discovery and `/rdd-model` vocabulary extraction
 - `/rdd-product` stakeholder maps and jobs inform `/rdd-model` vocabulary extraction — the Product Vocabulary Table feeds the Product Origin provenance column in the domain model
 - `/rdd-product` value tensions propagate as open questions into the domain model
