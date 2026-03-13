@@ -1,8 +1,8 @@
 # System Design: Pedagogical RDD
 
-**Version:** 3.0
+**Version:** 4.0
 **Status:** Current
-**Last amended:** 2026-03-09
+**Last amended:** 2026-03-12
 
 ## Architectural Drivers
 
@@ -30,13 +30,20 @@
 | Outline must be an exciting springboard: non-formulaic, pre-populated references, citation-audited, argument-audited | Quality Attribute | ADR-013; Essay 003 §6 |
 | Inversion principle operates at three levels (product, cross-cutting, narrative framing) | Quality Attribute | ADR-010; ADR-017 |
 | Synthesis essay serves as narrative context rollup for future sessions | Quality Attribute | ADR-015; Reflection 003 §1 |
+| Roadmap as separate Tier 2 artifact linked from system-design.md, not inline Build Sequence | Design Principle | ADR-022; Essay 005 §1 |
+| Field guide maps system design to implementation state as Tier 3 reference artifact | Design Principle | ADR-023; Essay 005 §3 |
+| Five cascading document sizing heuristics govern artifact structure (Purpose Test → Concept Rule → Word Guideline → Read Contract → Position-Sensitive Placement) | Design Principle | ADR-024; Essay 005 §4 |
+| Conformance audit detects documentation drift with two-level severity (structural blocks downstream; format is cosmetic) | Functional Requirement | ADR-025; Essay 005 §5 |
+| Graduation folds RDD knowledge into native docs and archives RDD artifacts; recurring at subsystem level | Functional Requirement | ADR-025; ADR-026; Essay 005 §5 |
+| Scoped cycles as first-class workflow pattern: scope → cycle → graduate | Functional Requirement | ADR-026; Product discovery update 2026-03-12 |
+| RDD framed as deep work tool composable with existing workflows, not a replacement | Design Principle | ADR-026; Reflection 005 |
 
 ## Module Decomposition
 
 ### Module: Orchestrator (`rdd/SKILL.md`)
-**Purpose:** Defines the pipeline sequence, epistemic gate protocol, three-tier artifact hierarchy, cross-cutting principles (including inversion principle), and ensures no phase transition consists solely of approval.
-**Provenance:** ADR-001 (gate pattern); ADR-002 (orchestrator defines protocol); ADR-004 (feed-forward instruction); ADR-006 (pipeline includes PRODUCT DISCOVERY); ADR-010 (inversion principle cross-cutting); ADR-019 (three-tier artifact hierarchy); Invariant 0, 2
-**Owns:** Gate protocol definition, pipeline sequence (including PRODUCT DISCOVERY phase), state tracking, feed-forward instruction, cross-cutting principles, Available Skills table, Artifacts Summary, three-tier artifact hierarchy principle, orientation document regeneration instruction
+**Purpose:** Defines the pipeline sequence, epistemic gate protocol, three-tier artifact hierarchy, cross-cutting principles (including inversion principle and document sizing heuristics), scoped cycle workflow pattern, and ensures no phase transition consists solely of approval.
+**Provenance:** ADR-001 (gate pattern); ADR-002 (orchestrator defines protocol); ADR-004 (feed-forward instruction); ADR-006 (pipeline includes PRODUCT DISCOVERY); ADR-010 (inversion principle cross-cutting); ADR-019 (three-tier artifact hierarchy); ADR-022 (roadmap at Tier 2); ADR-023 (field guide at Tier 3); ADR-024 (document sizing heuristics); ADR-026 (scoped cycles, deep work tool framing); Invariant 0, 2
+**Owns:** Gate protocol definition, pipeline sequence (including PRODUCT DISCOVERY phase), state tracking, feed-forward instruction, cross-cutting principles (inversion principle, document sizing heuristics), Available Skills table, Artifacts Summary, three-tier artifact hierarchy principle (with roadmap at Tier 2 and field guide at Tier 3), orientation document regeneration instruction, scoped cycle workflow pattern, deep work tool framing
 **Depends on:** None (top-level coordinator)
 **Depended on by:** All phase skills (they follow its protocol)
 
@@ -69,16 +76,16 @@
 **Depended on by:** None directly (produces ADR + scenario artifacts consumed by Architect Skill via file)
 
 ### Module: Architect Skill (`rdd-architect/SKILL.md`)
-**Purpose:** Decomposes the system into modules with provenance chains extending to user needs, including inversion principle check on module boundaries, with an epistemic gate tailored to system design artifacts.
-**Provenance:** ADR-002; ADR-003 (architect gate assignments); ADR-010 (inversion principle at ARCHITECT); Essay 001 §6; Essay 002 §7.3
-**Owns:** Architect-phase process, inversion principle check (at ARCHITECT), extended provenance chains, epistemic gate prompts, system design presentation step
+**Purpose:** Decomposes the system into modules with provenance chains extending to user needs, including inversion principle check on module boundaries, with an epistemic gate tailored to system design artifacts; generates roadmap as separate artifact.
+**Provenance:** ADR-002; ADR-003 (architect gate assignments); ADR-010 (inversion principle at ARCHITECT); ADR-022 (roadmap generation); Essay 001 §6; Essay 002 §7.3; Essay 005 §1
+**Owns:** Architect-phase process, inversion principle check (at ARCHITECT), extended provenance chains, epistemic gate prompts, system design presentation step, roadmap generation (work packages, dependency classification, transition states)
 **Depends on:** Orchestrator (protocol)
-**Depended on by:** None directly (produces system design artifact consumed by Build Skill via file)
+**Depended on by:** None directly (produces system design and roadmap artifacts consumed by Build Skill via file)
 
 ### Module: Build Skill (`rdd-build/SKILL.md`)
-**Purpose:** Turns scenarios into working software through BDD/TDD, with epistemic prompts at scenario group boundaries.
-**Provenance:** ADR-002; ADR-003 (build gate assignments); Essay 001 §6
-**Owns:** Build-phase process, epistemic gate prompts, scenario completion presentation step
+**Purpose:** Turns scenarios into working software through BDD/TDD, with epistemic prompts at scenario group boundaries; generates field guide when implementation exists.
+**Provenance:** ADR-002; ADR-003 (build gate assignments); ADR-023 (field guide generation); Essay 001 §6; Essay 005 §3
+**Owns:** Build-phase process, epistemic gate prompts, scenario completion presentation step, field guide generation (module-to-implementation mapping, design rationale, settled vs. in-flux marking)
 **Depends on:** Orchestrator (protocol)
 **Depended on by:** None
 
@@ -88,6 +95,13 @@
 **Owns:** Synthesis-phase process, artifact trail mining, novelty signal detection (five signals), three-phase conversation, worth-the-calories quality tests (Davis/ABT/inversion), outline production with pre-populated references, citation audit invocation, argument audit invocation, cross-project conversational prompting (Level 1), narrative inversion lenses
 **Depends on:** Orchestrator (protocol); Citation Audit skill (invoked during outline finalization); Argument Audit skill (invoked during outline finalization, after citation audit)
 **Depended on by:** None (terminal phase; outline artifact consumed by the user outside the pipeline)
+
+### Module: Conformance Audit Skill (`rdd-conform/SKILL.md`) — NEW
+**Purpose:** Scans artifact corpus against current skill version, producing gap analysis with prioritized remediation, drift detection against implementation, and graduation into native project docs.
+**Provenance:** ADR-025 (four operations: audit, remediation, drift detection, graduation); ADR-026 (graduation as scoped cycle endpoint); Essay 005 §5
+**Owns:** Audit template conformance process, remediation (structural and format gaps), drift detection (documentation vs. implementation — best-effort semantic comparison), graduation process (knowledge migration plan, archival), conformance report production
+**Depends on:** Orchestrator (available skill listing)
+**Depended on by:** None directly (invoked by user or orchestrator as needed; produces conformance report consumed by user)
 
 ## Responsibility Matrix
 
@@ -200,6 +214,33 @@
 | Product Debt | Essay 002 §1, §9 | Motivating context for product discovery |
 | Product Maintenance Cliff | Essay 002 §9 | Motivating context |
 
+### Roadmap/Field Guide/Sizing Concepts (from Essay 005 / ADRs 022-024)
+
+| Domain Concept/Action | Owning Module | Provenance |
+|----------------------|---------------|------------|
+| Roadmap (artifact) | Architect Skill (generation); Orchestrator (artifact hierarchy placement, Tier 2) | ADR-022 |
+| Work Package (roadmap unit) | Architect Skill (derives from module decomposition) | ADR-022 |
+| Transition State (roadmap) | Architect Skill (describes coherent intermediate architectures) | ADR-022 |
+| Dependency Classification (roadmap edges) | Architect Skill (classifies as hard/implied/open) | ADR-022 |
+| Generate Roadmap (action) | Architect Skill | ADR-022 |
+| Field Guide (artifact) | Build Skill (first generation when implementation exists) | ADR-023 |
+| Generate Field Guide (action) | Build Skill | ADR-023 |
+| Document Sizing Heuristics (design principle) | Orchestrator (cross-cutting principle governing artifact structure) | ADR-024 |
+
+### Conformance/Graduation/Scoping Concepts (from Essay 005 / ADRs 025-026)
+
+| Domain Concept/Action | Owning Module | Provenance |
+|----------------------|---------------|------------|
+| Conformance Audit (process + four operations) | Conformance Audit Skill (process); Orchestrator (available skill listing) | ADR-025 |
+| Audit Template Conformance (action) | Conformance Audit Skill | ADR-025 |
+| Documentation Drift (detection) | Conformance Audit Skill (detects during drift detection operation) | ADR-025; Essay 005 §5 |
+| Graduation (process) | Conformance Audit Skill (proposes migration plan); User (decides what to integrate) | ADR-025; ADR-026 |
+| Graduate (action) | Conformance Audit Skill (proposes); User (executes) | ADR-025 |
+| Documentation Fatigue (signal) | User (experiences); referenced by Conformance Audit Skill | ADR-025; ADR-026 |
+| Scoped Cycle (workflow pattern) | Orchestrator (recognizes and supports) | ADR-026 |
+| Scope Cycle (action) | User (initiates); Orchestrator (configures) | ADR-026 |
+| Deep Work Tool (framing) | Orchestrator (describes RDD's role) | ADR-026 |
+
 ## Dependency Graph
 
 ```
@@ -210,10 +251,12 @@ Orchestrator
 ├── Product Discovery Skill
 ├── Model Skill
 ├── Decide Skill
-├── Architect Skill
-├── Build Skill
-└── Synthesis Skill  ← NEW (optional terminal)
-        └── Citation Audit Skill (external, invoked during outline finalization)
+├── Architect Skill  ← updated (now also generates roadmap.md)
+├── Build Skill  ← updated (now also generates field-guide.md)
+├── Synthesis Skill (optional terminal)
+│       ├── Citation Audit Skill (external, invoked during outline finalization)
+│       └── Argument Audit Skill (external, invoked during outline finalization)
+└── Conformance Audit Skill (utility, invoked as needed)  ← NEW
 ```
 
 **Edges (all directed from Orchestrator to skills):**
@@ -224,6 +267,7 @@ Orchestrator
 - Orchestrator → Architect Skill (invokes, defines protocol)
 - Orchestrator → Build Skill (invokes, defines protocol)
 - Orchestrator → Synthesis Skill (invokes, defines protocol — optional)
+- Orchestrator → Conformance Audit Skill (lists in Available Skills; user invokes as needed)
 
 **Research Skill → Citation Audit Skill (external dependency):**
 - Research Skill invokes `/citation-audit` on the essay after writing, before the epistemic gate
@@ -244,8 +288,8 @@ Orchestrator
 **Inter-skill communication:** Skills do not depend on each other directly. They communicate through artifact files:
 
 ```
-essay → product-discovery.md → domain-model.md → ADRs → system-design.md → code
-                                                                              ↓
+essay → product-discovery.md → domain-model.md → ADRs + scenarios → system-design.md + roadmap.md → code + field-guide.md
+                                                                                                       ↓
                                         [full artifact trail] → synthesis outline → synthesis essay (user)
                                                    ↓
                                         ORIENTATION.md (derived from full artifact trail at milestones)
@@ -281,6 +325,8 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 - ADRs: `./docs/decisions/adr-NNN-*.md`
 - Scenarios: `./docs/scenarios.md`
 - System design: `./docs/system-design.md`
+- Roadmap: `./docs/roadmap.md`
+- Field guide: `./docs/references/field-guide.md`
 **Error handling:** If an artifact is missing, the next skill prompts the user (existing behavior).
 **Owned by:** Each skill owns its output artifact format.
 
@@ -355,6 +401,24 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 **Error handling:** If artifacts are insufficient for full orientation (e.g., only RESEARCH complete), a partial document is generated with sections 1 and 5 only. Missing sections are either omitted or marked as pending.
 **Owned by:** Orchestrator (defines regeneration timing); the generated artifact is validated by the user.
 
+### Architect Skill → roadmap.md (new output) — NEW
+**Protocol:** After system design is produced, Architect Skill generates `./docs/roadmap.md`. Derives work packages from the module decomposition, classifies each dependency edge as hard/implied/open, describes transition states.
+**Shared types:** `./docs/roadmap.md`. The roadmap reads system design modules and ADRs to derive work packages. System design links to it for sequencing context.
+**Error handling:** If the system is small enough that no sequencing context is needed (e.g., a single-module system), the roadmap may be trivially simple or omitted.
+**Owned by:** Architect Skill owns roadmap generation; system-design.md links to it.
+
+### Build Skill → field-guide.md (new output) — NEW
+**Protocol:** During or after BUILD, when implementation exists, Build Skill generates `./docs/references/field-guide.md`. Maps each system design module to its current implementation state.
+**Shared types:** `./docs/references/field-guide.md`. The field guide reads system-design.md and the actual codebase.
+**Error handling:** If no implementation exists (e.g., still in ARCHITECT phase), field guide is not generated. Only produced when there is code to map against.
+**Owned by:** Build Skill owns field guide generation.
+
+### Orchestrator → Conformance Audit Skill — NEW
+**Protocol:** The orchestrator lists the conformance audit skill in Available Skills. The user invokes it when needed — not part of the standard pipeline sequence. The skill reads current skill files and the project's artifact corpus, produces a conformance report.
+**Shared types:** Input: RDD skill files (`rdd*/SKILL.md`) + project artifact corpus (`docs/`). Output: conformance report (gap analysis, remediation recommendations, drift findings, graduation plan).
+**Error handling:** If no artifacts exist, audit reports "no artifacts to audit." If skill files cannot be read, reports the access limitation.
+**Owned by:** Orchestrator (available skill listing); Conformance Audit Skill (audit methodology and four operations).
+
 ### Synthesis Skill → Orchestrator (context loading feedback) — NEW
 **Protocol:** When a synthesis essay exists for a project (written by the user outside the pipeline), the orchestrator treats it as a primary context source when bootstrapping new sessions.
 **Shared types:** The synthesis essay at its essay path (`./docs/essays/NNN-*.md`), distinguished from research essays by the outline that preceded it.
@@ -403,6 +467,18 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 | Orientation document is agent-generated, user-validated | Generation instruction specifies agent produces, user reviews | Both roles present; no epistemic gate section for orientation | ADR-021; Invariant 3 |
 | Orientation document regeneration at milestones | Orchestrator specifies regeneration after RESEARCH (partial), ARCHITECT (scoping), BUILD (full) | Milestone-based regeneration specified | ADR-021 §3 |
 | Source artifacts authoritative over orientation | Orchestrator or generation instruction states source artifacts win contradictions | Authority hierarchy stated | ADR-021 |
+| Architect Skill generates roadmap as output | Presence of roadmap generation step in rdd-architect SKILL.md | Step present with work packages, dependency classification, transition states | ADR-022 |
+| Roadmap contains classified dependencies | Roadmap template includes hard/implied/open classification | Classification scheme present | ADR-022 |
+| System design links to roadmap (not inline Build Sequence) | system-design.md contains link to roadmap.md instead of prescriptive Build Sequence | Link present; no inline Build Sequence | ADR-022 |
+| Build Skill generates field guide when implementation exists | Presence of field guide generation step in rdd-build SKILL.md | Step present; conditional on implementation existence | ADR-023 |
+| Document sizing heuristics in orchestrator cross-cutting principles | rdd/SKILL.md lists five cascading heuristics | All 5 heuristics listed in priority order | ADR-024 |
+| Conformance audit skill exists with four operations | rdd-conform SKILL.md contains audit, remediation, drift detection, graduation | All 4 operations present | ADR-025 |
+| Conformance audit uses two-level severity | rdd-conform SKILL.md classifies gaps as structural vs. format | Classification present | ADR-025 |
+| Orchestrator supports scoped cycles | rdd/SKILL.md describes scoped cycle workflow pattern | Pattern described with subfolder convention and graduation endpoint | ADR-026 |
+| Orchestrator describes RDD as deep work tool | rdd/SKILL.md includes deep work tool framing | Framing present | ADR-026 |
+| Orchestrator Artifacts Summary includes roadmap and field guide | rdd/SKILL.md Artifacts Summary table has rows for both | Both rows present | ADR-022; ADR-023 |
+| Orchestrator Available Skills includes conformance audit | rdd/SKILL.md Available Skills table has row for conformance audit | Row present | ADR-025 |
+| Artifact hierarchy includes roadmap (Tier 2) and field guide (Tier 3) | rdd/SKILL.md three-tier hierarchy references both new artifacts | Both present in hierarchy description | ADR-019 amendment; ADR-022; ADR-023 |
 
 ## Test Architecture
 
@@ -430,6 +506,11 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 | Orchestrator → ORIENTATION.md | Read Orchestrator SKILL.md; verify three-tier artifact hierarchy principle present; verify "two documents that matter" amended; verify Artifacts Summary includes ORIENTATION.md row; verify regeneration instruction at milestones | ADR-019, ADR-020, ADR-021 contract |
 | Orchestrator → ORIENTATION.md structure | Read Orchestrator SKILL.md; verify five-section structure specified (what, who, constraints, artifact map, current state); verify under-five-minutes constraint | ADR-020 structure contract |
 | Orchestrator → ORIENTATION.md authority | Read Orchestrator SKILL.md; verify source artifacts authoritative over orientation document | ADR-021 truth hierarchy contract |
+| Architect Skill → roadmap.md | Read rdd-architect SKILL.md; verify roadmap generation step derives work packages from module decomposition with classified dependencies (hard/implied/open) and transition states | ADR-022 roadmap contract |
+| Build Skill → field-guide.md | Read rdd-build SKILL.md; verify field guide generation maps modules to implementation state; verify conditional on implementation existence | ADR-023 field guide contract |
+| Orchestrator → Conformance Audit Skill | Read rdd/SKILL.md; verify Available Skills includes conformance audit; read rdd-conform SKILL.md; verify four operations (audit, remediation, drift detection, graduation) | ADR-025 conformance contract |
+| Orchestrator → scoped cycles | Read rdd/SKILL.md; verify scoped cycle workflow pattern described with subfolder convention, graduation endpoint, deep work tool framing | ADR-026 scoped cycle contract |
+| Orchestrator → document sizing | Read rdd/SKILL.md; verify document sizing heuristics present as cross-cutting principle with five heuristics in priority order | ADR-024 sizing contract |
 
 ### Invariant Enforcement Tests
 
@@ -446,52 +527,15 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 
 ### Test Layers
 
-- **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present. For Product Discovery Skill: verify forward mode process, backward mode process, all 5 artifact sections, assumption inversion step.
-- **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect. Verify three-tier artifact hierarchy principle present in orchestrator; verify "two documents that matter" amended.
-- **Acceptance:** The behavior scenarios in `scenarios.md` (100 total: 18 epistemic gates + 25 product discovery + 37 synthesis + 20 orientation). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
+- **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present. For Product Discovery Skill: verify forward mode, backward mode, update mode, all 5 artifact sections, assumption inversion step. For Conformance Audit Skill: verify four operations present.
+- **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect, Synthesis. Verify three-tier artifact hierarchy includes roadmap (Tier 2) and field guide (Tier 3). Verify architect skill generates roadmap. Verify build skill generates field guide. Verify orchestrator supports scoped cycles and document sizing heuristics.
+- **Acceptance:** The behavior scenarios in `scenarios.md` (133 total: 18 epistemic gates + 25 product discovery + 37 synthesis + 20 orientation + 33 roadmap/field guide/sizing/conformance/scoping). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
 
-## Build Sequence
+## Roadmap
 
-### Phase 1: Product Discovery (new skill + integration)
+See [`./docs/roadmap.md`](./docs/roadmap.md) for the current roadmap — work packages, classified dependencies, transition states, and open decision points.
 
-The following order minimizes risk and allows incremental verification:
-
-1. **Product Discovery Skill** (new file) — create `rdd-product/SKILL.md` with forward mode, backward mode, artifact template, and epistemic gate. This is the core deliverable.
-2. **Orchestrator** (retrofit) — add PRODUCT DISCOVERY phase to pipeline, update Available Skills table, Artifacts Summary, state tracking table, cross-phase integration rules, and inversion principle as cross-cutting principle.
-3. **Model Skill** (retrofit) — add instruction to read `./docs/product-discovery.md` in Step 1, add Product Origin column to Concepts table template, add value tension → Open Questions propagation.
-4. **Decide Skill** (retrofit) — add instruction to read `./docs/product-discovery.md` in Step 1, add inversion principle check ("Does this ADR rest on an unexamined product assumption?").
-5. **Architect Skill** (retrofit) — add instruction to read `./docs/product-discovery.md`, add inversion principle check ("Does this boundary serve the user's mental model?"), extend provenance chain template to include product discovery origins.
-6. **Verification pass** — read all modified files, confirm all new scenarios are satisfied, run fitness criteria checks.
-
-Each change is a single commit. The new skill file is `feat: add /rdd-product skill`. Retrofit changes are `feat: integrate product discovery into [skill-name]`.
-
-### Phase 2: Synthesis (new skill + integration)
-
-The following order minimizes risk and allows incremental verification:
-
-1. **Synthesis Skill** (new file) — create `rdd-synthesis/SKILL.md` with: artifact trail mining (five novelty signals), three-phase conversation (journey review, novelty surfacing, framing), worth-the-calories quality tests (Davis/ABT/inversion), outline production with pre-populated references, `/citation-audit` invocation, `/argument-audit` invocation, cross-project conversational prompting (Level 1), narrative inversion lenses. No separate EPISTEMIC GATE section — conversation subsumes it.
-2. **Orchestrator** (retrofit) — add SYNTHESIS as optional terminal phase to pipeline, update Available Skills table, Artifacts Summary, state tracking table. Add SYNTHESIS to inversion principle cross-cutting list. Add synthesis essay to context loading for session bootstrapping.
-3. **Verification pass** — read all modified files, confirm all new scenarios are satisfied, run fitness criteria checks.
-
-Each change is a single commit. The new skill file is `feat: add /rdd-synthesis skill`. Orchestrator retrofit is `feat: integrate synthesis phase into orchestrator`.
-
-### Phase 3: Orientation Document (orchestrator retrofit)
-
-The orientation document does not introduce a new skill file. All changes are retrofits to the orchestrator.
-
-1. **Orchestrator** (retrofit) — amend "two documents that matter" principle to three-tier artifact hierarchy. Add ORIENTATION.md to Artifacts Summary table as cross-phase artifact. Add orientation document regeneration instruction (at milestones: after RESEARCH partial, after DECIDE mid-cycle, after ARCHITECT for scoping, after BUILD for full; on user request). Specify five-section structure, under-five-minutes constraint, agent-generates/user-validates model (with genuine review encouragement), and source-artifact authority rule.
-2. **Verification pass** — read orchestrator SKILL.md, confirm all orientation document fitness criteria and scenarios are satisfied.
-
-Single commit: `feat: add orientation document to orchestrator`.
-
-### Phase 0: Epistemic Gates (prior build — completed)
-
-1. Orchestrator — gate protocol and workflow modes
-2. Research Skill — epistemic gate section
-3. Model Skill — epistemic gate section
-4. Decide Skill — epistemic gate section
-5. Architect Skill — epistemic gate section
-6. Build Skill — epistemic gate prompts
+Prior build phases (Phase 0: Epistemic Gates, Phase 1: Product Discovery, Phase 2: Synthesis, Phase 3: Orientation Document) are completed. Current work packages address ADRs 022-026 (roadmap, field guide, document sizing, conformance audit, scoped cycles).
 
 ## Design Amendment Log
 
@@ -502,3 +546,4 @@ Single commit: `feat: add orientation document to orchestrator`.
 | 3 | 2026-03-09 | Amended "two primary readable documents" design principle to three-tier artifact hierarchy (ORIENTATION.md at Tier 1). Extended responsibility matrix with 5 orientation document concepts/actions (Orient, Validate Orientation, Orientation Document, Artifact Hierarchy, Artifact Legibility maximal). Added 1 new integration contract (Orchestrator→ORIENTATION.md). Added 7 fitness criteria. Added 3 boundary integration tests. Updated test layers and acceptance scenario count (95). Added build sequence Phase 3. Updated Orchestrator module purpose and ownership. Added ORIENTATION.md to artifact flow diagram. No new module — all orientation document responsibility owned by Orchestrator. Key architectural property: orientation document is a pragmatic artifact (Invariant 3), not an epistemic one — no gate, agent-generates, user-validates. | ADRs 019-021 (orientation document RDD cycle) | Essay 004; Product discovery update; ADRs 019-021 | Proposed |
 | 4 | 2026-03-10 | Added `/argument-audit` invocation to synthesis outline finalization (after citation audit). Extended Synthesis Skill module ownership and dependencies. Added new integration contract (Synthesis Skill→Argument Audit Skill). Added 1 fitness criterion and 1 boundary integration test. Updated architectural driver, build sequence, and orchestrator cross-phase integration rules. Same external invocation pattern as `/rdd-decide` using `/argument-audit` on ADRs, applied to narrative genre. | User request (logical integrity of synthesis outline) | ADR-013 (extended); ADR-014 (quality gate) | Accepted |
 | 5 | 2026-03-12 | Added `/citation-audit` and `/argument-audit` invocations to Research Skill (after essay writing, before epistemic gate). Extended Research Skill module purpose, ownership, and dependencies. Added 2 new integration contracts (Research Skill→Citation Audit, Research Skill→Argument Audit). Added 2 boundary integration tests. Updated dependency graph. The essay that enters downstream phases is now audited — catching citation and argument problems at the source rather than discovering them in DECIDE or BUILD. | User request (audit quality at pipeline source) | ADR-002 (research skill); ADR-003 (gate protocol) | Accepted |
+| 6 | 2026-03-12 | Added: Conformance Audit Skill module, roadmap generation to Architect Skill, field guide generation to Build Skill. Updated: Orchestrator (scoped cycles, document sizing heuristics, artifact hierarchy with roadmap Tier 2 and field guide Tier 3, deep work tool framing). Added: 7 architectural drivers, 17 responsibility matrix rows (2 new sections), 3 integration contracts, 12 fitness criteria, 5 boundary integration tests. Replaced: Build Sequence with link to roadmap. | ADRs 022-026 (essay 005 cycle) | ADR-022 (roadmap), ADR-023 (field guide), ADR-024 (document sizing), ADR-025 (conformance audit + graduation), ADR-026 (scoped cycles + deep work tool) | Approved |

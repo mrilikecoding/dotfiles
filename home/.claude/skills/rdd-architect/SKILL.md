@@ -147,7 +147,90 @@ Before presenting, evaluate the design against itself:
 
 Fix issues before presenting. If an issue requires a judgment call, present the options to the user.
 
-### Step 11: Present for Approval
+### Step 11: Generate Roadmap
+
+After the system design is complete, generate a roadmap as a separate artifact. The roadmap provides strategic sequencing context — it tells the builder what depends on what and where choices exist, without prescribing build order.
+
+#### Derive Work Packages
+
+Group the system design's modules and responsibility allocations into logical work packages. Each work package is a coherent unit of change — typically one module or a cluster of tightly related changes across modules.
+
+For each work package:
+- **Name and objective** — what changes and why
+- **Changes** — what modules, responsibilities, or contracts are affected
+- **Scenarios covered** — which behavior scenarios this work package satisfies
+- **Dependencies** — which other work packages must or should come first
+
+#### Classify Dependencies
+
+For each dependency edge between work packages, classify it:
+
+- **Hard dependency** — structural necessity. B cannot be built without A because B's code imports, extends, or requires A's output. The builder has no choice here.
+- **Implied logic** — suggested ordering. Building A before B is simpler because B references concepts A defines, but a skilled builder could stub the references and fill in later.
+- **Open choice** — genuinely independent. The builder can start with either.
+
+The classification must be visible in the document — stated explicitly, not implied by ordering.
+
+#### Describe Transition States
+
+Identify at least one intermediate architecture that is coherent on its own — a point where the system works (perhaps with reduced capability) even though not all work packages are complete. Transition states show that partial progress produces a stable system.
+
+#### Write the Roadmap
+
+Write the roadmap to `./docs/roadmap.md`. The roadmap contains:
+- Work packages with classified dependencies
+- A dependency graph showing the classification
+- Transition states
+- Open decision points (where the builder must choose based on context)
+
+The roadmap does **not** contain: step-by-step build instructions, single-commit prescriptions, timeline estimates, resource allocation, or any language that tells the developer what to build in what order. It provides the information to make that decision.
+
+#### Roadmap Template
+
+```markdown
+# Roadmap: [Project Name]
+
+**Generated:** [date]
+**Derived from:** [system design version, ADR references]
+
+## Work Packages
+
+### WP-A: [Name]
+
+**Objective:** [what changes and why]
+
+**Changes:**
+- [module/responsibility/contract changes]
+
+**Scenarios covered:** [scenario numbers or names]
+
+**Dependencies:** [None / WP-X (hard/implied/open)]
+
+---
+
+[repeat for each work package]
+
+## Dependency Graph
+
+[Visual or textual representation with classification key]
+
+**Classification key:**
+- **Hard dependency:** [cannot build B without A — structural necessity]
+- **Implied logic:** [simpler to build A first, but not required]
+- **Open choice:** [genuinely independent — build any first]
+
+## Transition States
+
+### TS-1: [Name] (after [work packages])
+
+[Description of the coherent intermediate architecture]
+
+## Open Decision Points
+
+- [Where the builder must choose based on context]
+```
+
+### Step 12: Present for Approval
 
 Write the system design to `./docs/system-design.md` using the template below.
 
@@ -174,6 +257,14 @@ Wait for the user to respond to at least one prompt. If the user responds with o
 After the user responds, note any obvious factual discrepancies between their response and the system design without framing it as an error ("The design places X in Module Y — your instinct was Z. Worth revisiting?"). Do not assess the quality of the user's understanding.
 
 Then ask whether to proceed to build, revise the design, or revisit decisions.
+
+### Post-Architecture Housekeeping
+
+After the user approves the system design (or after any design amendment):
+
+1. **Regenerate ORIENTATION.md** — the ARCHITECT milestone populates all five sections (ADR-021). In multi-cycle composition — where several research → decide → architect cycles run before BUILD — each cycle's system design and roadmap should be reflected in the orientation document so the growing artifact corpus stays navigable.
+
+2. **Consider `/rdd-conform` audit** — the RDD skills may have evolved since the project's artifacts were last produced. A conformance audit checks whether the existing corpus still matches what the current skill versions expect (new template sections, new artifact types, changed structures). This is especially relevant after multi-cycle composition, where artifacts from earlier cycles may predate skill updates.
 
 ---
 
@@ -246,6 +337,10 @@ Then ask whether to proceed to build, revise the design, or revisit decisions.
 - **Integration:** [which boundaries, real types required]
 - **Acceptance:** [end-to-end scenarios, full wiring]
 
+## Roadmap
+
+See [`./docs/roadmap.md`](./docs/roadmap.md) for the current roadmap — work packages, classified dependencies, transition states, and open decision points.
+
 ## Design Amendment Log
 
 | # | Date | What Changed | Trigger | Provenance | Status |
@@ -281,6 +376,7 @@ The system design is a living document. It evolves, but never silently.
 2. **Trace provenance impact** — which invariants, ADRs, or research findings are affected?
 3. **User approves or rejects** — no silent mutations
 4. **Apply and log** — update the design and record the amendment in the Design Amendment Log
+5. **Regenerate roadmap** — if the amendment changes module boundaries, responsibilities, or integration contracts, regenerate `./docs/roadmap.md` to reflect the new module decomposition. Re-evaluate dependency classifications — an amendment may turn an open choice into a hard dependency or vice versa.
 
 ### Amendment Log Entry
 

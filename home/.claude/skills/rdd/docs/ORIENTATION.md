@@ -1,10 +1,10 @@
 # Orientation: Research-Driven Development (RDD)
 
-*Generated 2026-03-10*
+*Generated 2026-03-12*
 
 ## What This System Is
 
-RDD is a methodology for building software through structured understanding. It replaces the common pattern of AI-generates-everything with a phased pipeline — research, product discovery, domain modeling, decisions, architecture, build — where the AI generates artifacts and the human engages with them at epistemic gates before proceeding. The central bet: if the person who runs the pipeline can explain what was built, who it was built for, and why, the software will be better and more maintainable than if they simply approved AI output.
+RDD is a deep work tool for building software through structured understanding. It replaces the common pattern of AI-generates-everything with a phased pipeline — research, product discovery, domain modeling, decisions, architecture, build — where the AI generates artifacts and the human engages with them at epistemic gates before proceeding. The central bet: if the person who runs the pipeline can explain what was built, who it was built for, and why, the software will be better and more maintainable than if they simply approved AI output. RDD composes with existing workflows rather than replacing them — teams reach for it when a problem warrants structured thinking, and put it away when the knowledge has been absorbed.
 
 ## Who It Serves
 
@@ -12,17 +12,19 @@ RDD is a methodology for building software through structured understanding. It 
   - Start: [SKILL.md](../SKILL.md) (orchestrator — workflow modes, phase sequence)
   - Then: [product-discovery.md](product-discovery.md) (who are you building for?)
   - Then: [system-design.md](system-design.md) (how is it structured?)
-  - Background: [Essay 001](essays/001-pedagogical-epistemology-in-ai-assisted-development.md) (why epistemic gates exist)
+  - Then: [roadmap.md](roadmap.md) (what depends on what, where are choices?)
+  - Background: [Essay 001](essays/001-pedagogical-epistemology-of-rdd.md) (why epistemic gates exist)
 
 - **Research-Engineer-Writer** — uses the research, product discovery, and modeling phases as a structured investigation methodology, whether or not software gets built.
   - Start: [rdd-research SKILL.md](../rdd-research/SKILL.md) (research loop mechanics)
   - Then: [rdd-product SKILL.md](../rdd-product/SKILL.md) (product discovery process)
   - Then: [domain-model.md](domain-model.md) (vocabulary authority)
-  - Background: [Essay 003](essays/003-synthesis-as-epistemic-practice.md) (synthesis methodology)
+  - Background: [Essay 003](essays/003-synthesis-as-final-epistemic-act.md) (synthesis methodology)
 
 - **Team Lead (scoping)** — runs RESEARCH through ARCHITECT, then hands off artifacts to a team for building. Uses RDD as a leadership thinking tool.
   - Start: [product-discovery.md](product-discovery.md) (stakeholder needs, value tensions)
   - Then: [system-design.md](system-design.md) (module decomposition, responsibility matrix)
+  - Then: [roadmap.md](roadmap.md) (work packages, dependency classification, transition states)
   - Then: [decisions/](decisions/) (ADRs — the "why" behind each choice)
   - Handoff artifact: [scenarios.md](scenarios.md) (what the team builds against)
 
@@ -30,6 +32,7 @@ RDD is a methodology for building software through structured understanding. It 
   - Start: [SKILL.md](../SKILL.md) (orchestrator — phase sequence, gate protocol, cross-phase rules)
   - Reference: [domain-model.md](domain-model.md) § Invariants (constitutional authority)
   - Reference: [system-design.md](system-design.md) (module ownership, fitness criteria)
+  - Reference: [field-guide.md](references/field-guide.md) (module-to-implementation mapping)
 
 - **Teammates / Collaborators** — receive artifacts without having gone through the gates. Need this document to orient.
   - Start: this document
@@ -52,29 +55,36 @@ RDD is a methodology for building software through structured understanding. It 
 **Tier 2 — Primary Readables (read end-to-end)**
 - `product-discovery.md` — stakeholder maps, jobs, value tensions, assumption inversions. Written in user language. The product perspective.
 - `system-design.md` — module decomposition, responsibility allocation, dependency graph, provenance chains. The technical perspective.
+- `roadmap.md` — work packages with classified dependencies (hard/implied/open), transition states, open decision points. The sequencing perspective.
 
 **Tier 3 — Supporting Material (consulted for provenance and depth)**
 - `domain-model.md` — concepts, actions, relationships, invariants. The vocabulary authority.
-- `essays/` — research findings (4 essays: pedagogical epistemology, product discovery, synthesis, orientation document)
-- `decisions/` — ADRs (21 decisions, from epistemic gates through orientation document)
-- `scenarios.md` — refutable behavior specifications (95 scenarios)
+- `essays/` — research findings (5 essays: pedagogical epistemology, product discovery, synthesis, orientation document, roadmap/field guide/sizing)
+- `decisions/` — ADRs (26 decisions, from epistemic gates through scoped cycles)
+- `scenarios.md` — refutable behavior specifications (133 scenarios)
+- `references/field-guide.md` — maps system design modules to implementation state. Developer reference.
 - `essays/reflections/` — meta-observations from epistemic gate conversations
 - `essays/research-logs/` — process records from research phases
 
 ## Current State
 
-**Pipeline:** All phases have been designed and built. The pipeline runs: RESEARCH → PRODUCT DISCOVERY → MODEL → DECIDE → ARCHITECT → BUILD → SYNTHESIS (optional).
+**Pipeline:** All phases have been designed and built. The pipeline runs: RESEARCH → PRODUCT DISCOVERY → MODEL → DECIDE → ARCHITECT → BUILD → SYNTHESIS (optional). A conformance audit utility (`/rdd-conform`) operates outside the pipeline for artifact template alignment, drift detection, remediation, and graduation.
 
 **What's settled:**
 - Epistemic gate protocol (ADRs 001-005) — implemented in all skill files
-- Product discovery phase (ADRs 006-011) — implemented as `/rdd-product`
+- Product discovery phase (ADRs 006-011) — implemented as `/rdd-product` with forward, backward, and update modes
 - Synthesis phase (ADRs 012-018) — implemented as `/rdd-synthesis`
-- Orientation document (ADRs 019-021) — integrated into orchestrator
-- Three-tier artifact hierarchy replacing prior two-tier model
+- Orientation document (ADRs 019-021) — integrated into orchestrator with three-tier hierarchy
+- Roadmap generation (ADR-022) — architect skill generates roadmap alongside system design
+- Field guide generation (ADR-023) — build skill generates field guide when implementation exists
+- Document sizing heuristics (ADR-024) — five cascading heuristics as cross-cutting principle
+- Conformance audit with graduation (ADR-025) — `/rdd-conform` with four operations
+- Scoped cycles (ADR-026) — first-class workflow pattern: scope → cycle → graduate
+- Deep work tool framing (ADR-026) — RDD composes with existing workflows
 
 **Open questions (selected):**
-- Should "scoping mode" (RESEARCH → ARCHITECT with handoff) be a named workflow mode?
 - How would Pair-RDD work at epistemic gates?
 - Should external review be formalized as a pipeline operation?
 - Cross-project synthesis (portfolio mode) is described but not operationalized
 - Fading implementation (Invariant 6) is deferred — tracked as design debt (ADR-005)
+- Conformance audit sizing heuristic check — not yet part of the audit operation

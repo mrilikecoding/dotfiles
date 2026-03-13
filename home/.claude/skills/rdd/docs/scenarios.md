@@ -646,3 +646,221 @@
 **Given** system-design.md exists
 **When** the Architectural Drivers table is read
 **Then** the readability design principle acknowledges the three-tier hierarchy with ORIENTATION.md at Tier 1
+
+## Feature: Roadmap Artifact (ADR-022)
+
+### Scenario: Roadmap generated from system design during ARCHITECT phase
+**Given** `/rdd-architect` has produced a system design with module decomposition and integration contracts
+**When** the ARCHITECT phase is completing
+**Then** the agent generates a roadmap document deriving work packages from the module decomposition
+**And** each work package has classified dependency edges (hard dependency, implied logic, or open choice)
+**And** the roadmap describes at least one transition state — an intermediate architecture coherent on its own
+**And** the roadmap is written to the docs directory alongside the system design
+
+### Scenario: Roadmap dependencies are explicitly classified
+**Given** a roadmap contains work packages with dependencies between them
+**When** the roadmap is read
+**Then** each dependency edge is labeled as one of: hard dependency (structural necessity — cannot build B without A), implied logic (suggested ordering — could go either way), or open choice (genuinely independent)
+**And** the classification is visible in the document, not implicit in ordering
+
+### Scenario: Roadmap does not contain prescriptive build instructions
+**Given** a roadmap has been generated
+**When** the roadmap is read
+**Then** it does not contain: step-by-step build instructions, single-commit prescriptions, timeline estimates, or resource allocation
+**And** it does not tell the developer what to build in what order — it provides the information to make that decision
+
+### Scenario: System design links to roadmap for sequencing context
+**Given** a roadmap has been generated
+**When** system-design.md is read
+**Then** the system design links to the roadmap for sequencing context
+**And** the system design may still note hard structural dependencies inline (these are architectural facts)
+**And** the strategic sequencing view (transition states, open choices, implied orderings) is in the roadmap, not the system design
+
+### Scenario: Roadmap updated reflexively when architecture changes
+**Given** a roadmap exists and the system design is amended
+**When** the amendment changes module boundaries, responsibilities, or integration contracts
+**Then** the roadmap is regenerated to reflect the new module decomposition
+**And** dependency classifications are re-evaluated
+
+### Scenario: Roadmap sits at Tier 2 of artifact hierarchy
+**Given** ORIENTATION.md lists the artifact hierarchy
+**When** the artifact map section is read
+**Then** the roadmap appears at Tier 2 alongside product-discovery.md and system-design.md
+
+## Feature: Field Guide Artifact (ADR-023)
+
+### Scenario: Field guide maps system design modules to implementation state
+**Given** a system design exists and implementation has begun
+**When** the agent generates the field guide
+**Then** each module in the system design is mapped to its current implementation state: what exists, what is partial, what is planned
+**And** domain model concepts are connected to their code-level manifestations (specific files, directories, patterns)
+
+### Scenario: Field guide surfaces design rationale not visible in code
+**Given** the field guide has been generated
+**When** a developer reads a module's entry
+**Then** the entry includes the "why" behind structural choices that code alone cannot carry
+**And** points to specific files and patterns where the developer should explore to build understanding
+
+### Scenario: Field guide distinguishes settled from in-flux areas
+**Given** the field guide has been generated
+**When** the field guide is read
+**Then** it marks which areas of the system are settled (stable, unlikely to change) versus in flux (under active development or pending decisions)
+**And** this prevents developers from investing understanding in areas about to change
+
+### Scenario: Field guide is only generated when implementation exists
+**Given** an RDD cycle is in the ARCHITECT phase with no implementation yet
+**When** the agent considers generating a field guide
+**Then** the field guide is not generated — it requires implementation to map against
+**And** the field guide is first generated during or after the BUILD phase
+
+### Scenario: Field guide sits at Tier 3 of artifact hierarchy
+**Given** ORIENTATION.md lists the artifact hierarchy
+**When** the artifact map section is read
+**Then** the field guide appears at Tier 3 as reference material consulted as needed
+
+### Scenario: Field guide updated reflexively when implementation changes
+**Given** a field guide exists and implementation has changed significantly
+**When** the agent detects the change (or the user requests a refresh)
+**Then** the field guide is regenerated to reflect current implementation state
+**And** module-to-code mappings are updated
+
+## Feature: Document Sizing Heuristics (ADR-024)
+
+### Scenario: New artifacts designed within sizing heuristics
+**Given** a new artifact type is being added to the RDD corpus (e.g., roadmap, field guide)
+**When** the artifact template is designed
+**Then** the template is designed to serve one purpose for one audience (Purpose Test)
+**And** no section requires holding more than 3-5 concepts simultaneously (Concept Rule)
+**And** end-to-end readable artifacts aim to stay near ~5,000 words (Word Guideline)
+
+### Scenario: Reference artifacts may exceed word guideline per Read Contract
+**Given** an artifact is designed for section-level consultation rather than end-to-end reading (e.g., domain model, field guide)
+**When** the artifact's length is evaluated
+**Then** the Read Contract heuristic permits longer documents
+**And** the Word Guideline does not apply as a constraint
+
+### Scenario: Critical information not buried in middle of agent-consumed documents
+**Given** an artifact will be consumed by an AI agent end-to-end
+**When** the artifact is structured
+**Then** the most critical information appears at the beginning and end
+**And** nothing essential is positioned only in the middle third (Position-Sensitive Placement)
+
+### Scenario: Heuristics cascade in priority order
+**Given** a document is being evaluated for potential splitting
+**When** the heuristics are applied
+**Then** they are applied in order: Purpose Test first, then Concept Rule, then Word Guideline, then Read Contract, then Position-Sensitive Placement
+**And** the Purpose Test is the strongest signal — a document serving multiple purposes should be split regardless of length
+
+## Feature: Conformance Audit (ADR-025)
+
+### Scenario: Audit scans artifact corpus against current skill version
+**Given** the conformance audit skill is invoked
+**When** it reads the current RDD skill files and the project's artifact corpus
+**Then** it produces a gap analysis listing: missing artifacts, missing sections within existing artifacts, template mismatches, and broken inter-artifact references
+**And** each gap is classified as structural (blocks downstream phases) or format (cosmetic, doesn't block)
+
+### Scenario: Audit prioritizes structural gaps over format gaps
+**Given** a conformance audit has produced a gap analysis
+**When** the report is presented to the user
+**Then** structural gaps (missing artifacts that downstream phases depend on) are listed first
+**And** format gaps (sections that could be updated but don't block anything) are listed separately
+**And** the user decides which gaps to address
+
+### Scenario: Remediation generates missing artifacts for structural gaps
+**Given** the conformance audit has identified structural gaps
+**When** the user approves remediation
+**Then** the agent generates missing artifacts or sections where possible (pragmatic action, Invariant 3)
+**And** generated content is derived from existing artifacts and code, not invented
+**And** the user validates all generated content
+
+### Scenario: Drift detection compares artifacts against implementation
+**Given** the conformance audit includes drift detection
+**When** the agent compares artifacts against current implementation
+**Then** it flags sections where the documentation no longer matches the code
+**And** the user decides whether to update docs (pragmatic) or re-run the relevant phase (epistemic)
+**And** the agent notes that drift detection is best-effort — subtle semantic divergences may be missed
+
+### Scenario: Graduation folds RDD knowledge into native project docs
+**Given** the user invokes graduation for a scoped cycle or a whole project
+**When** the agent produces a graduation plan
+**Then** the plan identifies durable knowledge to migrate: architectural decisions, domain vocabulary, product context, key rationale
+**And** the plan identifies RDD-specific artifacts to archive: research logs, reflections, scenarios, the domain model in its RDD-specific structure
+**And** the user decides what to integrate and what to archive
+**And** archived artifacts remain accessible for future RDD cycles
+
+### Scenario: Graduation preserves knowledge without RDD artifact structure
+**Given** graduation has been approved and executed
+**When** the project's native docs are updated
+**Then** the durable knowledge is expressed in the project's native documentation format
+**And** the RDD-specific structure (phases, gates, invariant tables) is not carried over
+**And** the project retains the knowledge without retaining the methodology's artifact structure
+
+### Scenario: Conformance audit distinct from product conformance
+**Given** both conformance audit (ADR-025) and product conformance (ADR-008) exist
+**When** either is invoked
+**Then** conformance audit checks artifact template/format alignment against the current skill version
+**And** product conformance checks product assumptions against actual user needs
+**And** the two operations are complementary, not overlapping
+
+## Feature: Scoped Cycles (ADR-026)
+
+### Scenario: User scopes RDD cycle to a subsystem subfolder
+**Given** a project has stable project-level architecture
+**When** the user invokes an RDD cycle scoped to a subsystem
+**Then** the cycle creates artifacts in a subfolder (e.g., `docs/features/auth/`)
+**And** the cycle follows the same pipeline phases and gate protocols as a full-project cycle
+**And** the subsystem's artifacts respect the parent project's architectural constraints
+
+### Scenario: Scoped cycle operates within broader project context
+**Given** a scoped cycle is running on a subsystem
+**When** the domain model or system design references project-level concepts
+**Then** it uses the project-level vocabulary and constraints as given context
+**And** it does not duplicate the entire project's domain model or system design
+
+### Scenario: Scoped cycle ends with graduation
+**Given** a scoped cycle has completed and the subsystem is built and stable
+**When** the user determines the work has shifted from identity-forming to feature-extending
+**Then** the user invokes graduation (ADR-025) for the scoped cycle's artifacts
+**And** durable knowledge is folded into project-level docs
+**And** the scoped cycle's RDD artifacts are archived
+
+### Scenario: Documentation fatigue signals graduation readiness
+**Given** a scoped cycle's artifacts exist and are being maintained
+**When** the user experiences the artifacts as maintenance burden rather than active value
+**Then** this is a design signal that the work has moved past the point where RDD's structure adds value at this scope
+**And** the appropriate response is graduation and re-scoping, not abandoning discipline
+
+### Scenario: Scoped cycle findings that challenge project-level assumptions
+**Given** a scoped cycle's research or modeling surfaces findings that contradict project-level architecture
+**When** the contradiction is identified
+**Then** it is flagged to the user as a potential project-level concern
+**And** the user decides whether to update project-level docs, trigger a project-level cycle, or note it as an open question
+
+## Feature: Conformance — New Artifacts in Pipeline
+
+### Scenario: Orchestrator Artifacts Summary includes roadmap
+**Given** the orchestrator skill file exists
+**When** the Artifacts Summary table is read
+**Then** it includes a row for the roadmap noting it is generated during ARCHITECT and maintained reflexively
+
+### Scenario: Orchestrator Artifacts Summary includes field guide
+**Given** the orchestrator skill file exists
+**When** the Artifacts Summary table is read
+**Then** it includes a row for the field guide noting it is generated during or after BUILD and maintained reflexively
+
+### Scenario: Orchestrator Available Skills table includes conformance audit
+**Given** the orchestrator skill file exists
+**When** the Available Skills table is read
+**Then** it includes a row for the conformance audit skill with purpose describing artifact conformance, drift detection, and graduation
+
+### Scenario: Artifact hierarchy in ORIENTATION.md includes new artifacts
+**Given** ORIENTATION.md is being generated or regenerated
+**When** section 4 (How artifacts fit together) is produced
+**Then** the roadmap appears at Tier 2 alongside product-discovery.md and system-design.md
+**And** the field guide appears at Tier 3 alongside domain-model.md, essays, ADRs, and scenarios
+
+### Scenario: rdd-architect SKILL.md generates roadmap as output
+**Given** the `/rdd-architect` skill file exists
+**When** the file is read
+**Then** it includes roadmap generation as part of the ARCHITECT phase output
+**And** the roadmap is generated from the system design's module decomposition and ADRs

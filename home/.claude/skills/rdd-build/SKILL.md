@@ -124,6 +124,88 @@ Key principle: **if the new component was tested only with `MockX` or `StubY`, a
 
 This step catches type mismatches between components designed in parallel, persistence paths that diverge between test and production, and missing contracts in adapters tested without their real pipeline.
 
+### Step 6: Generate Field Guide
+
+After all scenarios pass and integration is verified, generate a field guide that maps the system design to the current implementation. **This step is conditional** — only run it if implementation exists beyond `docs/`. If the project is still in the ARCHITECT phase with no code, skip this step entirely.
+
+The field guide is a pragmatic artifact (Invariant 3): agent-generated, user-validated. It is not a phase output with an epistemic gate — it is a reference document that helps developers build their own understanding of the system.
+
+#### Map Modules to Implementation
+
+For each module in the system design:
+
+- **Implementation state** — does code for this module exist? Is it complete, partial, or planned?
+- **Code location** — which files, directories, and patterns constitute this module in the codebase?
+- **Domain concept mapping** — for each domain model concept owned by this module, where does it manifest in code? (type names, function names, directory structure)
+
+#### Surface Design Rationale
+
+For each module, include the "why" behind structural choices that code alone cannot carry:
+
+- Why this module boundary exists (trace to ADR or invariant via the system design's provenance chain)
+- Key constraints or tradeoffs encoded in the implementation
+- Integration points with neighboring modules — what crosses the boundary and in what form
+
+#### Mark Settled vs. In-Flux
+
+Distinguish areas of the system by stability:
+
+- **Settled** — stable, unlikely to change. The design decisions behind this area are well-understood and the implementation matches the design.
+- **In flux** — under active development, pending decisions, or likely to change in upcoming work. Developers should invest understanding cautiously here.
+
+This prevents developers from building deep mental models of areas that are about to change.
+
+#### Write the Field Guide
+
+Write to `./docs/references/field-guide.md`. Create the `./docs/references/` directory if it doesn't exist.
+
+```markdown
+# Field Guide: [Project Name]
+
+**Generated:** [date]
+**Derived from:** System Design v[N], current implementation
+
+## How to Use This Guide
+
+This guide maps the system design's modules to their current implementation state. It is a reference — consult the entry for the module you're working in or exploring. For the overall architecture, read the system design. For routing to the right document, read ORIENTATION.md.
+
+## Module: [Name]
+
+**Implementation state:** Complete / Partial / Planned
+**Code location:** `[paths]`
+**Stability:** Settled / In flux
+
+### Domain Concepts in Code
+
+| Concept | Code Manifestation | Location |
+|---------|-------------------|----------|
+| [domain term] | [type/function/pattern] | [file path] |
+
+### Design Rationale
+
+[Why this module exists, what constraints it encodes, what tradeoffs were made — things the code alone doesn't explain]
+
+### Key Integration Points
+
+- [Neighbor module] — [what crosses the boundary, in what form]
+
+---
+
+[repeat for each module]
+```
+
+#### Reflexive Updates
+
+If the field guide already exists and the implementation has changed significantly during this build cycle, regenerate it to reflect the current state. Module-to-code mappings go stale when files move, types rename, or responsibilities shift during build.
+
+### Post-Build Housekeeping
+
+After all scenarios pass, integration is verified, and the field guide is generated:
+
+1. **Regenerate ORIENTATION.md** — the BUILD milestone reflects the completed implementation (ADR-021). Update the current state section with what was built.
+
+2. **Consider `/rdd-conform` audit** — the RDD skills may have evolved since the project's artifacts were last produced. A post-build conformance audit verifies the full artifact corpus still aligns with current skill expectations.
+
 ---
 
 ## STRUCTURE VS. BEHAVIOR

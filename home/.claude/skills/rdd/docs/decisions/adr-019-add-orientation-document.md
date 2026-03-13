@@ -34,3 +34,5 @@ This amends the prior two-tier design principle to three tiers.
 
 **Neutral:**
 - The Orientation Document is not produced by any single phase, but its regeneration points correlate with phase completion (especially after ARCHITECT for the Scoping use case). It is interleaved with the pipeline rather than strictly outside it
+
+> **Amendment (ADR-022, ADR-023):** Tier 2 now includes the roadmap alongside product-discovery.md and system-design.md. Tier 3 now includes the field guide alongside domain-model.md, essays, ADRs, and scenarios.

@@ -1,6 +1,6 @@
 # Product Discovery: Research-Driven Development (RDD)
 
-*2026-03-09*
+*2026-03-12*
 
 ## Stakeholder Map
 
@@ -12,11 +12,11 @@
 
 - **Team Lead (using RDD for scoping)** — A technical leader who runs RDD through RESEARCH → ARCHITECT to build deep understanding of a problem space, then hands off artifacts to their team for building. Uses RDD as a leadership thinking tool. Shares artifacts with architecture and product specialists for validation before team handoff. Does not necessarily advocate that the team adopt RDD — the artifacts stand on their own.
 
-- **AI Agent** — The agent executing the skill files. A direct interactor whose capabilities and constraints shape what the pipeline can do. The skill files are literally instructions to this stakeholder.
+- **AI Agent** — The agent executing the skill files. A direct interactor whose capabilities and constraints shape what the pipeline can do. The skill files are literally instructions to this stakeholder. Also responsible for generating and maintaining reflexive artifacts (orientation document, roadmap, field guide) and detecting artifact conformance drift.
 
-### Indirect Stakeholders
+### Indirect Stakeholders (Direct for BUILD)
 
-- **Teammates / Collaborators** — People who inherit, review, or extend projects built with RDD. They encounter the artifacts — especially the product discovery document and system design — without having gone through the gates that produced them. In the team lead scenario, they receive these artifacts as the starting point for their own planning and building. Need an entry point to the artifact corpus — a single document that orients them to what the system is, who it's for, and where to go for depth.
+- **Teammates / Collaborators** — People who inherit, review, or extend projects built with RDD. They encounter the artifacts — especially the product discovery document and system design — without having gone through the gates that produced them. In the team lead scenario, they receive these artifacts as the starting point for their own planning and building. They need: an entry point to the artifact corpus (orientation), context for how the work might be approached (roadmap), and a way to build their own understanding of how design maps to implementation (field guide). In some workflows, they enter RDD at the build phase — picking a work package from the roadmap and using `/rdd-build` to execute it — making them direct stakeholders for BUILD even though they are indirect for earlier phases.
 
 - **Architecture and Product Specialists** — People the team lead shares artifacts with for feedback before team handoff. They validate the thinking and surface questions the team lead may have missed. Their feedback flows back through the pipeline (external review re-entry).
 
@@ -34,9 +34,10 @@
 - "I want the research and decisions captured so I can pick up a project after weeks away and know why things are the way they are"
 - "I want to build the right thing, not just build a thing right"
 - "I want to use this for new features too, not just whole new projects — any work that's complex enough to benefit from thinking before building"
+- "I need enough context to make my own sequencing decisions during build, not be told what order to do things"
 
 **Mental Model:**
-"I describe what I want to explore, and the pipeline walks me through understanding it — research first, then figure out who it's for, then nail down the vocabulary, make decisions, design the system, and build it. At each step I have to engage with what was produced, not just approve it. The artifacts are my long-term memory for the project."
+"I describe what I want to explore, and the pipeline walks me through understanding it — research first, then figure out who it's for, then nail down the vocabulary, make decisions, design the system, and build it. At each step I have to engage with what was produced, not just approve it. The artifacts are my long-term memory for the project. When the project stabilizes, I scope RDD to new features rather than maintaining it across the whole project."
 
 ### Research-Engineer
 
@@ -57,9 +58,22 @@
 - "I want to be able to speak to the artifacts — explain and defend the decisions, respond to real questions, thread the needle between system design and product needs"
 - "I want the teams that are building to understand the system themselves, so I hand off building rather than doing it solo"
 - "I need a single document I can hand over that orients the team to the full artifact set — what the system is, who it's for, what's decided, what's open"
+- "I need to communicate not just what the system is but how the work might be approached — which pieces depend on which, where decisions are open"
+- "I need the team to be able to build their own understanding of the system without me explaining everything"
 
 **Mental Model:**
-"I run RDD through ARCHITECT to do my homework — build my own understanding and produce handoff artifacts. The essay tells the team why, the product discovery tells them who it's for, the system design tells them what to build. Before handing off to the team, I get feedback from architecture and product folks to validate my thinking. The team does the build how they want, using the artifacts as a guide. They don't need to use RDD — but they need to understand the system, so they should do the building themselves."
+"I run RDD through ARCHITECT to do my homework — build my own understanding and produce handoff artifacts. The essay tells the team why, the product discovery tells them who it's for, the system design tells them what to build, and the roadmap tells them how to think about sequencing. Before handing off to the team, I get feedback from architecture and product folks to validate my thinking. The team does the build how they want, using the artifacts as a guide. They don't need to use RDD — but they need to understand the system, so they should do the building themselves. The field guide helps them get there without me walking them through everything."
+
+### Teammates / Collaborators
+
+**Jobs:**
+- "I need to understand how the work might be approached without having been in the room when the thinking happened"
+- "I need to build my own understanding of how the system works — not just read someone else's understanding"
+- "I need to know what's settled versus what's still open for me to decide"
+- "I want to pick up a piece of the work and build it using the existing artifacts as my guide"
+
+**Mental Model:**
+"The orientation tells me what the system is and where to start. The roadmap shows me the pieces and their dependencies — I pick what to work on. The field guide helps me understand how the design maps to what's actually built. I might use `/rdd-build` to execute a work package, or I might build my own way. Either way, I need to understand what I'm building, not just follow instructions."
 
 ### AI Agent
 
@@ -68,15 +82,17 @@
 - "Maintain consistency across phases — vocabulary, invariants, provenance"
 - "Facilitate the gates without being patronizing or perfunctory"
 - "Maintain a current-state orientation document that lets new readers (human or agent) bootstrap into the system without reading everything"
+- "Generate and maintain the roadmap and field guide as reflexive artifacts"
+- "Detect when artifact format has drifted from the current skill version and produce a conformance report"
 
 **Mental Model:**
-"Each skill file is my instruction set for one phase. I read prior artifacts, produce the phase artifact, present it with prompts, and wait for the user to engage before moving on. The orchestrator tells me the sequence and the rules."
+"Each skill file is my instruction set for one phase. I read prior artifacts, produce the phase artifact, present it with prompts, and wait for the user to engage before moving on. The orchestrator tells me the sequence and the rules. I also maintain reflexive artifacts — orientation, roadmap, field guide — keeping them current as the system evolves."
 
 ## Value Tensions
 
 - **Speed vs. understanding:** RDD explicitly trades velocity for comprehension. The weight of the process is the value proposition — it means thinking critically and intentionally about what to build. This is different from handing a large problem to an agent and saying "build it." The tension is not "is it too heavy?" but rather "when is a problem important enough to warrant this level of intentionality?"
 
-- **Solo gates vs. team handoff:** The gates build the runner's understanding through generation. But when artifacts are handed to a team, the team hasn't gone through those gates — they receive understanding secondhand. The team lead mitigates this by being able to "speak to" the artifacts. And by handing off BUILD, the team gains their own understanding through implementation. But the gap between the runner's deep understanding and the team's artifact-mediated understanding remains a design tension.
+- **Solo gates vs. team handoff:** The gates build the runner's understanding through generation. But when artifacts are handed to a team, the team hasn't gone through those gates — they receive understanding secondhand. The team lead mitigates this by being able to "speak to" the artifacts. The roadmap and field guide partially address this by giving the team tools to build their own understanding. And by handing off BUILD, the team gains understanding through implementation. But the gap between the runner's deep understanding and the team's artifact-mediated understanding remains a design tension.
 
 - **Terminology precision vs. accessibility:** Terms like "epistemic gate," "invariant," and "backward propagation" are precise and accurate. They are also barriers to adoption. But diluting the terminology dilutes the signal. RDD's rigor is its strength. The terminology may self-select for the audience that will actually follow through — and that may be a feature, not a bug.
 
@@ -89,6 +105,14 @@
 - **Agent-generated artifact vs. trustworthy artifact:** The orientation document is maintained by the agent (currency) but validated by the user (accuracy). If the user doesn't review it carefully, it can drift from reality — especially for product-facing claims. Currency and accuracy pull in different directions.
 
 - **Orientation as coherence test:** If the agent can't produce a clear, concise orientation document, the problem may not be the document — it may be the system's architecture. The document's clarity becomes a proxy for architectural coherence. This is productive but also risky: it could lead to premature simplification of legitimately complex systems.
+
+- **Artifact maintenance burden vs. coverage:** More artifacts (roadmap, field guide) mean better handoff coverage but more to maintain. Each new reflexive document is a maintenance commitment. At what point does the maintenance cost exceed the coverage value? Documentation fatigue is a design signal — if artifacts feel burdensome, they may have outlived their scope.
+
+- **Pragmatic doc update vs. epistemic re-engagement:** When docs drift after non-RDD builds, the conformance audit can flag the gap. But should the fix be a doc update (pragmatic — just bring the text into alignment) or a phase re-run (epistemic — rebuild understanding because the system has changed enough)? The audit flags the gap; the user decides the response.
+
+- **RDD as permanent methodology vs. scaffolding:** Graduation says RDD's artifacts can be rolled into native project docs and archived. This treats the methodology itself as scaffolding (Invariant 6 applied at the meta level). When has a project matured past the point where RDD's structure adds value, and when is "graduating" just abandoning discipline?
+
+- **Whole-project scope vs. subsystem scope:** RDD works well when it can hold the full context. As a project grows, the whole-system context exceeds what a single cycle can meaningfully engage with. The natural move is to scope RDD to subsystems while maintaining project-level design context outside RDD. The tension: how do subsystem-scoped RDD cycles stay coherent with the broader project architecture?
 
 ## Assumption Inversions
 
@@ -105,6 +129,10 @@
 | The orientation document should be generated by the agent | What if the user should write it? | It becomes an epistemic act — but the synthesis essay already fills the user-authored explanation role. The orientation document's value is that the agent maintains it, freeing the user to validate rather than author. |
 | One orientation document serves all audiences (human newcomer, AI agent, specialist reviewer) | What if different audiences need different entry points? | Multiple entry points recreate the problem. The single-document constraint forces language that works across audiences — itself a test of system coherence. If the document can't be written clearly for all audiences, perhaps the system isn't as coherent as the artifacts claim. |
 | The orientation document sits above the two primary readables in the hierarchy | What if it sits alongside them as a third peer? | Loses the routing function. The orientation document points readers *to* the right primary document. If it's a peer, readers still need an entry point above all three. The hierarchy needs a top. |
+| RDD artifacts are permanent fixtures of the project | What if they should graduate into native docs and be archived? | Graduation at the subsystem level is a recurring operation, not a one-time exit. RDD artifacts are scaffolding — durable while needed, archived when the knowledge is integrated. Documentation fatigue is a signal that artifacts have outlived their scope. |
+| RDD scopes to the whole project | What if subsystem-scoped cycles are the primary use case once a project stabilizes? | Whole-project RDD may be an early-stage pattern. The long-term pattern is scoped cycles on features/subsystems, with project-level docs as guardrails. The user's experience confirms this: RDD on a subsystem within a microservices architecture, scoped to a subfolder in the docs. |
+| The system design should contain build instructions | What if sequencing belongs in a separate artifact with a fundamentally different character? | The Build Sequence section is prescriptive where it should be enabling. Extracting it into a roadmap changes the relationship from "follow these steps" to "here are the pieces and their dependencies — you decide." |
+| More documentation means better coverage | What if additional artifacts increase maintenance cost past the point of value? | Each new reflexive artifact is a maintenance commitment. The roadmap and field guide must earn their keep by reducing handoff friction more than they add maintenance burden. Graduation provides the release valve when they don't. |
 
 ## Product Vocabulary
 
@@ -128,6 +156,16 @@
 | "The one doc worth reading" | Team Lead (circulating) | Sharing artifacts with stakeholders | If you can only send one thing, send this |
 | "Stewardship signal" | Solo Developer | Reviewing orientation document over time | If the document grows abstract or contradictory, it signals accumulating complexity — a canary, not a diagnosis |
 | "Cover letter" | Team Lead (handoff) | "What am I giving the team?" | Mental model: the orientation document accompanies artifacts across a team boundary |
+| "How the work gets done" | Team Lead / Developer | Describing the roadmap's purpose | Sequencing enablement — not build instructions, but enough context to own the approach |
+| "The moving parts" | Team Lead / Developer | Describing the field guide's purpose | Understanding the system well enough to own it and speak with authority |
+| "Graduation" | Solo Developer / Team Lead | Folding RDD knowledge into native project docs and archiving RDD artifacts | Recurring at subsystem level, not just a one-time exit. The release valve for documentation fatigue |
+| "Scoped cycle" | Solo Developer / Team Lead | Running RDD on a subsystem or feature rather than the whole project | The natural pattern once project-level architecture stabilizes |
+| "Hard dependency" / "implied logic" / "open choice" | Developer | Classifying dependency edges in the roadmap | Distinguishes structural necessity from suggested ordering from genuine choice |
+| "Documentation drift" | Solo Developer / Team Lead | Artifacts falling out of sync with code or skill version | The conformance audit's target problem |
+| "Conformance audit" | AI Agent | Bringing artifact format into alignment with current skill version | Distinct from re-running phases — format, not content |
+| "Work packages" | Team Lead / Developer | Logical groups of changes in the roadmap | Borrowed from TOGAF, adapted to RDD scale |
+| "Documentation fatigue" | Solo Developer / Team Lead | When RDD artifacts outlive their immediate value and become maintenance burden | A design signal — time to graduate and re-scope, not time to abandon the methodology |
+| "Deep work tool" | Solo Developer / Team Lead | Framing RDD's role within an existing practice | RDD is something you reach for when a problem warrants structured thinking, then put away when the knowledge is absorbed. It integrates into existing workflows rather than replacing them |
 
 ## Product Debt
 
@@ -140,3 +178,9 @@
 | Backward mode is secondary to forward mode | Forward mode is Step 2a, backward mode is Step 2b; pipeline defaults to greenfield | Auditing existing systems may be the highest-impact application | Mental model mismatch | Consider whether backward mode deserves equal or greater emphasis in onboarding and documentation |
 | No artifact entry point exists | Artifact corpus has no top-level orientation document | New readers, handoff recipients, and bootstrapping agents need a single document that orients them to the system and routes them to depth | Missing artifact | Add an agent-maintained orientation document as the entry point to the artifact hierarchy, sitting above product-discovery.md and system-design.md |
 | Two-tier document hierarchy (primary readables + supporting material) | System design's "two primary readable documents" principle | Three tiers needed: orientation (entry point) → primary readables (product-discovery, system-design) → supporting material (domain model, ADRs, scenarios) | Missing tier | Amend the design principle to acknowledge three tiers |
+| Build Sequence in system-design.md is sufficient for sequencing | system-design.md Build Sequence (Phases 0-3) | A non-prescriptive roadmap that enables developer-owned sequencing with classified dependencies (hard, implied, open) | Wrong document type | Extract to roadmap artifact; link from system design |
+| No developer-focused understanding document | Artifact hierarchy has orientation + product discovery + system design | Developers receiving handoff need a field guide mapping design to implementation to build their own understanding and own the system | Missing artifact | Add field guide as Tier 3 reference artifact |
+| No conformance mechanism for skill evolution or project adoption | Each skill writes its own artifacts independently | When skills evolve, RDD is added to existing projects, or code changes without RDD, artifact corpus needs systematic alignment | Missing workflow | Add conformance audit skill with four operations: audit, remediation, drift detection, graduation |
+| No graduation path from RDD to native docs | RDD artifacts are implicitly permanent | Subsystem-scoped RDD cycles should graduate into project-level docs when stable; whole-project RDD should be archivable when the methodology has served its purpose | Missing workflow | Add graduation as a conformance audit operation |
+| system-design.md serves one purpose | system-design.md | Serves 5+ distinct purposes (architectural specification, responsibility reference, integration contracts, test architecture, build sequence); exceeds document sizing heuristics for end-to-end reading | Over-scoped document | Evaluate decomposition per Purpose Test heuristic |
+| RDD always scopes to the whole project | Pipeline and orchestrator assume whole-project context | Subsystem-scoped cycles within a stable project are a primary use case — RDD on a feature folder, graduating into project-level docs when done | Missing workflow pattern | Formalize scoped cycles and the graduation lifecycle |

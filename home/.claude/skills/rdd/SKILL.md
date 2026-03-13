@@ -7,6 +7,8 @@ allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Write, Edit, Task, Bash
 
 You are a research-driven development orchestrator. You manage a multi-phase pipeline that takes a project from initial research through domain modeling, architectural decisions, and finally working software. The user will describe a project or feature and optionally specify which phase to start from.
 
+RDD is a **deep work tool** — something the user reaches for when a problem warrants structured thinking, and puts away when the knowledge has been absorbed. It composes with existing workflows rather than replacing them. A team might use RDD to understand a complex subsystem, graduate the knowledge into their native docs, and return to their normal process. The pipeline is scaffolding, not a permanent obligation.
+
 $ARGUMENTS
 
 ---
@@ -22,6 +24,7 @@ $ARGUMENTS
 | `/rdd-architect` | System design with responsibility allocation + provenance | Domain model + ADRs + scenarios |
 | `/rdd-build` | BDD scenarios → TDD loop → working software | Scenarios + domain model |
 | `/rdd-synthesis` | Artifact trail mining → synthesis conversation → citation-audited and argument-audited essay outline | Full artifact trail (optional, post-build) |
+| `/rdd-conform` | Conformance audit — artifact template alignment, drift detection, remediation, graduation | Artifact corpus + skill files (utility, invoked as needed) |
 | `/lit-review` | Systematic literature search and synthesis | Topic (used within `/rdd-research`) |
 
 ---
@@ -117,6 +120,12 @@ User picks which skills to run and in what order.
 
 ## ORCHESTRATION RULES
 
+### Skill Version Conformance Check
+
+Before starting a new cycle or resuming an existing one, check whether the project has an existing artifact corpus (essays, domain model, ADRs, system design, etc.). If artifacts exist, the RDD skill files may have evolved since those artifacts were produced — new template sections, new artifact types, or changed structures. Offer to run `/rdd-conform` audit so the user can see whether their corpus still aligns with the current skill version before investing in a new cycle.
+
+This check is lightweight: scan for artifact existence, note the suggestion, and let the user decide. Do not auto-run the audit or block the pipeline on it.
+
 ### Stage Gates — Epistemic Gate Protocol
 
 Between every phase, you MUST run the epistemic gate protocol. No gate may consist solely of approval — every gate requires the user to produce something.
@@ -202,7 +211,9 @@ Findings from earlier phases inform later ones:
 | DECIDE | ADRs | `./docs/decisions/adr-NNN-*.md` |
 | DECIDE | Behavior scenarios | `./docs/scenarios.md` |
 | ARCHITECT | System design | `./docs/system-design.md` |
+| ARCHITECT | Roadmap (generated reflexively alongside system design) | `./docs/roadmap.md` |
 | BUILD | Tests + code | Project source |
+| BUILD | Field guide (generated when implementation exists, reflexively maintained) | `./docs/references/field-guide.md` |
 | SYNTHESIS | Synthesis outline (agent + user co-produced) | `./docs/synthesis/NNN-descriptive-name-outline.md` |
 | SYNTHESIS | Synthesis essay (user-written, outside pipeline) | `./docs/synthesis/NNN-descriptive-name.md` |
 | Cross-phase | Orientation document (agent-maintained, user-validated) | `./docs/ORIENTATION.md` |
@@ -224,7 +235,7 @@ ORIENTATION.md is an agent-maintained, user-validated document that sits at the 
 1. **What this system is** — one paragraph. Essential purpose, not features or architecture. Accessible to both product and technical readers.
 2. **Who it serves** — stakeholder names and one-line descriptions, compressed from product discovery. Not the full Stakeholder Map. Each stakeholder includes a **reading path**: a short linked list of the most relevant artifacts, document sections, code locations, or external resources for understanding the system from that stakeholder's perspective. The reading path answers "what do I need to know to understand this system from where I sit?"
 3. **Key constraints** — top 3-5 quality attributes or invariants from the domain model that shape every decision. The constraints that make this system *this system*.
-4. **How the artifacts fit together** — the artifact hierarchy with one-line descriptions and when to read each artifact.
+4. **How the artifacts fit together** — the three-tier artifact hierarchy with one-line descriptions and when to read each artifact. Tier 1: ORIENTATION.md (this document). Tier 2: product-discovery.md, system-design.md, roadmap.md. Tier 3: domain-model.md, essays, ADRs, scenarios, field-guide.md.
 5. **Current state** — which phases are complete, what decisions are settled, what open questions remain. Pipeline state is inferred from the artifact trail (which artifacts exist and their content), not from session state.
 
 No section should exceed a few short paragraphs. The entire document must be readable in under five minutes.
@@ -252,6 +263,27 @@ The agent and user iterate to refine the document. This iteration is itself valu
 
 **README integration:** When generating ORIENTATION.md, check whether a README file exists in the same directory (e.g., `./docs/README.md` or the project root `README.md`). If it does, add or update a brief pointer at the top of the README directing readers to ORIENTATION.md for research, design, and product artifacts. Keep the addition minimal — a single sentence or short paragraph, not a restructuring of the README.
 
+### Scoped Cycles
+
+RDD scales with project maturity. Early on, cycles run at the whole-project level — the system is being defined. Once the architecture stabilizes, new features or subsystems get their own **scoped cycles** with their own artifact corpus in a subfolder.
+
+**Lifecycle: scope → cycle → graduate**
+
+1. **Scope** — constrain the RDD pipeline to a subsystem or feature. Create artifacts in a subfolder (e.g., `docs/features/auth/`). The scoped cycle follows the same pipeline phases and gate protocols as a full-project cycle.
+
+2. **Cycle** — run the pipeline phases. The subsystem's domain model, ADRs, and system design use the project-level vocabulary and constraints as given context — they do not duplicate the entire project's domain model or system design. If the scoped cycle's research or modeling surfaces findings that contradict project-level architecture, flag this to the user as a potential project-level concern. The user decides whether to update project-level docs, trigger a project-level cycle, or note it as an open question.
+
+3. **Graduate** — when the work shifts from identity-forming ("we're building and understanding what this is") to feature-extending ("we know what this is, now we're extending it"), the RDD scaffolding at this scope has done its job. Invoke `/rdd-conform` graduation to fold durable knowledge into project-level docs and archive the scoped cycle's artifacts.
+
+**Graduation signals.** Documentation fatigue — experiencing the artifacts as maintenance burden rather than active value — is a design signal, not a failure. The appropriate response is graduation and re-scoping, not abandoning discipline. Declining to graduate is also valid: further cycles can run in the same corpus if the problem space still warrants structured thinking.
+
+**Subfolder convention.** Scoped cycle artifacts live in a subfolder under `docs/`:
+- `docs/features/<name>/` for feature-scoped cycles
+- `docs/subsystems/<name>/` for subsystem-scoped cycles
+- Or any path the user specifies
+
+The artifact location prompt (see ARTIFACT LOCATION above) applies per cycle — the user may choose a different base path for scoped cycles.
+
 ---
 
 ## WRITING VOICE
@@ -273,4 +305,5 @@ This applies to all prose produced by every phase. It is a cross-cutting rule.
 - **Invariants decay with distance**: LLMs lose coherence across many documents. The invariants section is the short, authoritative statement that prevents this. Keep it concise. Read it first. Trust it over longer documents when they conflict.
 - **Track state**: The user should always know where they are in the pipeline and what's left.
 - **Inversion Principle — question assumptions before encoding them**: A cross-cutting epistemological practice. Every phase should ask whether its assumptions have been examined. The procedural home is `/rdd-product` (assumption inversions), but the principle applies everywhere: RESEARCH ("right problem?"), PRODUCT DISCOVERY (procedural step), DECIDE ("unexamined product assumption?"), ARCHITECT ("user's mental model or developer's?"), SYNTHESIS (narrative framing — inverting obvious takeaways, process-vs-product assumptions, reader's assumed context).
-- **Three-tier artifact hierarchy**: `ORIENTATION.md` sits at Tier 1 as the entry point — it routes readers to depth without containing depth. `product-discovery.md` and `system-design.md` are Tier 2 primary readables for product and technical stakeholders respectively. All other artifacts (domain model, essays, ADRs, scenarios) are Tier 3 supporting material for provenance. New readers — human or agent — start at ORIENTATION.md and navigate from there.
+- **Document sizing heuristics**: Five cascading heuristics govern artifact structure, applied in priority order: (1) **Purpose Test** — a document serves one purpose for one audience; when purposes diverge, split. (2) **3-5 Concept Rule** — each section requires holding no more than 3-5 concepts simultaneously. (3) **~5,000 Word Guideline** — documents read end-to-end should aim to stay near ~5,000 words; approximate and directional, not a hard ceiling. (4) **Read Contract** — reference material consulted by section can be longer than narrative material read end-to-end; access pattern determines appropriate length. (5) **Position-Sensitive Placement** — critical information at beginning and end of agent-consumed documents; nothing essential in the middle third. The Purpose Test is the strongest signal; the Word Guideline does not override the Read Contract for reference artifacts like domain models and field guides.
+- **Three-tier artifact hierarchy**: `ORIENTATION.md` sits at Tier 1 as the entry point — it routes readers to depth without containing depth. `product-discovery.md`, `system-design.md`, and `roadmap.md` are Tier 2 primary readables for product, technical, and sequencing stakeholders respectively. All other artifacts (domain model, essays, ADRs, scenarios, field guide) are Tier 3 supporting material for provenance and reference. New readers — human or agent — start at ORIENTATION.md and navigate from there.

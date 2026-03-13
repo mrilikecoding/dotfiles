@@ -33,3 +33,5 @@ The mode is determined by context: if prior RDD artifacts exist, backward mode i
 
 **Neutral:**
 - The Product Debt table is structurally analogous to the conformance debt table in `/rdd-decide`. Both map expectations against reality; one maps code against ADRs, the other maps ADRs against user needs
+
+> **See also:** ADR-025 introduces template-level Conformance Audit, which is distinct from product conformance. Product conformance (this ADR) checks product assumptions against user needs. Template conformance (ADR-025) checks artifact format against the current skill version.
