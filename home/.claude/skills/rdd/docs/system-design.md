@@ -1,6 +1,6 @@
 # System Design: Pedagogical RDD
 
-**Version:** 4.0
+**Version:** 5.0
 **Status:** Current
 **Last amended:** 2026-03-12
 
@@ -25,9 +25,10 @@
 | Orientation document is agent-generated, user-validated (pragmatic action, not epistemic) | Quality Attribute | ADR-021; Invariant 3 |
 | Orientation document contains exactly five sections, readable in under five minutes | Constraint | ADR-020; Essay 004 §3 |
 | Orientation document regenerated at natural milestones: after RESEARCH (partial — sections 1, 5), after DECIDE (sections 1-3, 5), after ARCHITECT (full — scoping handoff), after BUILD (full). Partial orientation valid at any point. | Constraint | ADR-021 §3; Epistemic gate conversation |
-| Synthesis phase is optional and terminal, with different cost structure from gates | Constraint | ADR-012; Invariant 4 (resolved — synthesis is not a gate) |
+| Synthesis phase is usually terminal, with different cost structure from gates; can re-enter RESEARCH when structural experimentation surfaces new questions | Constraint | ADR-012; ADR-029; Invariant 4 (resolved — synthesis is not a gate) |
 | Synthesis conversation subsumes its epistemic gate (no separate gate section) | Quality Attribute | ADR-016; Invariant 2 |
-| Outline must be an exciting springboard: non-formulaic, pre-populated references, citation-audited, argument-audited | Quality Attribute | ADR-013; Essay 003 §6 |
+| Outline must be an exciting springboard: non-formulaic, two-register (argumentative backbone + curatorial arrangement), pre-populated references, citation-audited, argument-audited | Quality Attribute | ADR-013; ADR-030; Essay 003 §6; Essay 006 §§6, 8 |
+| Framing conversation navigates four dimensions (discovery type, narrative form, audience constraint, epistemic posture) through structural experiments, not purely discursive selection | Quality Attribute | ADR-027; ADR-028; Essay 006 §§1-7 |
 | Inversion principle operates at three levels (product, cross-cutting, narrative framing) | Quality Attribute | ADR-010; ADR-017 |
 | Synthesis essay serves as narrative context rollup for future sessions | Quality Attribute | ADR-015; Reflection 003 §1 |
 | Roadmap as separate Tier 2 artifact linked from system-design.md, not inline Build Sequence | Design Principle | ADR-022; Essay 005 §1 |
@@ -89,12 +90,12 @@
 **Depends on:** Orchestrator (protocol)
 **Depended on by:** None
 
-### Module: Synthesis Skill (`rdd-synthesis/SKILL.md`) — NEW
-**Purpose:** Mines the artifact trail for novelty signals and conducts a structured conversation (journey review, novelty surfacing, framing) to help the writer find their story, producing a citation-audited and argument-audited outline as springboard for the synthesis essay.
-**Provenance:** ADR-012 (phase placement); ADR-013 (conversation structure + outline); ADR-014 (quality gate); ADR-015 (narrative context rollup); ADR-016 (subsumes gate); ADR-017 (narrative inversions); ADR-018 (cross-project Level 1); Essay 003; Invariant 0 (public authority dimension)
-**Owns:** Synthesis-phase process, artifact trail mining, novelty signal detection (five signals), three-phase conversation, worth-the-calories quality tests (Davis/ABT/inversion), outline production with pre-populated references, citation audit invocation, argument audit invocation, cross-project conversational prompting (Level 1), narrative inversion lenses
+### Module: Synthesis Skill (`rdd-synthesis/SKILL.md`)
+**Purpose:** Mines the artifact trail for novelty signals, conducts a structured conversation (journey review, novelty surfacing, framing with four-dimension navigation via structural experiments) to help the writer find their story, and produces a two-register (argumentative backbone + curatorial arrangement) outline as springboard for the synthesis essay.
+**Provenance:** ADR-012 (phase placement); ADR-013 (conversation structure + outline); ADR-014 (quality gate); ADR-015 (narrative context rollup); ADR-016 (subsumes gate); ADR-017 (narrative inversions); ADR-018 (cross-project Level 1); ADR-027 (four-dimension framing); ADR-028 (structural experiments); ADR-029 (re-entry); ADR-030 (two-register outline); Essay 003; Essay 006; Invariant 0 (public authority dimension)
+**Owns:** Synthesis-phase process, artifact trail mining, novelty signal detection (five signals), three-phase conversation, four-dimension framing model (discovery type, narrative form, audience constraint, epistemic posture), structural experiment mechanism (agent proposes, writer executes externalized trials), worth-the-calories quality tests (Davis/ABT/inversion), two-register outline production (argumentative backbone verified by argument audit + curatorial arrangement with selection/juxtaposition/scale shifts/shimmer/negative space/personal voice), pre-populated references, citation audit invocation, argument audit invocation, cross-project conversational prompting (Level 1), narrative inversion lenses, re-entry decision logic (writer-initiated, scoped narrowly)
 **Depends on:** Orchestrator (protocol); Citation Audit skill (invoked during outline finalization); Argument Audit skill (invoked during outline finalization, after citation audit)
-**Depended on by:** None (terminal phase; outline artifact consumed by the user outside the pipeline)
+**Depended on by:** None directly (usually terminal; can re-enter Research when structural experimentation surfaces new questions — re-entry is writer's decision)
 
 ### Module: Conformance Audit Skill (`rdd-conform/SKILL.md`) — NEW
 **Purpose:** Scans artifact corpus against current skill version, producing gap analysis with prioritized remediation, drift detection against implementation, and graduation into native project docs.
@@ -186,9 +187,23 @@
 | Mine Artifact Trail (action) | Synthesis Skill | ADR-013 |
 | Review Journey (action) | Synthesis Skill | ADR-013 |
 | Surface Novelty (action) | Synthesis Skill | ADR-013 |
-| Frame Narrative (action) | Synthesis Skill | ADR-013; ADR-017 |
+| Frame Narrative (action — four-dimension navigation via structural experiments) | Synthesis Skill | ADR-013; ADR-017; ADR-027; ADR-028 |
 | Write Synthesis Essay (action) | User (outside pipeline) | ADR-012; ADR-013 |
 | Inversion Principle (narrative framing level) | Synthesis Skill; Orchestrator (cross-cutting) | ADR-017 |
+
+### Synthesis Enrichment Concepts (from Essay 006 / ADRs 027-030)
+
+| Domain Concept/Action | Owning Module | Provenance |
+|----------------------|---------------|------------|
+| Narrative Form (vocabulary — three tiers: established patterns, hermit crab forms, meta-forms) | Synthesis Skill | ADR-027; Essay 006 §2 |
+| Hermit Crab Form (vocabulary — essay inhabiting non-essay shell) | Synthesis Skill | ADR-027; Essay 006 §2 |
+| Epistemic Posture (dimension — determined/exploratory/indeterminate) | Synthesis Skill | ADR-027; Essay 006 §5 |
+| Structural Experiment (mechanism — externalized trials in candidate forms) | Synthesis Skill | ADR-028; Essay 006 §§2, 7 |
+| Curatorial Arrangement (outline register — selection, juxtaposition, scale shifts, shimmer, negative space, personal voice) | Synthesis Skill | ADR-030; Essay 006 §6 |
+| Argumentative Backbone (outline register — logical structure verified by argument audit) | Synthesis Skill | ADR-030; Essay 006 §§6, 8 |
+| Form-Content Generation (principle — formal constraint generates content, not merely contains it) | Synthesis Skill | ADR-028; Essay 006 §2 |
+| Audience Constraint (dimension — medium as creative catalyst) | Synthesis Skill | ADR-027; Essay 006 §4 |
+| Try On Form (action — create structural experiment to see what form reveals) | Synthesis Skill | ADR-028; Essay 006 §7 |
 
 ### Orientation Document Concepts (from Essay 004 / ADRs 019-021)
 
@@ -253,9 +268,10 @@ Orchestrator
 ├── Decide Skill
 ├── Architect Skill  ← updated (now also generates roadmap.md)
 ├── Build Skill  ← updated (now also generates field-guide.md)
-├── Synthesis Skill (optional terminal)
+├── Synthesis Skill (usually terminal; conditional re-entry to Research)
 │       ├── Citation Audit Skill (external, invoked during outline finalization)
-│       └── Argument Audit Skill (external, invoked during outline finalization)
+│       ├── Argument Audit Skill (external, invoked during outline finalization)
+│       └──→ Research Skill (re-entry when structural experimentation surfaces new questions)
 └── Conformance Audit Skill (utility, invoked as needed)  ← NEW
 ```
 
@@ -266,7 +282,8 @@ Orchestrator
 - Orchestrator → Decide Skill (invokes, defines protocol)
 - Orchestrator → Architect Skill (invokes, defines protocol)
 - Orchestrator → Build Skill (invokes, defines protocol)
-- Orchestrator → Synthesis Skill (invokes, defines protocol — optional)
+- Orchestrator → Synthesis Skill (invokes, defines protocol — usually terminal)
+- Synthesis Skill → Research Skill (conditional re-entry when structural experimentation surfaces new questions — writer-initiated)
 - Orchestrator → Conformance Audit Skill (lists in Available Skills; user invokes as needed)
 
 **Research Skill → Citation Audit Skill (external dependency):**
@@ -389,6 +406,12 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 **Error handling:** If citation audit finds hallucinated or misattributed sources, the synthesis skill removes or corrects them before presenting the outline.
 **Owned by:** Synthesis Skill initiates; Citation Audit Skill owns the audit methodology.
 
+### Synthesis Skill → Research Skill (re-entry) — NEW
+**Protocol:** When a structural experiment during the framing conversation reveals an incoherence that the writer articulates as a research question, the synthesis conversation pauses and the pipeline re-enters RESEARCH at the relevant scope. The writer must articulate the question — if they cannot, the incoherence is treated as a framing problem solvable within synthesis. Re-entry is scoped narrowly (a specific question, not a repeat of the entire cycle). The synthesis conversation may resume after the research question is addressed, avoiding redoing journey review and novelty surfacing.
+**Shared types:** The research question is recorded in the research log (`./docs/essays/research-logs/research-log.md`) as a new entry. The synthesis conversation state is preserved in conversation context (single-session) or noted for manual resumption (multi-session).
+**Error handling:** If the research question leads to a domain model change, the synthesis conversation must account for the new vocabulary when it resumes. If the writer chooses not to re-enter despite the incoherence, synthesis proceeds normally — re-entry is never forced.
+**Owned by:** Synthesis Skill initiates the pause; Research Skill handles the re-entry question; writer decides whether to re-enter.
+
 ### Synthesis Skill → Argument Audit Skill (external) — NEW
 **Protocol:** After citation audit passes, Synthesis Skill invokes `/argument-audit` on the outline itself — treating the narrative structure (central question, turns, threads) as the argument and the pre-populated references as the evidence base. Same `/argument-audit` that Decide Skill invokes on ADRs, applied to the narrative genre.
 **Shared types:** The outline (narrative structure + pre-populated references) is the input. Argument Audit returns logical integrity results.
@@ -479,6 +502,12 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 | Orchestrator Artifacts Summary includes roadmap and field guide | rdd/SKILL.md Artifacts Summary table has rows for both | Both rows present | ADR-022; ADR-023 |
 | Orchestrator Available Skills includes conformance audit | rdd/SKILL.md Available Skills table has row for conformance audit | Row present | ADR-025 |
 | Artifact hierarchy includes roadmap (Tier 2) and field guide (Tier 3) | rdd/SKILL.md three-tier hierarchy references both new artifacts | Both present in hierarchy description | ADR-019 amendment; ADR-022; ADR-023 |
+| Synthesis skill uses four-dimension framing model | Skill navigates discovery type, narrative form, audience constraint, epistemic posture during framing conversation | All 4 dimensions present in Phase 3 | ADR-027; Essay 006 §7 |
+| Synthesis skill includes structural experiment mechanism | Skill proposes externalized trials in candidate forms; agent proposes, writer executes; failures are diagnostic | Mechanism present with agent/writer roles specified | ADR-028; Essay 006 §§2, 7 |
+| Synthesis skill produces two-register outline | Outline contains argumentative backbone (verified by argument audit) and curatorial arrangement (selection, juxtaposition, scale shifts, shimmer, negative space, personal voice) | Both registers present in outline production step | ADR-030; Essay 006 §§6, 8 |
+| Synthesis skill includes re-entry logic | Skill describes conditions for re-entering RESEARCH; re-entry is writer's decision; writer must articulate the question; re-entry is scoped narrowly | Re-entry section present with writer-decision constraint | ADR-029; Essay 006 §9 |
+| Synthesis skill includes narrative form vocabulary | Skill provides three tiers of narrative forms (established patterns, hermit crab forms, meta-forms) as starting repertoire | Form vocabulary present | ADR-027; Essay 006 §2 |
+| Synthesis skill includes epistemic posture dimension | Skill navigates determined/exploratory/indeterminate epistemic postures | Posture dimension present | ADR-027; Essay 006 §5 |
 
 ## Test Architecture
 
@@ -511,6 +540,9 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 | Orchestrator → Conformance Audit Skill | Read rdd/SKILL.md; verify Available Skills includes conformance audit; read rdd-conform SKILL.md; verify four operations (audit, remediation, drift detection, graduation) | ADR-025 conformance contract |
 | Orchestrator → scoped cycles | Read rdd/SKILL.md; verify scoped cycle workflow pattern described with subfolder convention, graduation endpoint, deep work tool framing | ADR-026 scoped cycle contract |
 | Orchestrator → document sizing | Read rdd/SKILL.md; verify document sizing heuristics present as cross-cutting principle with five heuristics in priority order | ADR-024 sizing contract |
+| Synthesis Skill → four-dimension framing | Read Synthesis SKILL.md; verify framing conversation navigates discovery type, narrative form, audience constraint, epistemic posture; verify structural experiments as mechanism; verify agent proposes / writer executes roles | ADR-027, ADR-028 four-dimension framing + structural experiments contract |
+| Synthesis Skill → two-register outline | Read Synthesis SKILL.md; verify outline production produces argumentative backbone (verified by argument audit) and curatorial arrangement (selection, juxtaposition, scale shifts, shimmer, negative space, personal voice) | ADR-030 two-register outline contract |
+| Synthesis Skill → re-entry | Read Synthesis SKILL.md; verify re-entry conditions documented; verify re-entry is writer's decision; verify writer must articulate research question; verify re-entry scoped narrowly; verify synthesis conversation can resume | ADR-029 re-entry contract |
 
 ### Invariant Enforcement Tests
 
@@ -529,13 +561,13 @@ The synthesis skill reads the full artifact trail (all prior artifacts), not jus
 
 - **Unit:** Read each SKILL.md individually. Verify: EPISTEMIC GATE section exists, contains 2-3 prompts, prompts use exploratory framing, redirect for non-generative approval is present, discrepancy noting instruction is present. For Product Discovery Skill: verify forward mode, backward mode, update mode, all 5 artifact sections, assumption inversion step. For Conformance Audit Skill: verify four operations present.
 - **Integration:** Verify orchestrator protocol matches what skills implement. Verify workflow mode descriptions include PRODUCT DISCOVERY. Verify feed-forward instruction exists. Verify Model/Decide/Architect skills read product discovery artifact. Verify inversion principle appears in Orchestrator, Product Discovery, Decide, Architect, Synthesis. Verify three-tier artifact hierarchy includes roadmap (Tier 2) and field guide (Tier 3). Verify architect skill generates roadmap. Verify build skill generates field guide. Verify orchestrator supports scoped cycles and document sizing heuristics.
-- **Acceptance:** The behavior scenarios in `scenarios.md` (133 total: 18 epistemic gates + 25 product discovery + 37 synthesis + 20 orientation + 33 roadmap/field guide/sizing/conformance/scoping). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
+- **Acceptance:** The behavior scenarios in `scenarios.md` (164 total: 18 epistemic gates + 25 product discovery + 37 synthesis + 20 orientation + 33 roadmap/field guide/sizing/conformance/scoping + 31 synthesis enrichment from ADRs 027-030). Verified by reading the modified files and confirming the described behavior is present in the prompt text.
 
 ## Roadmap
 
 See [`./docs/roadmap.md`](./docs/roadmap.md) for the current roadmap — work packages, classified dependencies, transition states, and open decision points.
 
-Prior build phases (Phase 0: Epistemic Gates, Phase 1: Product Discovery, Phase 2: Synthesis, Phase 3: Orientation Document) are completed. Current work packages address ADRs 022-026 (roadmap, field guide, document sizing, conformance audit, scoped cycles).
+Prior build phases (Phase 0: Epistemic Gates, Phase 1: Product Discovery, Phase 2: Synthesis, Phase 3: Orientation Document) are completed. Current work packages address ADRs 022-026 (roadmap, field guide, document sizing, conformance audit, scoped cycles) and ADRs 027-030 (synthesis enrichment: four-dimension framing, structural experiments, re-entry, two-register outline).
 
 ## Design Amendment Log
 
@@ -547,3 +579,4 @@ Prior build phases (Phase 0: Epistemic Gates, Phase 1: Product Discovery, Phase 
 | 4 | 2026-03-10 | Added `/argument-audit` invocation to synthesis outline finalization (after citation audit). Extended Synthesis Skill module ownership and dependencies. Added new integration contract (Synthesis Skill→Argument Audit Skill). Added 1 fitness criterion and 1 boundary integration test. Updated architectural driver, build sequence, and orchestrator cross-phase integration rules. Same external invocation pattern as `/rdd-decide` using `/argument-audit` on ADRs, applied to narrative genre. | User request (logical integrity of synthesis outline) | ADR-013 (extended); ADR-014 (quality gate) | Accepted |
 | 5 | 2026-03-12 | Added `/citation-audit` and `/argument-audit` invocations to Research Skill (after essay writing, before epistemic gate). Extended Research Skill module purpose, ownership, and dependencies. Added 2 new integration contracts (Research Skill→Citation Audit, Research Skill→Argument Audit). Added 2 boundary integration tests. Updated dependency graph. The essay that enters downstream phases is now audited — catching citation and argument problems at the source rather than discovering them in DECIDE or BUILD. | User request (audit quality at pipeline source) | ADR-002 (research skill); ADR-003 (gate protocol) | Accepted |
 | 6 | 2026-03-12 | Added: Conformance Audit Skill module, roadmap generation to Architect Skill, field guide generation to Build Skill. Updated: Orchestrator (scoped cycles, document sizing heuristics, artifact hierarchy with roadmap Tier 2 and field guide Tier 3, deep work tool framing). Added: 7 architectural drivers, 17 responsibility matrix rows (2 new sections), 3 integration contracts, 12 fitness criteria, 5 boundary integration tests. Replaced: Build Sequence with link to roadmap. | ADRs 022-026 (essay 005 cycle) | ADR-022 (roadmap), ADR-023 (field guide), ADR-024 (document sizing), ADR-025 (conformance audit + graduation), ADR-026 (scoped cycles + deep work tool) | Approved |
+| 7 | 2026-03-12 | Updated Synthesis Skill module (purpose, provenance, ownership) to incorporate four-dimension framing, structural experiments, two-register outline, and re-entry logic. Updated 2 architectural drivers (synthesis terminal → usually terminal; four-dimension framing + structural experiments). Added 9-row responsibility matrix section (Synthesis Enrichment Concepts from Essay 006 / ADRs 027-030). Updated Frame Narrative action row. Updated dependency graph (synthesis conditional re-entry to Research). Added 1 integration contract (Synthesis Skill → Research Skill re-entry). Added 7 fitness criteria. Added 3 boundary integration tests. Updated acceptance scenario count (133 → 164). | ADRs 027-030 (essay 006 cycle) | ADR-027 (four-dimension framing), ADR-028 (structural experiments), ADR-029 (synthesis re-entry), ADR-030 (two-register outline) | Accepted |

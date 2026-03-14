@@ -59,9 +59,9 @@ RDD is a deep work tool for building software through structured understanding. 
 
 **Tier 3 — Supporting Material (consulted for provenance and depth)**
 - `domain-model.md` — concepts, actions, relationships, invariants. The vocabulary authority.
-- `essays/` — research findings (5 essays: pedagogical epistemology, product discovery, synthesis, orientation document, roadmap/field guide/sizing)
-- `decisions/` — ADRs (26 decisions, from epistemic gates through scoped cycles)
-- `scenarios.md` — refutable behavior specifications (133 scenarios)
+- `essays/` — research findings (6 essays: pedagogical epistemology, product discovery, synthesis, orientation document, roadmap/field guide/sizing, outline as exhibition)
+- `decisions/` — ADRs (30 decisions, from epistemic gates through synthesis enrichment)
+- `scenarios.md` — refutable behavior specifications (164 scenarios)
 - `references/field-guide.md` — maps system design modules to implementation state. Developer reference.
 - `essays/reflections/` — meta-observations from epistemic gate conversations
 - `essays/research-logs/` — process records from research phases
@@ -82,9 +82,12 @@ RDD is a deep work tool for building software through structured understanding. 
 - Scoped cycles (ADR-026) — first-class workflow pattern: scope → cycle → graduate
 - Deep work tool framing (ADR-026) — RDD composes with existing workflows
 
+- Synthesis enrichment (ADRs 027-030) — four-dimension framing model, structural experiments, two-register outline, synthesis re-entry. Implemented in `/rdd-synthesis` SKILL.md.
+
 **Open questions (selected):**
 - How would Pair-RDD work at epistemic gates?
 - Should external review be formalized as a pipeline operation?
 - Cross-project synthesis (portfolio mode) is described but not operationalized
 - Fading implementation (Invariant 6) is deferred — tracked as design debt (ADR-005)
 - Conformance audit sizing heuristic check — not yet part of the audit operation
+- Should graduation surface lingering open questions as a distinct category?

@@ -864,3 +864,192 @@
 **When** the file is read
 **Then** it includes roadmap generation as part of the ARCHITECT phase output
 **And** the roadmap is generated from the system design's module decomposition and ADRs
+
+## Feature: Four-Dimension Framing Model (ADR-027)
+
+### Scenario: Framing conversation navigates discovery type dimension
+**Given** the synthesis skill has completed novelty surfacing (Phase 2)
+**And** the ranked discoveries include at least one novelty signal type (explicit surprise, reframing, assumption denial, negative case integration, or superseded decision)
+**When** the framing conversation (Phase 3) begins
+**Then** the agent references the strongest novelty signal type
+**And** offers a heuristic narrative form suggestion based on the signal's structural affinity (e.g., reframing → whorl of reflection or hermit crab form)
+**And** presents the suggestion as one possibility to try, not as what the material definitively suggests
+
+### Scenario: Framing conversation navigates narrative form dimension
+**Given** the framing conversation is exploring narrative form
+**When** the agent presents form options
+**Then** the vocabulary includes at least three tiers: established patterns (e.g., braided, segmented, whorl of reflection), hermit crab forms (e.g., algorithm, recipe, field guide), and meta-forms (e.g., Borgesian review, counterfactual)
+**And** no form is presented as the correct choice — the form emerges from structural experiments
+
+### Scenario: Framing conversation navigates audience constraint dimension
+**Given** the framing conversation is exploring audience constraint
+**When** the agent asks about audience and medium
+**Then** the question frames audience/medium as creative catalyst, not delivery specification
+**And** acknowledges that the audience may not be known at the start — the material may disclose its audience through composition
+**And** offers specific medium constraints as examples (e.g., Story Collider: 10 min personal story; Ignite: 5 min, 20 auto-advancing slides; explain-to-a-child: simple words only)
+
+### Scenario: Framing conversation navigates epistemic posture dimension
+**Given** the framing conversation has explored discoveries and forms
+**When** the agent asks about the writer's stance toward certainty
+**Then** it offers three positions: determined (outline as map), exploratory (outline as invitation), indeterminate (outline as score)
+**And** the identified posture shapes what kind of outline is produced (e.g., an indeterminate outline contains elements with structural relationships but no fixed sequence)
+
+### Scenario: Dimensions are navigated responsively, not presented as a four-part checklist
+**Given** the framing conversation is underway
+**When** the agent navigates the four dimensions
+**Then** the dimensions surface through the conversation's natural flow — the agent does not present all four upfront as a form to fill in
+**And** some dimensions may be navigated implicitly (e.g., discovery type is already addressed by novelty surfacing)
+
+### Scenario: Existing lenses remain available within the dimensions
+**Given** the framing conversation is navigating narrative form
+**When** the agent offers tools for finding structure
+**Then** the ABT sentence, story spine, volta placement, and three narrative inversions (ADR-017) are available as tools within the dimensional framework
+**And** they are not replaced or deprecated — they are organized into a richer repertoire
+
+## Feature: Structural Experiments as Framing Mechanism (ADR-028)
+
+### Scenario: Agent proposes a structural experiment during framing
+**Given** the framing conversation is exploring a candidate narrative form
+**When** the agent wants to test whether the form fits the material
+**Then** the agent proposes a specific structural experiment (e.g., "Draft the opening paragraph as pseudocode" or "Arrange three artifacts as exhibition stops")
+**And** the writer executes the experiment — producing a quick externalized trial, not discussing the form in the abstract
+
+### Scenario: Writer executes structural experiment and discovers content
+**Given** the agent has proposed a structural experiment
+**When** the writer produces the experiment (a paragraph, a set of bullet points, or a sketch)
+**Then** the agent and writer observe what the form revealed about the material
+**And** the outcome informs the next move: try another form, refine this one, or converge
+
+### Scenario: Failed structural experiment is diagnostic
+**Given** the writer has attempted a structural experiment
+**When** the experiment does not work — the form and material clash
+**Then** the agent treats the failure as informative rather than wasted effort
+**And** asks what the mismatch reveals about what the material actually needs
+**And** proposes a different experiment informed by the failure
+
+### Scenario: Agent's draft experiment serves as provocation, not submission
+**Given** the agent drafts a structural experiment as a starting provocation
+**When** the writer receives the agent's draft
+**Then** the writer produces their own version rather than merely approving or reacting to the agent's
+**And** the writer's generation is the primary data, not the agent's draft
+
+### Scenario: Structural experiments respect Invariant 4 time constraint
+**Given** the framing conversation includes structural experiments
+**When** multiple experiments are attempted
+**Then** each individual experiment takes minutes, not hours
+**And** the conversation does not require exhaustive experimentation across all four dimensions
+
+### Scenario: Structural experiment surfaces a research question (integration with ADR-029)
+**Given** the writer has attempted a structural experiment
+**When** the experiment reveals an incoherence — a connection assumed during the cycle does not hold
+**Then** the agent observes the incoherence
+**And** asks the writer whether this is a framing problem (solvable within synthesis) or a research gap (warranting re-entry)
+
+## Feature: Synthesis Re-Entry into RESEARCH (ADR-029)
+
+### Scenario: Structural experiment reveals research gap — writer articulates question
+**Given** a structural experiment has revealed an incoherence in the material
+**And** the agent has flagged the incoherence
+**When** the writer articulates a specific research question that neither the essays, ADRs, nor code address
+**Then** the finding is recorded in the research log as a new research question
+**And** the synthesis conversation pauses
+**And** the pipeline re-enters RESEARCH at the relevant scope
+
+### Scenario: Re-entry is writer's decision, not agent's recommendation
+**Given** a structural experiment has revealed an incoherence
+**When** the agent observes the incoherence and asks the writer about it
+**Then** the writer decides whether to re-enter RESEARCH or continue within synthesis
+**And** the agent does not unilaterally recommend or initiate re-entry
+
+### Scenario: Writer cannot articulate research question — incoherence is a framing problem
+**Given** a structural experiment has revealed an incoherence
+**When** the writer cannot state a specific research question
+**Then** the agent treats the incoherence as a framing problem solvable within synthesis
+**And** proposes a different structural experiment or narrative form to try
+
+### Scenario: Synthesis conversation resumes after re-entry research completes
+**Given** synthesis paused and the pipeline re-entered RESEARCH for a specific question
+**When** the research question is addressed and the writer returns to synthesis
+**Then** the synthesis conversation may resume from where it paused (journey review and novelty surfacing are not redone)
+**And** the new research finding is integrated into the framing conversation
+
+### Scenario: Re-entry is scoped narrowly
+**Given** synthesis has triggered re-entry into RESEARCH
+**When** the research question is formulated
+**Then** it targets a specific question at a specific scope — not a repeat of the entire cycle
+**And** the re-entry pipeline segment is bounded (e.g., RESEARCH → MODEL for a vocabulary question, or RESEARCH alone for a factual question)
+
+### Scenario: Most synthesis cycles terminate without re-entry
+**Given** the synthesis conversation has completed the framing phase
+**When** no structural experiment has revealed a research gap the writer wants to pursue
+**Then** synthesis produces the outline and terminates normally
+**And** no re-entry occurs
+
+## Feature: Outline as Two-Register Artifact (ADR-030)
+
+### Scenario: Outline production identifies argumentative backbone
+**Given** the framing conversation has converged on a form, audience, and posture
+**When** the agent produces the outline
+**Then** the outline explicitly identifies the argumentative backbone: the logical thread connecting discoveries to claims to implications
+**And** this register is what the argument audit verifies
+
+### Scenario: Outline production identifies curatorial arrangement
+**Given** the framing conversation has converged on a form, audience, and posture
+**When** the agent produces the outline
+**Then** the outline explicitly identifies the curatorial arrangement: how the reader encounters the ideas, where the scale shifts, what juxtapositions create resonance, where negative space creates meaning
+**And** this register is not verified by argument audit — it is a judgment the writer and agent make together
+
+### Scenario: Argumentative backbone exists even in non-conventional forms
+**Given** the framing conversation has converged on a hermit crab form, lyric form, or indeterminate form
+**When** the agent produces the outline
+**Then** the argumentative backbone is still present — the logic may be subterranean but must be sound
+**And** the argument audit verifies the backbone regardless of the surface form
+
+### Scenario: Curatorial arrangement uses the exhibition vocabulary
+**Given** the agent is producing the curatorial arrangement register of the outline
+**When** the agent describes the experiential structure
+**Then** it uses the curatorial vocabulary: selection, juxtaposition, scale shifts, the shimmer, negative space, personal voice
+**And** these terms describe specific curatorial moves, not vague quality assessments
+
+### Scenario: Two registers are complementary, not competing
+**Given** the outline has both an argumentative backbone and a curatorial arrangement
+**When** there is tension between logical sequence and experiential sequence (e.g., the most dramatic juxtaposition comes before the evidence that supports it)
+**Then** the agent surfaces the tension to the writer
+**And** the writer decides how to resolve it — the argument makes it true, the curation makes it alive
+
+### Scenario: Argument audit operates on argumentative backbone, not curatorial arrangement
+**Given** the outline is produced with both registers
+**When** `/argument-audit` is run on the outline
+**Then** the audit verifies that claims follow from evidence and framing does not overreach (argumentative backbone)
+**And** the audit does not evaluate curatorial quality (selection, juxtaposition, scale shifts are outside its scope)
+
+## Feature: Conformance — Synthesis Skill Implements ADRs 027-030
+
+### Scenario: Synthesis skill Phase 3 navigates four dimensions
+**Given** the `/rdd-synthesis` skill file exists
+**When** the Phase 3 (framing conversation) section is read
+**Then** it references all four dimensions: discovery type, narrative form, audience constraint, epistemic posture
+**And** the dimensions are navigated through the conversation, not presented as a checklist
+
+### Scenario: Synthesis skill includes structural experiment mechanism
+**Given** the `/rdd-synthesis` skill file exists
+**When** the Phase 3 section is read
+**Then** it describes the structural experiment mechanism: agent proposes, writer executes quick externalized trials
+**And** failed experiments are described as diagnostic
+
+### Scenario: Synthesis skill NEXT PHASE section reflects re-entry possibility
+**Given** the `/rdd-synthesis` skill file exists
+**When** the NEXT PHASE section is read
+**Then** it states that synthesis is usually terminal but can re-enter RESEARCH when structural experimentation surfaces new questions
+**And** it does not say "There is no next phase"
+
+### Scenario: Synthesis skill cycle position diagram shows re-entry arrow
+**Given** the `/rdd-synthesis` skill file exists
+**When** the cycle position diagram is read
+**Then** it shows a conditional arrow from SYNTHESIS back to RESEARCH
+
+### Scenario: Synthesis skill outline section describes two registers
+**Given** the `/rdd-synthesis` skill file exists
+**When** the outline production section is read
+**Then** it instructs the agent to identify both the argumentative backbone and the curatorial arrangement
+**And** it provides the curatorial vocabulary (selection, juxtaposition, scale shifts, shimmer, negative space, personal voice)
