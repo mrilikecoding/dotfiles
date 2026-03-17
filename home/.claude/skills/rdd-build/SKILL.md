@@ -206,6 +206,8 @@ After all scenarios pass, integration is verified, and the field guide is genera
 
 2. **Consider `/rdd-conform` audit** — the RDD skills may have evolved since the project's artifacts were last produced. A post-build conformance audit verifies the full artifact corpus still aligns with current skill expectations.
 
+3. **Archive completed work packages in the roadmap** — if `./docs/roadmap.md` exists, move completed work packages from the active section to a **Completed Work Log** at the end of the document. Record commit references and completion status for each. The active section should reflect only upcoming or in-progress work. This prevents the roadmap from accumulating indefinitely and keeps it useful as a forward-looking document.
+
 ---
 
 ## STRUCTURE VS. BEHAVIOR
