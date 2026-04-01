@@ -21,6 +21,8 @@
 [user]
 	name = Nathan Green
 	email = nathanrgreen@gmail.com
+[includeIf "gitdir:~/Documents/Development/benadmin/"]
+	path = ~/.gitconfig-jellyvision
 [init]
 	defaultBranch = main
 [filter "lfs"]

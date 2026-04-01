@@ -1,6 +1,5 @@
 [appearance]
-theme = "dark"
-zoom_level = 0.95
+theme = "system"
 
 [editor]
 auto_save = false

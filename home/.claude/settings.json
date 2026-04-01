@@ -12,6 +12,16 @@
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
-  }
+    "typescript-lsp@claude-plugins-official": true,
+    "rdd@nrgforge": true
+  },
+  "extraKnownMarketplaces": {
+    "nrgforge": {
+      "source": {
+        "source": "github",
+        "repo": "nrgforge/rdd"
+      }
+    }
+  },
+  "effortLevel": "high"
 }

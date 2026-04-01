@@ -8,6 +8,7 @@
 
 # Claude Code
 **/settings.local.json
+docs/superpowers/
 
 # Plexus MCP
 .plexus.db
