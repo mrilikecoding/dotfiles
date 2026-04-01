@@ -10,6 +10,7 @@ home/.tmux/plugins/
 home/.config/glab-cli/
 home/.config/cagent/.cagent_first_run
 home/.config/llm-orc/credentials.yaml
+home/.config/manza/state.json
 
 home/.vibe/.env
 home/.vibe/logs/
