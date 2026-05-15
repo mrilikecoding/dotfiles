@@ -12,3 +12,7 @@ docs/superpowers/
 
 # Plexus MCP
 .plexus.db
+
+# Graphite (gt) stack metadata
+.graphite_*
+.graphite/
