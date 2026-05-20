@@ -1,5 +1,5 @@
-palette = "Manzanita"
+palette = "Oregon Grape"
 focus_mode = "sentence"
-column_width = 66
+column_width = 60
 editing_mode = "vim"
 scroll_mode = "typewriter"
