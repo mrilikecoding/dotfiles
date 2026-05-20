@@ -1,6 +1,37 @@
-theme = light:Belafonte Day,dark:Belafonte Night
-font-family = "Inconsolata Nerd Font Mono"
-font-size=14
+# Theme — uncomment ONE. The `light:X,dark:Y` form auto-switches with macOS
+# appearance; single-name form picks one theme regardless.
+# theme = light:Belafonte Day,dark:Belafonte Night
+# theme = light:Catppuccin Latte,dark:Catppuccin Mocha
+# theme = light:TokyoNight Day,dark:TokyoNight Night
+# theme = light:Rose Pine Dawn,dark:Rose Pine Moon
+# theme = light:Gruvbox Light,dark:Gruvbox Dark
+# theme = light:Nord Light,dark:Nord
+# theme = light:iTerm2 Solarized Light,dark:Solarized Dark Patched
+# theme = Dracula
+# theme = Kanagawa Wave
+# theme = Everforest Dark Hard
+# theme = Ayu Light
+theme = Gruvbox Light
+
+# Font — uncomment ONE. All Nerd Font variants (powerline + icon glyphs).
+# font-family = "Inconsolata Nerd Font Mono"
+font-family = "JetBrainsMono Nerd Font Mono"
+# font-family = "DMMono Nerd Font"
+font-size = 14
+
+# Extra vertical breathing room between lines. Tweak 5–15%.
+adjust-cell-height = "10%"
+
+# Treat bold as a heavier-weight glyph, not a brighter color.
+bold-is-bright = false
+
+# closest macOS gets to the old subpixel-AA "weight" — moderate stroke
+# thickening to compensate for grayscale-AA's thinness. Tune 0–255.
+font-thicken = true
+font-thicken-strength = 150
+
+# chunkier wheel scroll (outside tmux — inside tmux this has no effect)
+mouse-scroll-multiplier = 5
 keybind = global:ctrl+grave_accent=toggle_quick_terminal
 macos-titlebar-style = transparent
 
