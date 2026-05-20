@@ -67,3 +67,54 @@ model_profiles:
     cost_per_token: 0.0
     system_prompt: Respond with 'Authentication working' to confirm local model access.
     timeout_seconds: 30
+
+  # WP-C manual verification — tool-calling model exposed via Ollama's
+  # OpenAI-compatible /v1 endpoint.
+  orchestrator-local:
+    model: mistral-nemo:12b
+    provider: openai-compatible
+    base_url: http://localhost:11434/v1
+    cost_per_token: 0.0
+    timeout_seconds: 180
+
+  # Higher-capability local orchestrator profile. Drives the full
+  # cascade reliably but at significant per-turn latency on consumer
+  # hardware (~3 min/turn for 15K-token contexts). Use for batch /
+  # less-time-sensitive work; prefer orchestrator-qwen3-8b for
+  # interactive sessions.
+  orchestrator-qwen3-14b:
+    model: qwen3:14b
+    provider: openai-compatible
+    base_url: http://localhost:11434/v1
+    cost_per_token: 0.0
+    timeout_seconds: 180
+
+  # Validated orchestrator profile (agentic-serving cycle, 2026-04-29):
+  # empirically clears the internal-tool discoverability floor with
+  # the biased default system prompt (which now ships in the
+  # codebase). Drives the full cascade end-to-end on consumer
+  # hardware. Slower than frontier models but verified to produce
+  # useful agentic responses.
+  orchestrator-qwen3-8b:
+    model: qwen3:8b
+    provider: openai-compatible
+    base_url: http://localhost:11434/v1
+    cost_per_token: 0.0
+    timeout_seconds: 180
+
+  # Cloud orchestrator (MiniMax M2.5 Free via OpenCode Zen) paired
+  # with local ensembles. Free tier; supports tool calling. Default
+  # orchestrator for agentic serving.
+  orchestrator-minimax-m25-free:
+    model: minimax-m2.5-free
+    provider: openai-compatible/zen
+    base_url: https://opencode.ai/zen/v1
+    cost_per_token: 0.0
+    timeout_seconds: 180
+
+agentic_serving:
+  orchestrator:
+    model_profile: orchestrator-minimax-m25-free
+  budget:
+    turn_limit: 100
+    token_limit: 1000000
