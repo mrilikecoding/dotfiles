@@ -13,6 +13,9 @@ home/.config/llm-orc/credentials.yaml
 home/.config/llm-orc/*.pre-spike-*
 home/.config/manza/state.json
 
+home/.config/opencode/*
+!home/.config/opencode/opencode.json
+
 home/.vibe/.env
 home/.vibe/logs/
 home/.vibe/vibehistory

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "llm-orc": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "llm-orc",
+      "options": {
+        "baseURL": "http://localhost:8765/v1"
+      },
+      "models": {
+        "orchestrator-qwen3-8b": {
+          "name": "llm-orc orchestrator (qwen3:8b)"
+        },
+        "orchestrator-qwen3-14b": {
+          "name": "llm-orc orchestrator (qwen3:14b)"
+        },
+        "orchestrator-minimax-m25-free": {
+          "name": "llm-orc orchestrator (minimax-m2.5-free via Zen)"
+        }
+      }
+    }
+  }
+}
