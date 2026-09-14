@@ -38,7 +38,6 @@ ITEMS=(
     ".bashrc"
     ".claude/CLAUDE.md"
     ".claude/.mcp.json"
-    ".claude/settings.json"
     ".vibe/AGENTS.md"
     ".vibe/skills"
     ".config"
