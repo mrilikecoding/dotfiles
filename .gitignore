@@ -12,6 +12,8 @@ home/.config/cagent/.cagent_first_run
 home/.config/llm-orc/credentials.yaml
 home/.config/llm-orc/*.pre-spike-*
 home/.config/manza/state.json
+home/.config/1Password/
+home/.config/op/
 
 home/.config/opencode/*
 !home/.config/opencode/opencode.json
