@@ -1,3 +1,5 @@
 {
-  "theme": "obsidian"
+  "theme": "obsidian",
+  "textFontFamily": "JetBrainsMono Nerd Font",
+  "accentColor": "#5c82f5"
 }
