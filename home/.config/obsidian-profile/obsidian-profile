@@ -51,6 +51,13 @@ SETTINGS_ONLY_PLUGINS=(
   obsidian-advanced-slides # 28M, mostly MathJax fonts under plugin/math
 )
 
+# Plugins we build ourselves from patched source (see <dotfiles>/obsidian/patches/).
+# Their files flow ONE WAY, dotfiles -> vault, so an in-app "update" that installs
+# upstream's bundle can never publish back and spread. data.json is still two-way.
+PINNED_PLUGINS=(
+  yaos
+)
+
 # ---- helpers ----------------------------------------------------------------
 
 quiet=0
@@ -64,6 +71,18 @@ mtime() {
 is_local_plugin_file() {
   local rel="$1" f
   for f in "${LOCAL_PLUGIN_FILES[@]}"; do [ "$rel" = "plugins/$f" ] && return 0; done
+  return 1
+}
+
+# True for a pinned plugin's code files (anything under plugins/<id>/ except data.json).
+is_pinned_plugin_file() {
+  local rel="$1" p
+  for p in "${PINNED_PLUGINS[@]}"; do
+    case "$rel" in
+      "plugins/$p/data.json") return 1 ;;
+      "plugins/$p/"*)         return 0 ;;
+    esac
+  done
   return 1
 }
 
@@ -111,6 +130,14 @@ sync_dir() {
     is_unvendored_plugin_file "$rel" && continue
     src="$vdir/$rel"; dst="$PROFILE/$rel"
     if [ -f "$src" ] && [ -f "$dst" ] && cmp -s "$src" "$dst"; then continue; fi
+
+    if is_pinned_plugin_file "$rel"; then
+      # one-way: dotfiles is the source of truth for pinned plugin code
+      [ "$mode" = publish ] && continue
+      [ -f "$dst" ] || continue
+      [ -f "$src" ] && say "  dotfiles -> vault  $rel  (pinned: vault copy replaced)" || say "  dotfiles -> vault  $rel  (pinned, new)"
+      copy_file "$dst" "$src"; changed=$((changed+1)); continue
+    fi
 
     case "$mode" in
       publish)
@@ -204,4 +231,17 @@ for entry in "${vaults[@]}"; do
   [ "$n" -eq 0 ] && say "  up to date"
 done
 [ "$total" -eq 0 ] && say "obsidian-profile: nothing changed"
+
+# ---- once a day: is there a newer upstream release for a pinned plugin? -----
+# Prints one line (even in --quiet) only when an update exists; silent on
+# network failure. Stamp file keeps this to one GitHub call per day.
+stamp="$HOME/.config/obsidian-profile/.upstream-check"
+if [ "$mode" = sync ] && ! find "$stamp" -mtime -1 2>/dev/null | grep -q .; then
+  touch "$stamp"
+  for b in "$PROFILE_ROOT"/patches/*/build.sh; do
+    [ -x "$b" ] || continue
+    out="$("$b" check 2>/dev/null)"; rc=$?
+    [ "$rc" -eq 10 ] && printf 'obsidian-profile: %s\n' "$out" >&2
+  done
+fi
 exit 0

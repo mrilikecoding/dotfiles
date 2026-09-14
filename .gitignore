@@ -28,3 +28,4 @@ home/.vibe/trusted_folders.toml
 
 # obsidian-profile: per-machine vault registry
 home/.config/obsidian-profile/vaults
+home/.config/obsidian-profile/.upstream-check

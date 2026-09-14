@@ -1,0 +1,4 @@
+upstream=2.1.1
+plugin_patch_sha256=f47d7f4d1ad8451d
+server_patch_sha256=244300a1edeb1ceb
+built=2026-09-14T22:59:05Z
