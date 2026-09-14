@@ -28,6 +28,7 @@
     }
   },
   "effortLevel": "xhigh",
-  "skipAutoPermissionPrompt": true,
-  "promptSuggestionEnabled": false
+  "promptSuggestionEnabled": false,
+  "theme": "light",
+  "skipAutoPermissionPrompt": true
 }

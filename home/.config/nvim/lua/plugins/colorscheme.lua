@@ -2,7 +2,7 @@ return {
   {
     "RRethy/base16-nvim",
     config = function()
-      vim.cmd("colorscheme base16-ocean")
+      vim.cmd("colorscheme base16-atelier-dune-light")
     end,
   },
   -- Enable live preview when browsing colorschemes
