@@ -45,3 +45,5 @@ window-padding-balance = true
 window-padding-color = extend
 background-opacity = 0.97
 background-blur = 15
+
+cursor-style-blink = true
