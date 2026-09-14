@@ -17,7 +17,8 @@
     "datadog@claude-plugins-official": true,
     "sentry@claude-plugins-official": true,
     "figma@claude-plugins-official": true,
-    "gitlab@claude-plugins-official": true
+    "gitlab@claude-plugins-official": true,
+    "terraform@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "nrgforge": {
