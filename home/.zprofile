@@ -16,3 +16,6 @@ source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 
 # Added by Obsidian
 export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
+
+# Keep Obsidian settings in sync with ~/dotfiles/obsidian (quick, exits quietly when nothing to do)
+[ -x "$HOME/.config/obsidian-profile/obsidian-profile" ] && "$HOME/.config/obsidian-profile/obsidian-profile" sync --quiet &!

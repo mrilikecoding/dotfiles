@@ -25,3 +25,6 @@ home/.vibe/vibehistory
 home/.vibe/update_cache.json
 home/.vibe/trusted_folders.toml
 
+
+# obsidian-profile: per-machine vault registry
+home/.config/obsidian-profile/vaults

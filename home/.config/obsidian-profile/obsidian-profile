@@ -1,0 +1,188 @@
+#!/bin/bash
+#
+# obsidian-profile: keep portable Obsidian settings in sync between vaults
+# and the dotfiles repo.
+#
+#   obsidian-profile sync    [--quiet] [--profile NAME] [vault ...]   newest wins, both ways
+#   obsidian-profile publish [--quiet] [--profile NAME] [vault ...]   vault  -> dotfiles only
+#   obsidian-profile apply   [--quiet] [--profile NAME] [vault ...]   dotfiles -> vault only
+#   obsidian-profile list                                             show registered vaults
+#
+# Profiles live in <dotfiles>/obsidian/<NAME>/. The default profile is "default".
+# With no vault arguments, vaults come from ~/.config/obsidian-profile/vaults,
+# one per line, optionally followed by @NAME to pick a profile:
+#     ~/Vaults/Personal
+#     ~/Vaults/Work @work
+# That file is machine-local. # comments allowed.
+#
+# Exit 0 whenever there is simply nothing to do: no registry, no vaults,
+# no Obsidian installed, or everything already identical.
+
+set -u
+
+# ---- locations --------------------------------------------------------------
+
+self="$(cd "$(dirname "$(readlink "$0" || echo "$0")")" && pwd -P)"
+# home/.config/obsidian-profile -> repo root is three levels up
+DOTFILES="${DOTFILES_DIR:-$(cd "$self/../../.." && pwd -P)}"
+PROFILE_ROOT="$DOTFILES/obsidian"
+PROFILE=""   # set per vault: $PROFILE_ROOT/<name>
+REGISTRY="${OBSIDIAN_PROFILE_VAULTS:-$HOME/.config/obsidian-profile/vaults}"
+
+# ---- what travels and what stays --------------------------------------------
+
+# Top-level files inside .obsidian/ that are portable.
+PORTABLE_FILES=(app.json appearance.json core-plugins.json community-plugins.json hotkeys.json)
+
+# Directories whose contents are portable (all regular files, recursively).
+PORTABLE_DIRS=(snippets plugins)
+
+# Plugin files that hold per-vault state and must never travel.
+# Format: <plugin-id>/<file>
+LOCAL_PLUGIN_FILES=(
+  longform/data.json     # projects, drafts, writing sessions
+  yaos/data.json         # vault id, device name, sync token
+  obsidian-git/data.json # per-repo settings
+)
+
+# ---- helpers ----------------------------------------------------------------
+
+quiet=0
+say() { [ "$quiet" = 1 ] || printf '%s\n' "$*"; }
+warn() { printf 'obsidian-profile: %s\n' "$*" >&2; }
+
+mtime() {
+  if stat -f %m "$1" >/dev/null 2>&1; then stat -f %m "$1"; else stat -c %Y "$1"; fi
+}
+
+is_local_plugin_file() {
+  local rel="$1" f
+  for f in "${LOCAL_PLUGIN_FILES[@]}"; do [ "$rel" = "plugins/$f" ] && return 0; done
+  return 1
+}
+
+# Print the relative paths (under .obsidian/) of every portable file present
+# in the given .obsidian directory.
+portable_paths() {
+  local root="$1" f d
+  for f in "${PORTABLE_FILES[@]}"; do [ -f "$root/$f" ] && printf '%s\n' "$f"; done
+  for d in "${PORTABLE_DIRS[@]}"; do
+    [ -d "$root/$d" ] || continue
+    ( cd "$root" && find "$d" -type f ! -name .DS_Store )
+  done
+}
+
+# copy_file <src> <dst>: copy preserving mtime, creating parent dirs.
+copy_file() {
+  mkdir -p "$(dirname "$2")" && cp -p "$1" "$2"
+}
+
+# sync_pair <vault .obsidian> <mode>
+# mode: sync | publish | apply. Prints one line per action. Returns count.
+sync_dir() {
+  local vdir="$1" mode="$2" changed=0 rel src dst vm pm
+  local -a rels
+  # union of portable paths on both sides
+  while IFS= read -r rel; do
+    [ -n "$rel" ] && rels+=("$rel")
+  done < <( { portable_paths "$vdir"; portable_paths "$PROFILE"; } | sort -u )
+  [ "${#rels[@]}" -gt 0 ] || return 0
+
+  for rel in "${rels[@]}"; do
+    is_local_plugin_file "$rel" && continue
+    src="$vdir/$rel"; dst="$PROFILE/$rel"
+    if [ -f "$src" ] && [ -f "$dst" ] && cmp -s "$src" "$dst"; then continue; fi
+
+    case "$mode" in
+      publish)
+        [ -f "$src" ] || continue
+        copy_file "$src" "$dst"; say "  vault -> dotfiles  $rel"; changed=$((changed+1)) ;;
+      apply)
+        [ -f "$dst" ] || continue
+        copy_file "$dst" "$src"; say "  dotfiles -> vault  $rel"; changed=$((changed+1)) ;;
+      sync)
+        if [ ! -f "$dst" ]; then
+          copy_file "$src" "$dst"; say "  vault -> dotfiles  $rel  (new)"
+        elif [ ! -f "$src" ]; then
+          copy_file "$dst" "$src"; say "  dotfiles -> vault  $rel  (new)"
+        else
+          vm=$(mtime "$src"); pm=$(mtime "$dst")
+          if [ "$vm" -gt "$pm" ]; then
+            copy_file "$src" "$dst"; say "  vault -> dotfiles  $rel  (vault newer)"
+          else
+            copy_file "$dst" "$src"; say "  dotfiles -> vault  $rel  (dotfiles newer)"
+          fi
+        fi
+        changed=$((changed+1)) ;;
+    esac
+  done
+  return $changed
+}
+
+read_registry() {
+  [ -f "$REGISTRY" ] || return 0
+  sed -e 's/#.*//' -e 's/[[:space:]]*$//' -e '/^$/d' "$REGISTRY" | while IFS= read -r line; do
+    local prof=default
+    case "$line" in *" @"*) prof="${line##* @}"; line="${line% @*}"; line="${line%"${line##*[! ]}"}" ;; esac
+    case "$line" in "~/"*) line="$HOME/${line#\~/}" ;; esac
+    printf '%s\t%s\n' "${line//\$HOME/$HOME}" "$prof"
+  done
+}
+
+# ---- main -------------------------------------------------------------------
+
+mode="${1:-}"; shift || true
+case "$mode" in sync|publish|apply|list) ;; ""|-h|--help) sed -n '2,19p' "$0"; exit 0 ;; *) warn "unknown command: $mode"; exit 2 ;; esac
+
+vaults=(); arg_profile=default; expect_profile=0
+for arg in "$@"; do
+  if [ "$expect_profile" = 1 ]; then arg_profile="$arg"; expect_profile=0; continue; fi
+  case "$arg" in
+    --quiet|-q) quiet=1 ;;
+    --profile|-p) expect_profile=1 ;;
+    --profile=*) arg_profile="${arg#--profile=}" ;;
+    *) vaults+=("$arg	$arg_profile") ;;
+  esac
+done
+# a --profile given after the vault args applies to all of them
+if [ "$arg_profile" != default ]; then
+  for i in "${!vaults[@]}"; do vaults[$i]="${vaults[$i]%%	*}	$arg_profile"; done
+fi
+
+if [ "$mode" = list ]; then
+  read_registry | while IFS=$'\t' read -r v p; do printf '%s  @%s\n' "$v" "$p"; done; exit 0
+fi
+
+# Nothing to do without Obsidian on this machine.
+obsidian_installed() {
+  [ -d /Applications/Obsidian.app ] && return 0
+  [ -d "$HOME/Applications/Obsidian.app" ] && return 0
+  command -v obsidian >/dev/null 2>&1 && return 0
+  command -v flatpak >/dev/null 2>&1 && flatpak info md.obsidian.Obsidian >/dev/null 2>&1 && return 0
+  return 1
+}
+if ! obsidian_installed; then
+  say "obsidian-profile: Obsidian not installed here; nothing to do"; exit 0
+fi
+
+if [ "${#vaults[@]}" -eq 0 ]; then
+  while IFS= read -r v; do [ -n "$v" ] && vaults+=("$v"); done < <(read_registry)
+fi
+if [ "${#vaults[@]}" -eq 0 ]; then
+  say "obsidian-profile: no vaults given and none registered in $REGISTRY"; exit 0
+fi
+
+total=0
+for entry in "${vaults[@]}"; do
+  v="${entry%%	*}"; prof="${entry#*	}"; v="${v%/}"
+  if [ ! -d "$v/.obsidian" ]; then
+    say "obsidian-profile: skipping $v (no .obsidian directory)"; continue
+  fi
+  PROFILE="$PROFILE_ROOT/$prof"; mkdir -p "$PROFILE"
+  say "$mode: $v  (@$prof)"
+  sync_dir "$v/.obsidian" "$mode"; n=$?
+  total=$((total+n))
+  [ "$n" -eq 0 ] && say "  up to date"
+done
+[ "$total" -eq 0 ] && say "obsidian-profile: nothing changed"
+exit 0
