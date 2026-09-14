@@ -45,6 +45,12 @@ LOCAL_PLUGIN_FILES=(
   obsidian-git/data.json # per-repo settings
 )
 
+# Plugins whose binaries are too big to vendor. Only data.json travels; install
+# the plugin itself from the community store once per vault.
+SETTINGS_ONLY_PLUGINS=(
+  obsidian-advanced-slides # 28M, mostly MathJax fonts under plugin/math
+)
+
 # ---- helpers ----------------------------------------------------------------
 
 quiet=0
@@ -58,6 +64,18 @@ mtime() {
 is_local_plugin_file() {
   local rel="$1" f
   for f in "${LOCAL_PLUGIN_FILES[@]}"; do [ "$rel" = "plugins/$f" ] && return 0; done
+  return 1
+}
+
+# True for a settings-only plugin's binaries, i.e. anything but its data.json.
+is_unvendored_plugin_file() {
+  local rel="$1" p
+  for p in "${SETTINGS_ONLY_PLUGINS[@]}"; do
+    case "$rel" in
+      "plugins/$p/data.json") return 1 ;;
+      "plugins/$p/"*)         return 0 ;;
+    esac
+  done
   return 1
 }
 
@@ -90,6 +108,7 @@ sync_dir() {
 
   for rel in "${rels[@]}"; do
     is_local_plugin_file "$rel" && continue
+    is_unvendored_plugin_file "$rel" && continue
     src="$vdir/$rel"; dst="$PROFILE/$rel"
     if [ -f "$src" ] && [ -f "$dst" ] && cmp -s "$src" "$dst"; then continue; fi
 
