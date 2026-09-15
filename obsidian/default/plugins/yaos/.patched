@@ -1,4 +1,4 @@
 upstream=2.1.1
-fork=mrilikecoding/yaos@nrg
+fork=mrilikecoding/og-cloud@main
 commit=d6a6f42
-built=2026-09-15T16:43:58Z
+built=2026-09-15T16:48:48Z

@@ -12,7 +12,7 @@
 #   build.sh update                     rebase FORK_BRANCH onto upstream's latest
 #                                       tag, push, then build. Stops on conflict.
 #   build.sh release                    build, then publish a GitHub release on the
-#                                       fork tagged <upstream>-nrg.<n> with
+#                                       fork tagged <upstream>-og.<n> with
 #                                       main.js / manifest.json / styles.css.
 #                                       Phone installs it with BRAT by exact tag.
 #
@@ -27,11 +27,11 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd -P)"
 DOTFILES="$(cd "$here/../../.." && pwd -P)"
 PROFILE_PLUGIN="$DOTFILES/obsidian/default/plugins/yaos"
-FORK="${YAOS_FORK:-mrilikecoding/yaos}"
-FORK_BRANCH="${YAOS_FORK_BRANCH:-nrg}"
+FORK="${YAOS_FORK:-mrilikecoding/og-cloud}"
+FORK_BRANCH="${YAOS_FORK_BRANCH:-main}"
 UPSTREAM="kavinsood/yaos"
 API_LATEST="https://api.github.com/repos/$UPSTREAM/releases/latest"
-WORK="${YAOS_BUILD_DIR:-$HOME/.cache/obsidian-profile/yaos-fork}"
+WORK="${YAOS_BUILD_DIR:-$HOME/.cache/obsidian-profile/og-cloud}"
 
 cmd="${1:-build}"; shift || true
 deploy=0
@@ -128,8 +128,8 @@ do_update() {
 do_release() {
   do_build
   local base n tag; base="$(base_tag)"
-  n=$(( $(gh release list --repo "$FORK" --limit 100 --json tagName --jq "[.[] | select(.tagName | startswith(\"$base-nrg.\"))] | length") + 1 ))
-  tag="$base-nrg.$n"
+  n=$(( $(gh release list --repo "$FORK" --limit 100 --json tagName --jq "[.[] | select(.tagName | startswith(\"$base-og.\"))] | length") + 1 ))
+  tag="$base-og.$n"
   echo "== publishing release $tag on $FORK"
   gh release create "$tag" --repo "$FORK" --target "$FORK_BRANCH" --title "YAOS $tag" \
     --notes "Patched build of upstream $base from branch $FORK_BRANCH ($(git -C "$WORK" rev-parse --short HEAD)). Install on mobile with BRAT: add beta plugin $FORK, frozen at $tag." \
