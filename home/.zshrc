@@ -39,7 +39,7 @@ ssh-add --apple-use-keychain $DAFAULT_SSH_KEY 2>/dev/null
 export PATH="$HOME/.local/bin:$PATH"
 
 # The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/nategreen/.docker/completions $fpath)
+fpath=($HOME/.docker/completions $fpath)
 autoload -Uz compinit
 compinit
 # End of Docker CLI completions
