@@ -28,7 +28,7 @@ M.configs = {
     request = "attach",
     name = "Platform API Docker",
     connect = { host = "localhost", port = 38698 },
-    localfsMap = "/home/app:/Users/nategreen/Documents/Development/jv-dev-kit/services/platform-api",
+    localfsMap = "/home/app:" .. vim.fn.expand("~") .. "/Documents/Development/jv-dev-kit/services/platform-api",
   },
 }
 

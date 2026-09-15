@@ -92,7 +92,7 @@ function M.create_env()
       end,
       stdpath = function(what)
         if what == "config" then
-          return "/Users/nategreen/.config/nvim"
+          return os.getenv("HOME") .. "/.config/nvim"
         end
         return "/default/" .. what
       end,

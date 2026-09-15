@@ -4,7 +4,7 @@ local test_results = {}
 -- Safely require a module
 local function safe_require(module_name)
   -- Get absolute path to nvim config directory
-  local nvim_dir = "/Users/nategreen/.config/nvim/"
+  local nvim_dir = vim.fn.stdpath("config") .. "/"
 
   -- Setup package path to include all necessary directories
   package.path = nvim_dir .. "lua/?.lua;" .. nvim_dir .. "lua/?/init.lua;" .. nvim_dir .. "test/?.lua;" .. package.path

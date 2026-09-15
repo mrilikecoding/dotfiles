@@ -23,9 +23,11 @@ cat > "$SCRIPT_DIR/minimal_init.lua" << EOF
 -- Minimal init for testing
 vim.cmd('set rtp+=' .. vim.fn.getcwd())
 -- Add test directory to package.path
-package.path = "$SCRIPT_DIR/?.lua;" .. 
-               "$SCRIPT_DIR/?/init.lua;" .. 
-               "$SCRIPT_DIR/helpers/?.lua;" ..
+local test_dir = vim.fn.stdpath("config") .. "/test"
+package.path = vim.fn.stdpath("config") .. "/?.lua;" ..
+               test_dir .. "/?.lua;" ..
+               test_dir .. "/?/init.lua;" ..
+               test_dir .. "/helpers/?.lua;" ..
                package.path
 vim.cmd('set noswapfile')
 vim.cmd('set nobackup')

@@ -1,9 +1,11 @@
 -- Minimal init for testing
 vim.cmd('set rtp+=' .. vim.fn.getcwd())
 -- Add test directory to package.path
-package.path = "/Users/nategreen/.config/nvim/test/?.lua;" .. 
-               "/Users/nategreen/.config/nvim/test/?/init.lua;" .. 
-               "/Users/nategreen/.config/nvim/test/helpers/?.lua;" ..
+local test_dir = vim.fn.stdpath("config") .. "/test"
+package.path = vim.fn.stdpath("config") .. "/?.lua;" ..
+               test_dir .. "/?.lua;" ..
+               test_dir .. "/?/init.lua;" ..
+               test_dir .. "/helpers/?.lua;" ..
                package.path
 vim.cmd('set noswapfile')
 vim.cmd('set nobackup')
