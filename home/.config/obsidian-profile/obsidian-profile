@@ -52,7 +52,7 @@ SETTINGS_ONLY_PLUGINS=(
   obsidian-advanced-slides # 28M, mostly MathJax fonts under plugin/math
 )
 
-# Plugins we build ourselves from patched source (see <dotfiles>/obsidian/patches/).
+# Plugins we build ourselves from patched source (see <dotfiles>/obsidian/tools/).
 # Their files flow ONE WAY, dotfiles -> vault, so an in-app "update" that installs
 # upstream's bundle can never publish back and spread. data.json is still two-way.
 PINNED_PLUGINS=(
@@ -240,7 +240,7 @@ done
 stamp="$HOME/.config/obsidian-profile/.upstream-check"
 if [ "$mode" = sync ] && ! find "$stamp" -mtime -1 2>/dev/null | grep -q .; then
   touch "$stamp"
-  for b in "$PROFILE_ROOT"/patches/*/build.sh; do
+  for b in "$PROFILE_ROOT"/tools/*/build.sh; do
     [ -x "$b" ] || continue
     out="$("$b" check 2>/dev/null)"; rc=$?
     [ "$rc" -eq 10 ] && printf 'obsidian-profile: %s\n' "$out" >&2
