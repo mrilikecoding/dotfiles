@@ -4,7 +4,7 @@
 # patched server, or publish a GitHub release for BRAT on mobile).
 #
 #   build.sh [build] [--deploy-server]  clone FORK_BRANCH, build, copy into the
-#                                       profile (obsidian/default/plugins/yaos)
+#                                       profile (obsidian/default/plugins/og-cloud)
 #   build.sh check                      is upstream ahead of the branch's base tag?
 #                                       exit 0 = current, 10 = rebase needed
 #                                       (prints "clean" or the conflicting files),
@@ -26,7 +26,7 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd -P)"
 DOTFILES="$(cd "$here/../../.." && pwd -P)"
-PROFILE_PLUGIN="$DOTFILES/obsidian/default/plugins/yaos"
+PROFILE_PLUGIN="$DOTFILES/obsidian/default/plugins/og-cloud"
 FORK="${YAOS_FORK:-mrilikecoding/og-cloud}"
 FORK_BRANCH="${YAOS_FORK_BRANCH:-main}"
 UPSTREAM="kavinsood/yaos"
@@ -131,7 +131,7 @@ do_release() {
   n=$(( $(gh release list --repo "$FORK" --limit 100 --json tagName --jq "[.[] | select(.tagName | startswith(\"$base-og.\"))] | length") + 1 ))
   tag="$base-og.$n"
   echo "== publishing release $tag on $FORK"
-  gh release create "$tag" --repo "$FORK" --target "$FORK_BRANCH" --title "YAOS $tag" \
+  gh release create "$tag" --repo "$FORK" --target "$FORK_BRANCH" --title "OG Cloud Sync $tag" \
     --notes "Patched build of upstream $base from branch $FORK_BRANCH ($(git -C "$WORK" rev-parse --short HEAD)). Install on mobile with BRAT: add beta plugin $FORK, frozen at $tag." \
     "$PROFILE_PLUGIN/main.js" "$PROFILE_PLUGIN/manifest.json" "$PROFILE_PLUGIN/styles.css"
   echo "== release: https://github.com/$FORK/releases/tag/$tag"

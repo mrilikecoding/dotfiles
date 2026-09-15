@@ -41,7 +41,8 @@ PORTABLE_DIRS=(snippets plugins)
 # Format: <plugin-id>/<file>
 LOCAL_PLUGIN_FILES=(
   longform/data.json     # projects, drafts, writing sessions
-  yaos/data.json         # vault id, device name, sync token
+  yaos/data.json         # (legacy id) vault id, device name, sync token
+  og-cloud/data.json     # vault id, device name, sync token
   obsidian-git/data.json # per-repo settings
 )
 
@@ -55,7 +56,8 @@ SETTINGS_ONLY_PLUGINS=(
 # Their files flow ONE WAY, dotfiles -> vault, so an in-app "update" that installs
 # upstream's bundle can never publish back and spread. data.json is still two-way.
 PINNED_PLUGINS=(
-  yaos
+  og-cloud
+  yaos   # legacy id, kept pinned so an old vault copy never publishes back
 )
 
 # ---- helpers ----------------------------------------------------------------
